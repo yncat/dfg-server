@@ -4,16 +4,16 @@ import { monitor } from "@colyseus/monitor";
 /**
  * Import your Room files
  */
-import { MyRoom } from "./rooms/MyRoom";
+import { GlobalRoom } from "./rooms/global";
 
 export default Arena({
-    getId: () => "Your Colyseus App",
+    getId: () => "dfg-server",
 
     initializeGameServer: (gameServer) => {
         /**
          * Define your room handlers:
          */
-        gameServer.define('my_room', MyRoom);
+        gameServer.define('global_room', GlobalRoom);
 
     },
 
