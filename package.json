@@ -31,10 +31,11 @@
     "typescript": "^3.4.5"
   },
   "dependencies": {
-    "@colyseus/arena": "^0.14.20",
+    "@colyseus/arena": "^0.14.22",
     "@colyseus/monitor": "^0.14.20",
     "colyseus": "^0.14.20",
     "cors": "^2.8.5",
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "protobufjs": "~6.11.2"
   }
 }
