@@ -6,17 +6,26 @@ import { ChatHandler } from "../logic/chatHandler";
 import { PlayerMap } from "../logic/playerMap";
 
 export class GlobalRoom extends Room {
-  private chatHandler:ChatHandler;
-  private playerMap:PlayerMap;
+  private chatHandler: ChatHandler;
+  private playerMap: PlayerMap;
   onCreate(options: any) {
-    this.chatHandler=new ChatHandler();
+    this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
     this.onMessage("chatRequest", (client, payload) => {
-      const req = dfgmsg.decodePayload<dfgmsg.ChatRequest>(payload,dfgmsg.ChatRequestDecoder)
-      if(!isDecodeSuccess<dfgmsg.ChatRequest>(req)){
+      const req = dfgmsg.decodePayload<dfgmsg.ChatRequest>(
+        payload,
+        dfgmsg.ChatRequestDecoder
+      );
+      if (!isDecodeSuccess<dfgmsg.ChatRequest>(req)) {
         return;
       }
-      this.broadcast("chatMessage", this.chatHandler.generateChatMessage(req,this.playerMap.client2player(client)));
+      this.broadcast(
+        "chatMessage",
+        this.chatHandler.generateChatMessage(
+          req,
+          this.playerMap.client2player(client)
+        )
+      );
     });
   }
 
@@ -28,7 +37,7 @@ export class GlobalRoom extends Room {
   }
 
   onJoin(client: Client, options: any) {
-    this.playerMap.add(client,options.playerName);
+    this.playerMap.add(client, options.playerName);
   }
 
   onLeave(client: Client, consented: boolean) {
