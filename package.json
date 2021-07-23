@@ -11,6 +11,9 @@
     "proto-build": "pbjs -t static-module -o proto-dist/dfgpb.js proto-src/dfgpb.proto && pbts -o proto-dist/dfgpb.d.ts proto-dist/dfgpb.js",
     "clean": "node node_modules/rimraf/bin lib",
     "test": "mocha --require ts-node/register test/**_test.ts --exit --timeout 15000"
+    "fmt-lint": "prettier -c test/**/*.ts src/**/*.ts",
+    "fmt": "prettier -w src/**/*.ts test/**/*.ts",
+    "lint": "eslint . --ext ts",
   },
   "author": "Yukio Nozawa",
   "license": "UNLICENSED",
@@ -39,10 +42,14 @@
     "@mojotech/json-type-validation": "^3.1.0",
     "@types/chai": "^4.2.21",
     "@types/sinon": "^10.0.2",
+    "@typescript-eslint/eslint-plugin": "^4.28.4",
+    "@typescript-eslint/parser": "^4.28.4",
     "chai": "^4.3.4",
     "colyseus": "^0.14.20",
     "cors": "^2.8.5",
+    "eslint": "^7.31.0",
     "express": "^4.16.4",
+    "prettier": "^2.3.2",
     "sinon": "^11.1.1"
   }
 }
