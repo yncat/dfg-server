@@ -41,16 +41,19 @@ describe("testing your Colyseus app", () => {
     it("handle chat message", async () => {
       const room = await colyseus.createRoom("global_room", {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      const cfn1 = sinon.fake((message:any)=>{});
-      client1.onMessage("chatMessage",cfn1);
+      const cfn1 = sinon.fake((message: any) => {});
+      client1.onMessage("chatMessage", cfn1);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      const cfn2 = sinon.fake((message:any)=>{});
-      client2.onMessage("chatMessage",cfn2);
+      const cfn2 = sinon.fake((message: any) => {});
+      client2.onMessage("chatMessage", cfn2);
       client1.send("chatRequest", dfgmsg.encodeChatRequest("hello"));
       await Promise.all([
         client1.waitForMessage("chatMessage"),
-        client2.waitForMessage("chatMessage")
+        client2.waitForMessage("chatMessage"),
       ]);
+      const want = { playerName: "cat", message: "hello" };
+      expect(cfn1.firstCall.lastArg).to.eql(want);
+      expect(cfn2.firstCall.lastArg).to.eql(want);
     });
   });
 });

@@ -7,17 +7,13 @@ import {
   boolean,
 } from "@mojotech/json-type-validation";
 
-interface ChatRequest {
+export interface ChatRequest {
   message: string;
 }
 
-const chatRequestDecoder: Decoder<ChatRequest> = object({
+export const ChatRequestDecoder: Decoder<ChatRequest> = object({
   message: string(),
 });
-
-export function decodeChatRequest(encoded: string): ChatRequest {
-  return chatRequestDecoder.runWithException(encoded);
-}
 
 export function encodeChatRequest(message: string): ChatRequest {
   return {
@@ -25,19 +21,15 @@ export function encodeChatRequest(message: string): ChatRequest {
   };
 }
 
-interface ChatMessage {
+export interface ChatMessage {
   playerName: string;
   message: string;
 }
 
-const chatMessageDecoder: Decoder<ChatMessage> = object({
+export const ChatMessageDecoder: Decoder<ChatMessage> = object({
   playerName: string(),
   message: string(),
 });
-
-export function decodeChatMessage(encoded: string): ChatMessage {
-  return chatMessageDecoder.runWithException(encoded);
-}
 
 export function encodeChatMessage(
   playerName: string,
@@ -47,4 +39,22 @@ export function encodeChatMessage(
     playerName: playerName,
     message: message,
   };
+}
+
+export class PayloadDecodeError extends Error {}
+export function decodePayload<T>(
+  encoded: any,
+  decoder: Decoder<T>
+): T | PayloadDecodeError {
+  const ret = decoder.run(encoded);
+  if (ret.ok===false) {
+    const e = ret.error;
+    return new PayloadDecodeError(
+      "Cannot decode Payload."+
+      "input: " + e.input + "\n"+
+      "at: " + e.at + "\n"+
+      "message: " + e.message
+    );
+  }
+  return ret.result;
 }
