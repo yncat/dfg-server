@@ -45,7 +45,7 @@ export class GlobalRoom extends Room<GlobalState> {
 
   onJoin(client: Client, options: any) {
     this.playerMap.add(client, options.playerName);
-    this.state.playerCount=this.clients.length;
+    this.state.playerCount = this.clients.length;
   }
 
   onLeave(client: Client, consented: boolean) {
