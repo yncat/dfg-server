@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 import { Room, Client, ServerError } from "colyseus";
 import http from "http";
 import * as dfgmsg from "../../msg-src/dfgmsg";
@@ -32,6 +36,7 @@ export class GlobalRoom extends Room<GlobalState> {
   }
 
   onAuth(client: Client, options: any, request: http.IncomingMessage): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!options.playerName) {
       throw new ServerError(403, "player name is not given");
     }

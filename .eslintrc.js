@@ -13,6 +13,8 @@ module.exports = {
   ],
   rules: {
     "no-constant-condition": "off",
+    "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/restrict-plus-operands": "off",
   },
 };

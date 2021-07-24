@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 import { Room, Client } from "colyseus.js";
 
 export function requestJoinOptions (this: Client, i: number) {

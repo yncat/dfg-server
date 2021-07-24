@@ -12,6 +12,9 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "src"
+    "src",
+    "test",
+    "loadtest",
+    "msg-src"
   ]
 }

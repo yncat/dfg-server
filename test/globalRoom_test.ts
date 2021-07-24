@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 import sinon from "sinon";
 import { expect } from "chai";
 import { ColyseusTestServer, boot } from "@colyseus/testing";
 // import your "arena.config.ts" file here.
 import appConfig from "../src/arena.config";
-import { ServerError } from "colyseus";
 import * as dfgmsg from "../msg-src/dfgmsg";
 
 describe("testing your Colyseus app", () => {
@@ -32,7 +35,7 @@ describe("testing your Colyseus app", () => {
     it("reject connection when player name is not given", async () => {
       const room = await colyseus.createRoom("global_room", {});
       try {
-        const ret = await colyseus.connectTo(room);
+        await colyseus.connectTo(room);
       } catch (e) {
         expect(e.code).to.eql(403);
       }
@@ -41,9 +44,11 @@ describe("testing your Colyseus app", () => {
     it("handle chat message", async () => {
       const room = await colyseus.createRoom("global_room", {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const cfn1 = sinon.fake((message: any) => {});
       client1.onMessage("chatMessage", cfn1);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const cfn2 = sinon.fake((message: any) => {});
       client2.onMessage("chatMessage", cfn2);
       client1.send("chatRequest", dfgmsg.encodeChatRequest("hello"));

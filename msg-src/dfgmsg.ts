@@ -39,6 +39,7 @@ export function encodeChatMessage(
 }
 
 export class PayloadDecodeError extends Error {}
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function decodePayload<T>(
   encoded: any,
   decoder: Decoder<T>
