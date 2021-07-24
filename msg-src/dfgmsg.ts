@@ -2,9 +2,6 @@ import {
   Decoder,
   object,
   string,
-  optional,
-  number,
-  boolean,
 } from "@mojotech/json-type-validation";
 
 export interface ChatRequest {

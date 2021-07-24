@@ -50,10 +50,13 @@ describe("testing your Colyseus app", () => {
       await Promise.all([
         client1.waitForMessage("chatMessage"),
         client2.waitForMessage("chatMessage"),
+        room.waitForNextPatch(),
       ]);
       const want = { playerName: "cat", message: "hello" };
       expect(cfn1.firstCall.lastArg).to.eql(want);
       expect(cfn2.firstCall.lastArg).to.eql(want);
+      expect(client1.state.playerCount).to.eql(2);
+      expect(client2.state.playerCount).to.eql(2);
     });
   });
 });

@@ -4,11 +4,13 @@ import * as dfgmsg from "../../msg-src/dfgmsg";
 import { isDecodeSuccess } from "../logic/decodeValidator";
 import { ChatHandler } from "../logic/chatHandler";
 import { PlayerMap } from "../logic/playerMap";
+import { GlobalState } from "./schema/global";
 
-export class GlobalRoom extends Room {
+export class GlobalRoom extends Room<GlobalState> {
   private chatHandler: ChatHandler;
   private playerMap: PlayerMap;
   onCreate(options: any) {
+    this.setState(new GlobalState());
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
     this.onMessage("chatRequest", (client, payload) => {
@@ -38,6 +40,7 @@ export class GlobalRoom extends Room {
 
   onJoin(client: Client, options: any) {
     this.playerMap.add(client, options.playerName);
+    this.state.playerCount=this.clients.length;
   }
 
   onLeave(client: Client, consented: boolean) {
