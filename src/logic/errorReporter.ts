@@ -1,5 +1,5 @@
 export interface ErrorReporter {
-  report: (message: string) => void;
+  report: (error: Error) => void;
 }
 
 export class ConsoleReporter implements ErrorReporter {
@@ -9,7 +9,7 @@ export class ConsoleReporter implements ErrorReporter {
 }
 
 export function reportErrorWithDefaultReporter(error:Error):void{
-  return createDefaultReporter().report(error);
+  return createDefaultErrorReporter().report(error);
 }
 
 export function createDefaultErrorReporter(){

@@ -10,7 +10,7 @@ import appConfig from "../src/arena.config";
 import * as dfgmsg from "../msg-src/dfgmsg";
 import { ServerError } from "colyseus";
 
-describe("testing your Colyseus app", () => {
+describe("e2e test", () => {
   let colyseus: ColyseusTestServer;
 
   before(async () => (colyseus = await boot(appConfig)));
@@ -45,6 +45,40 @@ describe("testing your Colyseus app", () => {
 
     it("handle chat message", async () => {
       const room = await colyseus.createRoom("global_room", {});
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const cfn1 = sinon.fake((message: any) => {});
+      client1.onMessage("chatMessage", cfn1);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const cfn2 = sinon.fake((message: any) => {});
+      client2.onMessage("chatMessage", cfn2);
+      client1.send("chatRequest", dfgmsg.encodeChatRequest("hello"));
+      await Promise.all([
+        client1.waitForMessage("chatMessage"),
+        client2.waitForMessage("chatMessage"),
+        room.waitForNextPatch(),
+      ]);
+      const want = { playerName: "cat", message: "hello" };
+      expect(cfn1.firstCall.lastArg).to.eql(want);
+      expect(cfn2.firstCall.lastArg).to.eql(want);
+      expect(client1.state.playerCount).to.eql(2);
+      expect(client2.state.playerCount).to.eql(2);
+    });
+  });
+
+  describe("gameRoom", () => {
+    it("connecting into the game room", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const clbk = sinon.fake((message: any) => {});
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      client1.onMessage("gameMasterMessage", clbk);
+      expect(client1.sessionId).to.eql(room.clients[0].sessionId);
+    });
+
+    it("handle chat message", async () => {
+      const room = await colyseus.createRoom("game_room", {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const cfn1 = sinon.fake((message: any) => {});
