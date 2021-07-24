@@ -8,6 +8,7 @@ import { ColyseusTestServer, boot } from "@colyseus/testing";
 // import your "arena.config.ts" file here.
 import appConfig from "../src/arena.config";
 import * as dfgmsg from "../msg-src/dfgmsg";
+import { ServerError } from "colyseus";
 
 describe("testing your Colyseus app", () => {
   let colyseus: ColyseusTestServer;
@@ -37,7 +38,8 @@ describe("testing your Colyseus app", () => {
       try {
         await colyseus.connectTo(room);
       } catch (e) {
-        expect(e.code).to.eql(403);
+        const ex = e as ServerError;
+        expect(ex.code).to.eql(403);
       }
     });
 

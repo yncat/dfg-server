@@ -3,7 +3,15 @@ export interface ErrorReporter {
 }
 
 export class ConsoleReporter implements ErrorReporter {
-  public report(message: string) {
-    console.log(message);
+  public report(error: Error) {
+    console.log(error.message);
   }
+}
+
+export function reportErrorWithDefaultReporter(error:Error):void{
+  return createDefaultReporter().report(error);
+}
+
+export function createDefaultErrorReporter(){
+  return new ConsoleReporter();
 }

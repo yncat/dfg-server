@@ -9,6 +9,7 @@ import { isDecodeSuccess } from "../logic/decodeValidator";
 import { ChatHandler } from "../logic/chatHandler";
 import { PlayerMap } from "../logic/playerMap";
 import { GlobalState } from "./schema/global";
+import { reportErrorWithDefaultReporter } from "../logic/errorReporter";
 
 export class GlobalRoom extends Room<GlobalState> {
   private chatHandler: ChatHandler;
@@ -23,6 +24,7 @@ export class GlobalRoom extends Room<GlobalState> {
         dfgmsg.ChatRequestDecoder
       );
       if (!isDecodeSuccess<dfgmsg.ChatRequest>(req)) {
+        reportErrorWithDefaultReporter(req);
         return;
       }
       this.broadcast(
