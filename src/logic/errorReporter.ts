@@ -8,10 +8,10 @@ export class ConsoleReporter implements ErrorReporter {
   }
 }
 
-export function reportErrorWithDefaultReporter(error:Error):void{
+export function reportErrorWithDefaultReporter(error: Error): void {
   return createDefaultErrorReporter().report(error);
 }
 
-export function createDefaultErrorReporter(){
+export function createDefaultErrorReporter() {
   return new ConsoleReporter();
 }
