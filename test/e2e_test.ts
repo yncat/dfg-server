@@ -10,6 +10,8 @@ import appConfig from "../src/arena.config";
 import * as dfgmsg from "../msg-src/dfgmsg";
 import { ServerError } from "colyseus";
 
+function dummyMessageHandler(message: any) {}
+
 describe("e2e test", () => {
   let colyseus: ColyseusTestServer;
 
@@ -74,17 +76,41 @@ describe("e2e test", () => {
       const clbk = sinon.fake((message: any) => {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("GameMasterMessage", clbk);
+      client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       expect(client1.sessionId).to.eql(room.clients[0].sessionId);
     });
 
-    it("send gameMasterMessage to the first connected player", async () => {
+    it("send GameMasterMessage to the first connected player", async () => {
       const room = await colyseus.createRoom("game_room", {});
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const clbk = sinon.fake((message: any) => {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("GameMasterMessage", clbk);
-      client1.waitForMessage("GameMasterMessage");
+      await client1.waitForMessage("GameMasterMessage");
       expect(clbk.called).to.be.true;
+    });
+
+    it("broadcast PlayerJoinedMessage when second player joins", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const cfn1 = sinon.fake((message: any) => {});
+      client1.onMessage("PlayerJoinedMessage", cfn1);
+      client1.onMessage("GameMasterMessage", dummyMessageHandler);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const cfn2 = sinon.fake((message: any) => {});
+      client2.onMessage("PlayerJoinedMessage", cfn2);
+      await Promise.all([
+        client1.waitForMessage("PlayerJoinedMessage"),
+        client2.waitForMessage("PlayerJoinedMessage"),
+        room.waitForNextPatch(),
+      ]);
+      const want = { playerName: "dog" };
+      expect(cfn1.called).to.be.true;
+      expect(cfn2.called).to.be.true;
+      expect(cfn1.firstCall.lastArg).to.eql(want);
+      expect(cfn2.firstCall.lastArg).to.eql(want);
     });
 
     it("handle chat message", async () => {

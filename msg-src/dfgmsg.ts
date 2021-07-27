@@ -34,15 +34,15 @@ export function encodeChatMessage(
   };
 }
 
-export interface NewPlayerMessage {
+export interface PlayerJoinedMessage {
   playerName: string;
 }
 
-export const NewPlayerMessageDecoder: Decoder<NewPlayerMessage> = object({
+export const PlayerJoinedMessageDecoder: Decoder<PlayerJoinedMessage> = object({
   playerName: string(),
 });
 
-export function encodeNewPlayerMessage(playerName: string): NewPlayerMessage {
+export function encodePlayerJoinedMessage(playerName: string): PlayerJoinedMessage {
   return {
     playerName: playerName,
   };

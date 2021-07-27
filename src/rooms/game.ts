@@ -39,14 +39,14 @@ export class GameRoom extends Room<GameState> {
   }
 
   onJoin(client: Client, options: any) {
-    if (this.clients.length == 0) {
+    console.log("onjoin called, clients: " + this.clients.length);
+    if (this.clients.length == 1) {
+      // first player in this room will become the game master
       client.send("GameMasterMessage", "");
       this.masterClient = client;
     } else {
-      this.broadcast(
-        "NewPlayerMessage",
-        dfgmsg.encodeNewPlayerMessage(options.playerName)
-      );
+      console.log("broadcasting");
+      this.broadcast("PlayerJoinedMessage",dfgmsg.encodePlayerJoinedMessage(options.playerName));
     }
     this.playerMap.add(client, options.playerName);
     this.state.playerCount = this.clients.length;
