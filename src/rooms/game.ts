@@ -39,13 +39,11 @@ export class GameRoom extends Room<GameState> {
   }
 
   onJoin(client: Client, options: any) {
-    console.log("onjoin called, clients: " + this.clients.length);
     if (this.clients.length == 1) {
       // first player in this room will become the game master
       client.send("GameMasterMessage", "");
       this.masterClient = client;
     } else {
-      console.log("broadcasting");
       this.broadcast("PlayerJoinedMessage",dfgmsg.encodePlayerJoinedMessage(options.playerName));
     }
     this.playerMap.add(client, options.playerName);
@@ -55,7 +53,7 @@ export class GameRoom extends Room<GameState> {
   onLeave(client: Client, consented: boolean) {
     this.playerMap.delete(client);
     if (client === this.masterClient) {
-      this.broadcast("masterDisconnectMessage", "");
+      this.broadcast("MasterDisconnectedMessage", "");
       this.disconnect();
     }
   }
