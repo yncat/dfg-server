@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 import { Room, Client, ServerError } from "colyseus";
-import http from "http";
 import * as dfgmsg from "../../msg-src/dfgmsg";
 import { isDecodeSuccess } from "../logic/decodeValidator";
 import { ChatHandler } from "../logic/chatHandler";
@@ -14,6 +13,7 @@ import { reportErrorWithDefaultReporter } from "../logic/errorReporter";
 export class GlobalRoom extends Room<GlobalState> {
   private chatHandler: ChatHandler;
   private playerMap: PlayerMap;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onCreate(options: any) {
     this.setState(new GlobalState());
     this.chatHandler = new ChatHandler();

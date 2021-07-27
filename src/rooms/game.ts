@@ -57,7 +57,7 @@ export class GameRoom extends Room<GameState> {
     this.playerMap.delete(client);
     if (client === this.masterClient) {
       this.broadcast("MasterDisconnectedMessage", "");
-      this.disconnect();
+      void this.disconnect();
     }
   }
 

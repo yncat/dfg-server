@@ -10,6 +10,7 @@ import appConfig from "../src/arena.config";
 import * as dfgmsg from "../msg-src/dfgmsg";
 import { ServerError } from "colyseus";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function dummyMessageHandler(message: any) {}
 
 function forMilliseconds(milliseconds: number): Promise<void> {
@@ -127,6 +128,7 @@ describe("e2e test", () => {
       client2.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const disconnected = sinon.fake((code: number) => {});
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const masterDisconnectedMessage = sinon.fake((message: any) => {});
       client2.onLeave(disconnected);
       client2.onMessage("MasterDisconnectedMessage", masterDisconnectedMessage);
@@ -135,7 +137,7 @@ describe("e2e test", () => {
         client2.waitForMessage("PlayerJoinedMessage"),
         room.waitForNextPatch(),
       ]);
-      client1.leave();
+      void client1.leave();
       await client2.waitForMessage("MasterDisconnectedMessage");
       expect(masterDisconnectedMessage.called).to.be.true;
       await forMilliseconds(100);
