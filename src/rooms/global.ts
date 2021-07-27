@@ -28,7 +28,7 @@ export class GlobalRoom extends Room<GlobalState> {
         return;
       }
       this.broadcast(
-        "chatMessage",
+        "ChatMessage",
         this.chatHandler.generateChatMessage(
           req,
           this.playerMap.client2player(client)

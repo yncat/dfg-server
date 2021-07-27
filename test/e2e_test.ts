@@ -50,15 +50,15 @@ describe("e2e test", () => {
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const cfn1 = sinon.fake((message: any) => {});
-      client1.onMessage("chatMessage", cfn1);
+      client1.onMessage("ChatMessage", cfn1);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const cfn2 = sinon.fake((message: any) => {});
-      client2.onMessage("chatMessage", cfn2);
+      client2.onMessage("ChatMessage", cfn2);
       client1.send("chatRequest", dfgmsg.encodeChatRequest("hello"));
       await Promise.all([
-        client1.waitForMessage("chatMessage"),
-        client2.waitForMessage("chatMessage"),
+        client1.waitForMessage("ChatMessage"),
+        client2.waitForMessage("ChatMessage"),
         room.waitForNextPatch(),
       ]);
       const want = { playerName: "cat", message: "hello" };
@@ -118,15 +118,15 @@ describe("e2e test", () => {
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const cfn1 = sinon.fake((message: any) => {});
-      client1.onMessage("chatMessage", cfn1);
+      client1.onMessage("ChatMessage", cfn1);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const cfn2 = sinon.fake((message: any) => {});
-      client2.onMessage("chatMessage", cfn2);
+      client2.onMessage("ChatMessage", cfn2);
       client1.send("chatRequest", dfgmsg.encodeChatRequest("hello"));
       await Promise.all([
-        client1.waitForMessage("chatMessage"),
-        client2.waitForMessage("chatMessage"),
+        client1.waitForMessage("ChatMessage"),
+        client2.waitForMessage("ChatMessage"),
         room.waitForNextPatch(),
       ]);
       const want = { playerName: "cat", message: "hello" };
