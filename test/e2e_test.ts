@@ -73,8 +73,18 @@ describe("e2e test", () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const clbk = sinon.fake((message: any) => {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      client1.onMessage("gameMasterMessage", clbk);
+      client1.onMessage("GameMasterMessage", clbk);
       expect(client1.sessionId).to.eql(room.clients[0].sessionId);
+    });
+
+    it("send gameMasterMessage to the first connected player", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const clbk = sinon.fake((message: any) => {});
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      client1.onMessage("GameMasterMessage", clbk);
+      client1.waitForMessage("GameMasterMessage");
+      expect(clbk.called).to.be.true;
     });
 
     it("handle chat message", async () => {

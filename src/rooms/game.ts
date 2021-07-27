@@ -40,8 +40,13 @@ export class GameRoom extends Room<GameState> {
 
   onJoin(client: Client, options: any) {
     if (this.clients.length == 0) {
-      client.send("gameMasterMessage", "");
+      client.send("GameMasterMessage", "");
       this.masterClient = client;
+    } else {
+      this.broadcast(
+        "NewPlayerMessage",
+        dfgmsg.encodeNewPlayerMessage(options.playerName)
+      );
     }
     this.playerMap.add(client, options.playerName);
     this.state.playerCount = this.clients.length;

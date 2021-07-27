@@ -1,8 +1,4 @@
-import {
-  Decoder,
-  object,
-  string,
-} from "@mojotech/json-type-validation";
+import { Decoder, object, string } from "@mojotech/json-type-validation";
 
 export interface ChatRequest {
   message: string;
@@ -38,6 +34,20 @@ export function encodeChatMessage(
   };
 }
 
+export interface NewPlayerMessage {
+  playerName: string;
+}
+
+export const NewPlayerMessageDecoder: Decoder<NewPlayerMessage> = object({
+  playerName: string(),
+});
+
+export function encodeNewPlayerMessage(playerName: string): NewPlayerMessage {
+  return {
+    playerName: playerName,
+  };
+}
+
 export class PayloadDecodeError extends Error {}
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function decodePayload<T>(
@@ -45,13 +55,18 @@ export function decodePayload<T>(
   decoder: Decoder<T>
 ): T | PayloadDecodeError {
   const ret = decoder.run(encoded);
-  if (ret.ok===false) {
+  if (ret.ok === false) {
     const e = ret.error;
     return new PayloadDecodeError(
-      "Cannot decode Payload."+
-      "input: " + e.input + "\n"+
-      "at: " + e.at + "\n"+
-      "message: " + e.message
+      "Cannot decode Payload." +
+        "input: " +
+        e.input +
+        "\n" +
+        "at: " +
+        e.at +
+        "\n" +
+        "message: " +
+        e.message
     );
   }
   return ret.result;
