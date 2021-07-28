@@ -7,6 +7,7 @@ import http from "http";
 import * as dfgmsg from "../../msg-src/dfgmsg";
 import { ChatHandler } from "../logic/chatHandler";
 import { PlayerMap } from "../logic/playerMap";
+import { createPlayerFromClientOptions } from "../logic/player";
 import { GameState } from "./schema/game";
 import { isDecodeSuccess } from "../logic/decodeValidator";
 import { reportErrorWithDefaultReporter } from "../logic/errorReporter";
@@ -32,7 +33,7 @@ export class GameRoom extends Room<GameState> {
         "ChatMessage",
         this.chatHandler.generateChatMessage(
           req,
-          this.playerMap.client2player(client)
+          this.playerMap.client2player(client).name
         )
       );
     });
@@ -49,7 +50,7 @@ export class GameRoom extends Room<GameState> {
         dfgmsg.encodePlayerJoinedMessage(options.playerName)
       );
     }
-    this.playerMap.add(client, options.playerName);
+    this.playerMap.add(client, createPlayerFromClientOptions(options));
     this.state.playerCount = this.clients.length;
   }
 

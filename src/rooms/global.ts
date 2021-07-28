@@ -7,8 +7,10 @@ import * as dfgmsg from "../../msg-src/dfgmsg";
 import { isDecodeSuccess } from "../logic/decodeValidator";
 import { ChatHandler } from "../logic/chatHandler";
 import { PlayerMap } from "../logic/playerMap";
+import { createPlayerFromClientOptions } from "../logic/player";
 import { GlobalState } from "./schema/global";
 import { reportErrorWithDefaultReporter } from "../logic/errorReporter";
+import http from "http";
 
 export class GlobalRoom extends Room<GlobalState> {
   private chatHandler: ChatHandler;
@@ -31,7 +33,7 @@ export class GlobalRoom extends Room<GlobalState> {
         "ChatMessage",
         this.chatHandler.generateChatMessage(
           req,
-          this.playerMap.client2player(client)
+          this.playerMap.client2player(client).name
         )
       );
     });
@@ -46,7 +48,7 @@ export class GlobalRoom extends Room<GlobalState> {
   }
 
   onJoin(client: Client, options: any) {
-    this.playerMap.add(client, options.playerName);
+    this.playerMap.add(client, createPlayerFromClientOptions(options));
     this.state.playerCount = this.clients.length;
   }
 
