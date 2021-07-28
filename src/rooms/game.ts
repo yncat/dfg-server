@@ -11,13 +11,16 @@ import { createPlayerFromClientOptions } from "../logic/player";
 import { GameState } from "./schema/game";
 import { isDecodeSuccess } from "../logic/decodeValidator";
 import { reportErrorWithDefaultReporter } from "../logic/errorReporter";
+import { DFGHandler} from "../logic/dfgHandler";
 
 export class GameRoom extends Room<GameState> {
   private chatHandler: ChatHandler;
   private playerMap: PlayerMap;
   private masterClient: Client;
+  private dfgHandler:DFGHandler;
   onCreate(options: any) {
     this.chatHandler = new ChatHandler();
+    this.dfgHandler=new DFGHandler(this);
     this.setState(new GameState());
     this.playerMap = new PlayerMap();
     this.onMessage("chatRequest", (client, payload) => {
