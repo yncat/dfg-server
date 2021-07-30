@@ -1,19 +1,19 @@
 import * as dfg from "dfg-simulator";
-import { Room } from "colyseus";
 import { GameState } from "../rooms/schema/game";
+import { RoomProxy } from "./roomProxy";
 
 export class DFGHandler {
   game: dfg.Game;
   eventReceiver: dfg.EventReceiver;
-  constructor(room: Room<GameState>) {
-    this.eventReceiver = new EventReceiver(room);
+  constructor(roomProxy: RoomProxy<GameState>) {
+    this.eventReceiver = new EventReceiver(roomProxy);
   }
 }
 
 class EventReceiver implements dfg.EventReceiver {
-  room: Room<GameState>;
-  constructor(room: Room<GameState>) {
-    this.room = room;
+  roomProxy: RoomProxy<GameState>;
+  constructor(roomProxy: RoomProxy<GameState>) {
+    this.roomProxy = roomProxy;
   }
 
   public onNagare(): void {

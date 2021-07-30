@@ -1,6 +1,8 @@
 import { Room } from "colyseus";
 import { Schema } from "@colyseus/schema";
 
+// Colyseus.roomへの直接の呼び出しを避けることで、テストを書きやすいようにするためのプロキシ。
+
 export class RoomProxy<T extends Schema> {
   room: Room<T> | null;
   constructor(room: Room<T> | null = null) {
