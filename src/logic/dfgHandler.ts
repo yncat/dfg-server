@@ -3,14 +3,23 @@ import { GameState } from "../rooms/schema/game";
 import { RoomProxy } from "./roomProxy";
 
 export class DFGHandler {
-  game: dfg.Game;
+  game: dfg.Game | null;
   eventReceiver: dfg.EventReceiver;
   constructor(roomProxy: RoomProxy<GameState>) {
     this.eventReceiver = new EventReceiver(roomProxy);
+    this.game = null;
+  }
+
+  public startGame(clientIDList: string[]) {
+    const rc = dfg.createDefaultRuleConfig();
+    rc.jBack = true;
+    rc.kakumei = true;
+    rc.yagiri = true;
+    this.game = dfg.createGame(clientIDList, this.eventReceiver, rc);
   }
 }
 
-class EventReceiver implements dfg.EventReceiver {
+export class EventReceiver implements dfg.EventReceiver {
   roomProxy: RoomProxy<GameState>;
   constructor(roomProxy: RoomProxy<GameState>) {
     this.roomProxy = roomProxy;
