@@ -40,16 +40,6 @@ describe("e2e test", () => {
       expect(client1.sessionId).to.eql(room.clients[0].sessionId);
     });
 
-    it("reject connection when player name is not given", async () => {
-      const room = await colyseus.createRoom("global_room", {});
-      try {
-        await colyseus.connectTo(room);
-      } catch (e) {
-        const ex = e as ServerError;
-        expect(ex.code).to.eql(403);
-      }
-    });
-
     it("handle chat message", async () => {
       const room = await colyseus.createRoom("global_room", {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
