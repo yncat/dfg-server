@@ -1,4 +1,4 @@
-import { Decoder, object, string } from "@mojotech/json-type-validation";
+import { array, boolean, Decoder, number, object, string } from "@mojotech/json-type-validation";
 
 export interface ChatRequest {
   message: string;
@@ -45,6 +45,45 @@ export const PlayerJoinedMessageDecoder: Decoder<PlayerJoinedMessage> = object({
 export function encodePlayerJoinedMessage(playerName: string): PlayerJoinedMessage {
   return {
     playerName: playerName,
+  };
+}
+
+export interface CardMessage {
+  mark: string;
+  cardNumber: number;
+  isChecked: boolean;
+  isCheckable: boolean;
+}
+
+export const CardMessageDecoder: Decoder<CardMessage> = object({
+  mark: string(),
+  cardNumber: number(),
+  isChecked: boolean(),
+  isCheckable: boolean(),
+});
+
+export function encodeCardMessage(mark: string, cardNumber:number, isChecked:boolean, isCheckable:boolean): CardMessage {
+  return {
+    mark: mark,
+    cardNumber: cardNumber,
+    isChecked: isChecked,
+    isCheckable: isCheckable,
+  };
+}
+
+export interface CardListMessage {
+  cardList: CardMessage[];
+}
+
+export const CardListMessageDecoder: Decoder<CardListMessage> = object({
+  cardList: array(CardMessageDecoder),
+});
+
+export function encodeCardListMessage(cardList: CardMessage[]): CardListMessage {
+  return {
+    cardList: cardList.map((c)=>{
+      return encodeCardMessage(c);
+    }),
   };
 }
 
