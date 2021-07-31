@@ -59,8 +59,6 @@ describe("e2e test", () => {
       const want = { playerName: "cat", message: "hello" };
       expect(cfn1.firstCall.lastArg).to.eql(want);
       expect(cfn2.firstCall.lastArg).to.eql(want);
-      expect(client1.state.playerCount).to.eql(2);
-      expect(client2.state.playerCount).to.eql(2);
     });
   });
 
