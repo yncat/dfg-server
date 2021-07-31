@@ -42,7 +42,7 @@ export class GlobalRoom extends Room<GlobalState> {
   onAuth(client: Client, options: any, request: http.IncomingMessage): boolean {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!options.playerName) {
-      throw new ServerError(403, "player name is not given");
+      return false;
     }
     return true;
   }

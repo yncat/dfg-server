@@ -4,6 +4,7 @@ import { RoomProxy } from "./roomProxy";
 
 export class DFGHandler {
   game: dfg.Game | null;
+  activePlayerControl:dfg.ActivePlayerControl|null;
   eventReceiver: dfg.EventReceiver;
   constructor(roomProxy: RoomProxy<GameState>) {
     this.eventReceiver = new EventReceiver(roomProxy);
