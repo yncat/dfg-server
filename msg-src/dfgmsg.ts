@@ -1,4 +1,11 @@
-import { array, boolean, Decoder, number, object, string } from "@mojotech/json-type-validation";
+import {
+  array,
+  boolean,
+  Decoder,
+  number,
+  object,
+  string,
+} from "@mojotech/json-type-validation";
 
 export interface ChatRequest {
   message: string;
@@ -42,7 +49,9 @@ export const PlayerJoinedMessageDecoder: Decoder<PlayerJoinedMessage> = object({
   playerName: string(),
 });
 
-export function encodePlayerJoinedMessage(playerName: string): PlayerJoinedMessage {
+export function encodePlayerJoinedMessage(
+  playerName: string
+): PlayerJoinedMessage {
   return {
     playerName: playerName,
   };
@@ -62,7 +71,12 @@ export const CardMessageDecoder: Decoder<CardMessage> = object({
   isCheckable: boolean(),
 });
 
-export function encodeCardMessage(mark: string, cardNumber:number, isChecked:boolean, isCheckable:boolean): CardMessage {
+export function encodeCardMessage(
+  mark: string,
+  cardNumber: number,
+  isChecked: boolean,
+  isCheckable: boolean
+): CardMessage {
   return {
     mark: mark,
     cardNumber: cardNumber,
@@ -79,10 +93,12 @@ export const CardListMessageDecoder: Decoder<CardListMessage> = object({
   cardList: array(CardMessageDecoder),
 });
 
-export function encodeCardListMessage(cardList: CardMessage[]): CardListMessage {
+export function encodeCardListMessage(
+  cardList: CardMessage[]
+): CardListMessage {
   return {
-    cardList: cardList.map((c)=>{
-      return encodeCardMessage(c);
+    cardList: cardList.map((c) => {
+      return encodeCardMessage(c.mark, c.cardNumber, c.isChecked, c.isChecked);
     }),
   };
 }
