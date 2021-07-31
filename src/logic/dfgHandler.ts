@@ -1,13 +1,19 @@
 import * as dfg from "dfg-simulator";
 import { GameState } from "../rooms/schema/game";
 import { RoomProxy } from "./roomProxy";
+import { CardEnumerator } from "./cardEnumerator";
 
+class GameInactiveError extends Error {}
 export class DFGHandler {
   game: dfg.Game | null;
-  activePlayerControl:dfg.ActivePlayerControl|null;
+  activePlayerControl: dfg.ActivePlayerControl | null;
   eventReceiver: dfg.EventReceiver;
+  roomProxy: RoomProxy<GameState>;
+  cardEnumerator: CardEnumerator;
   constructor(roomProxy: RoomProxy<GameState>) {
     this.eventReceiver = new EventReceiver(roomProxy);
+    this.roomProxy = roomProxy;
+    this.cardEnumerator = new CardEnumerator();
     this.game = null;
   }
 
@@ -17,6 +23,23 @@ export class DFGHandler {
     rc.kakumei = true;
     rc.yagiri = true;
     this.game = dfg.createGame(clientIDList, this.eventReceiver, rc);
+    this.updateCardsForEveryone();
+  }
+
+  private updateCardsForEveryone() {
+    if (!this.game) {
+      this.gameInactiveError();
+    }
+    this.game.enumeratePlayerIdentifiers().forEach((v) => {
+      const msg = this.cardEnumerator.enumerate(
+        this.game.findPlayerByIdentifier(v).hand
+      );
+      this.roomProxy.send(v, "CardListMessage", msg);
+    });
+  }
+
+  private gameInactiveError() {
+    throw new GameInactiveError("game is inactive");
   }
 }
 
