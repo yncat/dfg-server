@@ -58,27 +58,27 @@ export function encodePlayerJoinedMessage(
 }
 
 export interface CardMessage {
-  mark: string;
+  markEnum: number;
   cardNumber: number;
   isChecked: boolean;
   isCheckable: boolean;
 }
 
 export const CardMessageDecoder: Decoder<CardMessage> = object({
-  mark: string(),
+  markEnum: number(),
   cardNumber: number(),
   isChecked: boolean(),
   isCheckable: boolean(),
 });
 
 export function encodeCardMessage(
-  mark: string,
+  markEnum: number,
   cardNumber: number,
   isChecked: boolean,
   isCheckable: boolean
 ): CardMessage {
   return {
-    mark: mark,
+    markEnum: markEnum,
     cardNumber: cardNumber,
     isChecked: isChecked,
     isCheckable: isCheckable,
@@ -97,9 +97,7 @@ export function encodeCardListMessage(
   cardList: CardMessage[]
 ): CardListMessage {
   return {
-    cardList: cardList.map((c) => {
-      return encodeCardMessage(c.mark, c.cardNumber, c.isChecked, c.isChecked);
-    }),
+    cardList: cardList
   };
 }
 
