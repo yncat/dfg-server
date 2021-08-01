@@ -21,13 +21,7 @@ describe("DFGHandler", () => {
     const eventReceiverMock = sinon.mock(h.eventReceiver);
     eventReceiverMock.expects("onInitialInfoProvided").once();
     eventReceiverMock.expects("onCardsProvided").thrice();
-    const cardEnumeratorMock = sinon.mock(h.cardEnumerator);
-    cardEnumeratorMock.expects("enumerate").thrice();
-    const roomProxyMock = sinon.mock(h.roomProxy);
-    roomProxyMock.expects("send").thrice();
     h.startGame(["a", "b", "c"]);
     eventReceiverMock.verify();
-    cardEnumeratorMock.verify();
-    roomProxyMock.verify();
   });
 });

@@ -23,10 +23,9 @@ export class DFGHandler {
     rc.kakumei = true;
     rc.yagiri = true;
     this.game = dfg.createGame(clientIDList, this.eventReceiver, rc);
-    this.updateCardsForEveryone();
   }
 
-  private updateCardsForEveryone() {
+  public updateCardsForEveryone() {
     if (!this.game) {
       this.gameInactiveError();
     }
