@@ -97,7 +97,21 @@ export function encodeCardListMessage(
   cardList: CardMessage[]
 ): CardListMessage {
   return {
-    cardList: cardList
+    cardList: cardList,
+  };
+}
+
+export interface TurnMessage {
+  playerName: string;
+}
+
+export const TurnMessageDecoder: Decoder<TurnMessage> = object({
+  playerName: string(),
+});
+
+export function encodeTurnMessage(playerName: string): TurnMessage {
+  return {
+    playerName: playerName,
   };
 }
 
