@@ -22,7 +22,7 @@ export class DFGHandler {
     rc.jBack = true;
     rc.kakumei = true;
     rc.yagiri = true;
-    this.game = dfg.createGame(clientIDList, this.eventReceiver, rc);
+    this.game = this.createGame(clientIDList, this.eventReceiver, rc);
   }
 
   public updateCardsForEveryone() {
@@ -39,6 +39,14 @@ export class DFGHandler {
 
   private gameInactiveError() {
     throw new GameInactiveError("game is inactive");
+  }
+
+  private createGame(
+    clientIDList: string[],
+    eventReceiver: dfg.EventReceiver,
+    ruleConfig: dfg.RuleConfig
+  ) {
+    return dfg.createGame(clientIDList, eventReceiver, ruleConfig);
   }
 }
 

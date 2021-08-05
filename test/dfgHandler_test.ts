@@ -1,3 +1,4 @@
+import * as dfg from "dfg-simulator";
 import sinon from "sinon";
 import { expect } from "chai";
 import { DFGHandler, EventReceiver } from "../src/logic/dfgHandler";
@@ -10,6 +11,15 @@ function createDFGHandler(): DFGHandler {
   return h;
 }
 
+function createGame() {
+  const g = <dfg.Game>(<unknown>{
+    enumeratePlayerIdentifiers: sinon.fake(() => {
+      return ["a", "b", "c"];
+    }),
+  });
+  return g;
+}
+
 describe("DFGHandler", () => {
   it("can be instantiated", () => {
     const h = createDFGHandler();
@@ -18,10 +28,18 @@ describe("DFGHandler", () => {
 
   it("can start a game", () => {
     const h = createDFGHandler();
-    const eventReceiverMock = sinon.mock(h.eventReceiver);
-    eventReceiverMock.expects("onInitialInfoProvided").once();
-    eventReceiverMock.expects("onCardsProvided").thrice();
+    const g = createGame();
+    const cg = sinon.fake(
+      (
+        clientIDList: string[],
+        eventReceiver: dfg.EventReceiver,
+        ruleConfig: dfg.RuleConfig
+      ) => {
+        return g;
+      }
+    );
+    h["createGame"] = cg;
     h.startGame(["a", "b", "c"]);
-    eventReceiverMock.verify();
+    expect(cg.called).to.be.true;
   });
 });

@@ -12,11 +12,11 @@ describe("CardEnumerator", () => {
     const msg = ce.enumerate(h, null);
     expect(msg.cardList).not.to.be.null;
     const cl = msg.cardList;
-    expect(cl[0].markEnum).to.eql(dfg.CardMark.SPADES)
+    expect(cl[0].markEnum).to.eql(dfg.CardMark.SPADES);
     expect(cl[0].cardNumber).to.eql(4);
     expect(cl[0].isChecked).to.be.false;
     expect(cl[0].isCheckable).to.be.false;
-	expect(cl[1].markEnum).to.eql(dfg.CardMark.SPADES)
+    expect(cl[1].markEnum).to.eql(dfg.CardMark.SPADES);
     expect(cl[1].cardNumber).to.eql(5);
     expect(cl[1].isChecked).to.be.false;
     expect(cl[1].isCheckable).to.be.false;

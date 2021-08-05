@@ -4,7 +4,7 @@ import * as dfgmsg from "../../msg-src/dfgmsg";
 export class CardEnumerator {
   public enumerate(
     hand: dfg.Hand,
-    activePlayerControl: dfg.ActivePlayerControl | null=null
+    activePlayerControl: dfg.ActivePlayerControl | null = null
   ): dfgmsg.CardListMessage {
     return this.inactive(hand);
   }
