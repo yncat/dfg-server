@@ -129,4 +129,26 @@ describe("DFGHandler", () => {
       }).to.throw("game is inactive");
     });
   });
+
+  describe("notifyToCurrentPlayer", () => {
+    it("can send YourTurnMessage to the appropriate player", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+      });
+      h.activePlayerControl = apc;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      roomProxyMock.expects("send").withExactArgs(pi, "YourTurnMessage", "");
+      h.notifyToActivePlayer();
+      roomProxyMock.verify();
+    });
+
+    it("throws an error when activePlayerControl is not set", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.notifyToActivePlayer();
+      }).to.throw("active player control is invalid");
+    });
+  });
 });

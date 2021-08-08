@@ -5,7 +5,7 @@ import { PlayerMap } from "./playerMap";
 import { CardEnumerator } from "./cardEnumerator";
 import * as dfgmsg from "../../msg-src/dfgmsg";
 
-class GameInactiveError extends Error {}
+class InvalidGameStateError extends Error {}
 export class DFGHandler {
   game: dfg.Game | null;
   activePlayerControl: dfg.ActivePlayerControl | null;
@@ -53,8 +53,23 @@ export class DFGHandler {
     this.roomProxy.broadcast("TurnMessage", msg);
   }
 
+  public notifyToActivePlayer() {
+    if (!this.activePlayerControl) {
+      this.invalidControllerError();
+    }
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "YourTurnMessage",
+      ""
+    );
+  }
+
   private gameInactiveError() {
-    throw new GameInactiveError("game is inactive");
+    throw new InvalidGameStateError("game is inactive");
+  }
+
+  private invalidControllerError() {
+    throw new InvalidGameStateError("active player control is invalid");
   }
 
   private createGame(
