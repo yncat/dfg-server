@@ -130,7 +130,7 @@ describe("DFGHandler", () => {
     });
   });
 
-  describe("notifyToCurrentPlayer", () => {
+  describe("notifyToActivePlayer", () => {
     it("can send YourTurnMessage to the appropriate player", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
@@ -152,7 +152,7 @@ describe("DFGHandler", () => {
     });
   });
 
-  describe("updateHandForCurrentPlayer", () => {
+  describe("updateHandForActivePlayer", () => {
     it("can send CardListMessage to the active player", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
@@ -168,14 +168,14 @@ describe("DFGHandler", () => {
         .stub(h.cardEnumerator, "enumerateFromActivePlayerControl")
         .returns(msg);
       roomProxyMock.expects("send").withExactArgs(pi, "CardListMessage", msg);
-      h.updateHandForCurrentPlayer();
+      h.updateHandForActivePlayer();
       roomProxyMock.verify();
     });
 
     it("throws an error when activePlayerControl is not set", () => {
       const h = createDFGHandler();
       expect(() => {
-        h.updateHandForCurrentPlayer();
+        h.updateHandForActivePlayer();
       }).to.throw("active player control is invalid");
     });
   });
