@@ -151,4 +151,32 @@ describe("DFGHandler", () => {
       }).to.throw("active player control is invalid");
     });
   });
+
+  describe("updateHandForCurrentPlayer", () => {
+    it("can send CardListMessage to the active player", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+      });
+      h.activePlayerControl = apc;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      const msg = dfgmsg.encodeCardListMessage([
+        dfgmsg.encodeCardMessage(dfg.CardMark.SPADES, 3, true, true),
+      ]);
+      const enumerate = sinon
+        .stub(h.cardEnumerator, "enumerateFromActivePlayerControl")
+        .returns(msg);
+      roomProxyMock.expects("send").withExactArgs(pi, "CardListMessage", msg);
+      h.updateHandForCurrentPlayer();
+      roomProxyMock.verify();
+    });
+
+    it("throws an error when activePlayerControl is not set", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.updateHandForCurrentPlayer();
+      }).to.throw("active player control is invalid");
+    });
+  });
 });

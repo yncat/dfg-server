@@ -64,13 +64,17 @@ export class DFGHandler {
     );
   }
 
-  public updateHandForCurrentPlayer(){
+  public updateHandForCurrentPlayer() {
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
-
-
-
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "CardListMessage",
+      this.cardEnumerator.enumerateFromActivePlayerControl(
+        this.activePlayerControl
+      )
+    );
   }
 
   private gameInactiveError() {
