@@ -55,60 +55,78 @@ describe("DFGHandler", () => {
     expect(cg.called).to.be.true;
   });
 
-  it("can update hand info for everyone", () => {
-    const p1 = dfg.createPlayer("a");
-    p1.hand.give(...createCards());
-    const p2 = dfg.createPlayer("b");
-    p2.hand.give(...createCards());
-    const p3 = dfg.createPlayer("c");
-    p3.hand.give(...createCards());
-    const h = createDFGHandler();
-    const g = <dfg.Game>(<unknown>{
-      enumeratePlayerIdentifiers: sinon.fake(() => {
-        return ["a", "b", "c"];
-      }),
-      findPlayerByIdentifier: sinon.fake((identifier: string) => {
-        switch (identifier) {
-          case "a":
-            return p1;
-          case "b":
-            return p2;
-          case "c":
-            return p3;
-        }
-        throw new Error("error");
-      }),
+  describe("updateHandForEveryone", () => {
+    it("can update hand info for everyone", () => {
+      const p1 = dfg.createPlayer("a");
+      p1.hand.give(...createCards());
+      const p2 = dfg.createPlayer("b");
+      p2.hand.give(...createCards());
+      const p3 = dfg.createPlayer("c");
+      p3.hand.give(...createCards());
+      const h = createDFGHandler();
+      const g = <dfg.Game>(<unknown>{
+        enumeratePlayerIdentifiers: sinon.fake(() => {
+          return ["a", "b", "c"];
+        }),
+        findPlayerByIdentifier: sinon.fake((identifier: string) => {
+          switch (identifier) {
+            case "a":
+              return p1;
+            case "b":
+              return p2;
+            case "c":
+              return p3;
+          }
+          throw new Error("error");
+        }),
+      });
+      h.game = g;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      roomProxyMock.expects("send").thrice();
+      const cardEnumeratorMock = sinon.mock(h.cardEnumerator);
+      cardEnumeratorMock.expects("enumerate").thrice();
+      h.updateCardsForEveryone();
+      roomProxyMock.verify();
+      cardEnumeratorMock.verify();
     });
-    h.game = g;
-    const roomProxyMock = sinon.mock(h.roomProxy);
-    roomProxyMock.expects("send").thrice();
-    const cardEnumeratorMock = sinon.mock(h.cardEnumerator);
-    cardEnumeratorMock.expects("enumerate").thrice();
-    h.updateCardsForEveryone();
-    roomProxyMock.verify();
-    cardEnumeratorMock.verify();
+
+    it("throws an error when game is not started", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.updateCardsForEveryone();
+      }).to.throw("game is inactive");
+    });
   });
 
-  it("can get the next player and notify the info to everyone", () => {
-    const pn = "cat";
-    const h = createDFGHandler();
-    const apc = <dfg.ActivePlayerControl>(<unknown>{
-      playerIdentifier: pn,
+  describe("prepareNextPlayer", () => {
+    it("can get the next player and notify the info to everyone", () => {
+      const pn = "cat";
+      const h = createDFGHandler();
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pn,
+      });
+      const g = <dfg.Game>(<unknown>{
+        startActivePlayerControl: sinon.fake(() => {
+          return apc;
+        }),
+      });
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      const msg = dfgmsg.encodeTurnMessage(pn);
+      roomProxyMock.expects("broadcast").withExactArgs("TurnMessage", msg);
+      const p = <Player>{
+        name: pn,
+      };
+      sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
+      h.game = g;
+      h.prepareNextPlayer();
+      roomProxyMock.verify();
     });
-    const g = <dfg.Game>(<unknown>{
-      startActivePlayerControl: sinon.fake(() => {
-        return apc;
-      }),
+
+    it("throws an error when game is not started", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.prepareNextPlayer();
+      }).to.throw("game is inactive");
     });
-    const roomProxyMock = sinon.mock(h.roomProxy);
-    const msg = dfgmsg.encodeTurnMessage(pn);
-    roomProxyMock.expects("broadcast").withExactArgs("TurnMessage", msg);
-    const p = <Player>{
-      name: pn,
-    };
-    sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
-    h.game = g;
-    h.prepareNextPlayer();
-    roomProxyMock.verify();
   });
 });
