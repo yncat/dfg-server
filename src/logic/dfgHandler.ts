@@ -1,7 +1,9 @@
 import * as dfg from "dfg-simulator";
 import { GameState } from "../rooms/schema/game";
 import { RoomProxy } from "./roomProxy";
+import { PlayerMap } from "./playerMap";
 import { CardEnumerator } from "./cardEnumerator";
+import * as dfgmsg from "../../msg-src/dfgmsg";
 
 class GameInactiveError extends Error {}
 export class DFGHandler {
@@ -9,8 +11,9 @@ export class DFGHandler {
   activePlayerControl: dfg.ActivePlayerControl | null;
   eventReceiver: dfg.EventReceiver;
   roomProxy: RoomProxy<GameState>;
+  playerMap: PlayerMap;
   cardEnumerator: CardEnumerator;
-  constructor(roomProxy: RoomProxy<GameState>) {
+  constructor(roomProxy: RoomProxy<GameState>, playerMap: PlayerMap) {
     this.eventReceiver = new EventReceiver(roomProxy);
     this.roomProxy = roomProxy;
     this.cardEnumerator = new CardEnumerator();
@@ -35,6 +38,18 @@ export class DFGHandler {
       );
       this.roomProxy.send(v, "CardListMessage", msg);
     });
+  }
+
+  public prepareNextPlayer() {
+    if (!this.game) {
+      this.gameInactiveError();
+    }
+    this.activePlayerControl = this.game.startActivePlayerControl();
+    const pn = this.playerMap.clientIDToPlayer(
+      this.activePlayerControl.playerIdentifier
+    ).name;
+    const msg = dfgmsg.encodeTurnMessage(pn);
+    this.roomProxy.broadcast("TurnMessage", msg);
   }
 
   private gameInactiveError() {
