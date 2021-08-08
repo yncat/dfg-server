@@ -4,7 +4,9 @@ import { expect } from "chai";
 import { DFGHandler, EventReceiver } from "../src/logic/dfgHandler";
 import { RoomProxy } from "../src/logic/roomProxy";
 import { GameState } from "../src/rooms/schema/game";
+import { Player } from "../src/logic/player";
 import { PlayerMap } from "../src/logic/playerMap";
+import * as dfgmsg from "../msg-src/dfgmsg";
 
 function createDFGHandler(): DFGHandler {
   const rp = new RoomProxy<GameState>();
@@ -85,5 +87,28 @@ describe("DFGHandler", () => {
     h.updateCardsForEveryone();
     roomProxyMock.verify();
     cardEnumeratorMock.verify();
+  });
+
+  it("can get the next player and notify the info to everyone", () => {
+    const pn = "cat";
+    const h = createDFGHandler();
+    const apc = <dfg.ActivePlayerControl>(<unknown>{
+      playerIdentifier: pn,
+    });
+    const g = <dfg.Game>(<unknown>{
+      startActivePlayerControl: sinon.fake(() => {
+        return apc;
+      }),
+    });
+    const roomProxyMock = sinon.mock(h.roomProxy);
+    const msg = dfgmsg.encodeTurnMessage(pn);
+    roomProxyMock.expects("broadcast").withExactArgs("TurnMessage", msg);
+    const p = <Player>{
+      name: pn,
+    };
+    sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
+    h.game = g;
+    h.prepareNextPlayer();
+    roomProxyMock.verify();
   });
 });
