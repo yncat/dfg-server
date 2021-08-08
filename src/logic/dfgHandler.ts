@@ -34,7 +34,7 @@ export class DFGHandler {
       this.gameInactiveError();
     }
     this.game.enumeratePlayerIdentifiers().forEach((v) => {
-      const msg = this.cardEnumerator.enumerate(
+      const msg = this.cardEnumerator.enumerateFromHand(
         this.game.findPlayerByIdentifier(v).hand
       );
       this.roomProxy.send(v, "CardListMessage", msg);
@@ -62,6 +62,15 @@ export class DFGHandler {
       "YourTurnMessage",
       ""
     );
+  }
+
+  public updateHandForCurrentPlayer(){
+    if (!this.activePlayerControl) {
+      this.invalidControllerError();
+    }
+
+
+
   }
 
   private gameInactiveError() {

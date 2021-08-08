@@ -84,7 +84,7 @@ describe("DFGHandler", () => {
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock.expects("send").thrice();
       const cardEnumeratorMock = sinon.mock(h.cardEnumerator);
-      cardEnumeratorMock.expects("enumerate").thrice();
+      cardEnumeratorMock.expects("enumerateFromHand").thrice();
       h.updateCardsForEveryone();
       roomProxyMock.verify();
       cardEnumeratorMock.verify();

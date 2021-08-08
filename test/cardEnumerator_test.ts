@@ -3,13 +3,13 @@ import { CardEnumerator } from "../src/logic/cardEnumerator";
 import * as dfg from "dfg-simulator";
 
 describe("CardEnumerator", () => {
-  it("can enumerate cards when player is inactive", () => {
+  it("can enumerate cards from a dfg.Hand instance", () => {
     const ce = new CardEnumerator();
     const c1 = dfg.createCard(dfg.CardMark.SPADES, 4);
     const c2 = dfg.createCard(dfg.CardMark.SPADES, 5);
     const h = dfg.createHand();
     h.give(c1, c2);
-    const msg = ce.enumerate(h, null);
+    const msg = ce.enumerateFromHand(h);
     expect(msg.cardList).not.to.be.null;
     const cl = msg.cardList;
     expect(cl[0].markEnum).to.eql(dfg.CardMark.SPADES);
