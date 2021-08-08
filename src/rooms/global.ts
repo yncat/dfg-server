@@ -33,7 +33,7 @@ export class GlobalRoom extends Room<GlobalState> {
         "ChatMessage",
         this.chatHandler.generateChatMessage(
           req,
-          this.playerMap.client2player(client).name
+          this.playerMap.clientIDToPlayer(client.id).name
         )
       );
     });
@@ -48,12 +48,12 @@ export class GlobalRoom extends Room<GlobalState> {
   }
 
   onJoin(client: Client, options: any) {
-    this.playerMap.add(client, createPlayerFromClientOptions(options));
+    this.playerMap.add(client.id, createPlayerFromClientOptions(options));
     this.state.playerCount = this.clients.length;
   }
 
   onLeave(client: Client, consented: boolean) {
-    this.playerMap.delete(client);
+    this.playerMap.delete(client.id);
   }
 
   onDispose() {}

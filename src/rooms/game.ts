@@ -21,10 +21,10 @@ export class GameRoom extends Room<GameState> {
   private dfgHandler: DFGHandler;
   onCreate(options: any) {
     this.chatHandler = new ChatHandler();
-    const rp = new RoomProxy<GameState>(this);
-    this.dfgHandler = new DFGHandler(rp);
-    this.setState(new GameState());
     this.playerMap = new PlayerMap();
+    const rp = new RoomProxy<GameState>(this);
+    this.dfgHandler = new DFGHandler(rp, this.playerMap);
+    this.setState(new GameState());
     this.onMessage("chatRequest", (client, payload) => {
       const req = dfgmsg.decodePayload<dfgmsg.ChatRequest>(
         payload,
@@ -38,7 +38,7 @@ export class GameRoom extends Room<GameState> {
         "ChatMessage",
         this.chatHandler.generateChatMessage(
           req,
-          this.playerMap.client2player(client).name
+          this.playerMap.clientIDToPlayer(client.id).name
         )
       );
     });
@@ -55,12 +55,12 @@ export class GameRoom extends Room<GameState> {
         dfgmsg.encodePlayerJoinedMessage(options.playerName)
       );
     }
-    this.playerMap.add(client, createPlayerFromClientOptions(options));
+    this.playerMap.add(client.id, createPlayerFromClientOptions(options));
     this.state.playerCount = this.clients.length;
   }
 
   onLeave(client: Client, consented: boolean) {
-    this.playerMap.delete(client);
+    this.playerMap.delete(client.id);
     if (client === this.masterClient) {
       this.broadcast("MasterDisconnectedMessage", "");
       void this.disconnect();

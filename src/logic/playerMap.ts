@@ -1,23 +1,22 @@
-import { Client } from "colyseus";
 import { Player } from "./player";
 
 export class PlayerNotFoundError extends Error {}
 export class PlayerMap {
-  clientPlayerMap: Map<Client, Player>;
+  clientPlayerMap: Map<string, Player>;
   constructor() {
     this.clientPlayerMap = new Map();
   }
 
-  public add(client: Client, player: Player) {
-    this.clientPlayerMap.set(client, player);
+  public add(clientID: string, player: Player) {
+    this.clientPlayerMap.set(clientID, player);
   }
 
-  public delete(client: Client) {
-    this.clientPlayerMap.delete(client);
+  public delete(clientID: string) {
+    this.clientPlayerMap.delete(clientID);
   }
 
-  public client2player(client: Client): Player {
-    let ret = this.clientPlayerMap.get(client);
+  public clientIDToPlayer(clientID: string): Player {
+    let ret = this.clientPlayerMap.get(clientID);
     if (ret === undefined) {
       throw new PlayerNotFoundError("player is not in PlayerMap");
     }

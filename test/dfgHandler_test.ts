@@ -4,10 +4,12 @@ import { expect } from "chai";
 import { DFGHandler, EventReceiver } from "../src/logic/dfgHandler";
 import { RoomProxy } from "../src/logic/roomProxy";
 import { GameState } from "../src/rooms/schema/game";
+import { PlayerMap } from "../src/logic/playerMap";
 
 function createDFGHandler(): DFGHandler {
   const rp = new RoomProxy<GameState>();
-  const h = new DFGHandler(rp);
+  const pm = new PlayerMap();
+  const h = new DFGHandler(rp, pm);
   return h;
 }
 
