@@ -57,26 +57,27 @@ export function encodePlayerJoinedMessage(
   };
 }
 
-export interface CardMessage {
+export interface SelectableCardMessage {
   markEnum: number;
   cardNumber: number;
   isChecked: boolean;
   isCheckable: boolean;
 }
 
-export const CardMessageDecoder: Decoder<CardMessage> = object({
-  markEnum: number(),
-  cardNumber: number(),
-  isChecked: boolean(),
-  isCheckable: boolean(),
-});
+export const SelectableCardMessageDecoder: Decoder<SelectableCardMessage> =
+  object({
+    markEnum: number(),
+    cardNumber: number(),
+    isChecked: boolean(),
+    isCheckable: boolean(),
+  });
 
-export function encodeCardMessage(
+export function encodeSelectableCardMessage(
   markEnum: number,
   cardNumber: number,
   isChecked: boolean,
   isCheckable: boolean
-): CardMessage {
+): SelectableCardMessage {
   return {
     markEnum: markEnum,
     cardNumber: cardNumber,
@@ -86,15 +87,15 @@ export function encodeCardMessage(
 }
 
 export interface CardListMessage {
-  cardList: CardMessage[];
+  cardList: SelectableCardMessage[];
 }
 
 export const CardListMessageDecoder: Decoder<CardListMessage> = object({
-  cardList: array(CardMessageDecoder),
+  cardList: array(SelectableCardMessageDecoder),
 });
 
 export function encodeCardListMessage(
-  cardList: CardMessage[]
+  cardList: SelectableCardMessage[]
 ): CardListMessage {
   return {
     cardList: cardList,
@@ -126,6 +127,59 @@ export const CardSelectRequestDecoder: Decoder<CardSelectRequest> = object({
 export function encodeCardSelectRequest(index: number): CardSelectRequest {
   return {
     index: index,
+  };
+}
+
+export interface CardMessage {
+  markEnum: number;
+  cardNumber: number;
+}
+
+export const CardMessageDecoder: Decoder<CardMessage> = object({
+  markEnum: number(),
+  cardNumber: number(),
+});
+
+export function encodeCardMessage(
+  markEnum: number,
+  cardNumber: number
+): CardMessage {
+  return {
+    markEnum: markEnum,
+    cardNumber: cardNumber,
+  };
+}
+
+export interface DiscardPairMessage {
+  cardList: CardMessage[];
+}
+
+export const DiscardPairMessageDecoder: Decoder<DiscardPairMessage> = object({
+  cardList: array(CardMessageDecoder),
+});
+
+export function encodeDiscardPairMessage(
+  cardList: CardMessage[]
+): DiscardPairMessage {
+  return {
+    cardList: cardList,
+  };
+}
+
+export interface DiscardPairListMessage {
+  discardPairList: DiscardPairMessage[];
+}
+
+export const DiscardPairListMessageDecoder: Decoder<DiscardPairListMessage> =
+  object({
+    discardPairList: array(DiscardPairMessageDecoder),
+  });
+
+export function encodeDiscardPairListMessage(
+  discardPairList: DiscardPairMessage[]
+): DiscardPairListMessage {
+  return {
+    discardPairList: discardPairList,
   };
 }
 
