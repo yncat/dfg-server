@@ -96,6 +96,25 @@ export class DFGHandler {
     this.activePlayerControl.selectCard(index);
   }
 
+  public enumerateDiscardPairs() {
+    if (!this.activePlayerControl) {
+      this.invalidControllerError();
+    }
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "DiscardPairListMessage",
+      dfgmsg.encodeDiscardPairListMessage(
+        this.activePlayerControl.enumerateDiscardPairs().map((v) => {
+          return dfgmsg.encodeDiscardPairMessage(
+            v.cards.map((w) => {
+              return dfgmsg.encodeCardMessage(w.mark, w.cardNumber);
+            })
+          );
+        })
+      )
+    );
+  }
+
   private gameInactiveError() {
     throw new InvalidGameStateError("game is inactive");
   }

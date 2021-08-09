@@ -5,7 +5,12 @@ export class CardEnumerator {
   public enumerateFromHand(hand: dfg.Hand): dfgmsg.CardListMessage {
     return dfgmsg.encodeCardListMessage(
       hand.cards.map((v) => {
-        return dfgmsg.encodeSelectableCardMessage(v.mark, v.cardNumber, false, false);
+        return dfgmsg.encodeSelectableCardMessage(
+          v.mark,
+          v.cardNumber,
+          false,
+          false
+        );
       })
     );
   }

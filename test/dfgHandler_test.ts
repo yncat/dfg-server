@@ -261,4 +261,68 @@ describe("DFGHandler", () => {
       }).to.throw("active player control is invalid");
     });
   });
+
+  describe("enumerateDiscardPairs", () => {
+    it("can send DiscardPairListMessage to the active player", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+      const d4 = dfg.createCard(dfg.CardMark.DIAMONDS, 4);
+      const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
+      const d4m = dfgmsg.encodeCardMessage(d4.mark, d4.cardNumber);
+      const dp1 = <dfg.DiscardPair>(<unknown>{
+        cards: [s4, s4],
+      });
+      const dp2 = <dfg.DiscardPair>(<unknown>{
+        cards: [d4, d4],
+      });
+      const edc = sinon.fake(() => {
+        return [dp1, dp2];
+      });
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+        enumerateDiscardPairs: edc,
+      });
+      h.activePlayerControl = apc;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      const msg = dfgmsg.encodeDiscardPairListMessage([
+        dfgmsg.encodeDiscardPairMessage([s4m, s4m]),
+        dfgmsg.encodeDiscardPairMessage([d4m, d4m]),
+      ]);
+      roomProxyMock
+        .expects("send")
+        .calledWithExactly(pi, "DiscardPairListMessage", msg);
+      h.enumerateDiscardPairs();
+      expect(edc.called).to.be.true;
+      roomProxyMock.verify();
+    });
+
+    it("sends DiscardPairListMessage with an empty DiscardPairList when no discardPair is enumerated", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const edc = sinon.fake((): dfg.DiscardPair[] => {
+        return [];
+      });
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+        enumerateDiscardPairs: edc,
+      });
+      h.activePlayerControl = apc;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      const msg = dfgmsg.encodeDiscardPairListMessage([]);
+      roomProxyMock
+        .expects("send")
+        .calledWithExactly(pi, "DiscardPairListMessage", msg);
+      h.enumerateDiscardPairs();
+      expect(edc.called).to.be.true;
+      roomProxyMock.verify();
+    });
+
+    it("throws an error when activePlayerControl is not set", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.selectCardByIndex(0);
+      }).to.throw("active player control is invalid");
+    });
+  });
 });
