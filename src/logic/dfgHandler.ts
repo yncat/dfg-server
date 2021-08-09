@@ -115,6 +115,21 @@ export class DFGHandler {
     );
   }
 
+  public discardByIndex(index: number) {
+    if (!this.activePlayerControl) {
+      this.invalidControllerError();
+    }
+    if (index < 0) {
+      return;
+    }
+    const dps = this.activePlayerControl.enumerateDiscardPairs();
+    if (index >= dps.length) {
+      return;
+    }
+
+    this.activePlayerControl.discard(dps[index]);
+  }
+
   private gameInactiveError() {
     throw new InvalidGameStateError("game is inactive");
   }

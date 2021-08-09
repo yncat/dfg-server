@@ -325,4 +325,80 @@ describe("DFGHandler", () => {
       }).to.throw("active player control is invalid");
     });
   });
+
+  describe("discardByIndex", () => {
+    it("can set discard info to activePlayerControl", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+      const dp1 = <dfg.DiscardPair>(<unknown>{
+        cards: [s4, s4],
+      });
+      const edc = sinon.fake(() => {
+        return [dp1];
+      });
+      const dc = sinon.fake((dp: dfg.DiscardPair) => {});
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+        enumerateDiscardPairs: edc,
+        discard: dc,
+      });
+      h.activePlayerControl = apc;
+      h.discardByIndex(0);
+      expect(edc.called).to.be.true;
+      expect(dc.called).to.be.true;
+      expect(dc.firstCall.firstArg).to.eql(dp1);
+    });
+
+    it("does nothing when index is out of range", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+      const dp1 = <dfg.DiscardPair>(<unknown>{
+        cards: [s4, s4],
+      });
+      const edc = sinon.fake(() => {
+        return [dp1];
+      });
+      const dc = sinon.fake((dp: dfg.DiscardPair) => {});
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+        enumerateDiscardPairs: edc,
+        discard: dc,
+      });
+      h.activePlayerControl = apc;
+      h.discardByIndex(1);
+      expect(edc.called).to.be.true;
+      expect(dc.called).to.be.false;
+    });
+
+    it("does nothing when index is negative", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+      const dp1 = <dfg.DiscardPair>(<unknown>{
+        cards: [s4, s4],
+      });
+      const edc = sinon.fake(() => {
+        return [dp1];
+      });
+      const dc = sinon.fake((dp: dfg.DiscardPair) => {});
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+        enumerateDiscardPairs: edc,
+        discard: dc,
+      });
+      h.activePlayerControl = apc;
+      h.discardByIndex(-1);
+      expect(edc.called).to.be.false;
+      expect(dc.called).to.be.false;
+    });
+
+    it("throws an error when activePlayerControl is not set", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.selectCardByIndex(0);
+      }).to.throw("active player control is invalid");
+    });
+  });
 });
