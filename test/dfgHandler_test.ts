@@ -162,7 +162,7 @@ describe("DFGHandler", () => {
       h.activePlayerControl = apc;
       const roomProxyMock = sinon.mock(h.roomProxy);
       const msg = dfgmsg.encodeCardListMessage([
-        dfgmsg.encodeCardMessage(dfg.CardMark.SPADES, 3, true, true),
+        dfgmsg.encodeSelectableCardMessage(dfg.CardMark.SPADES, 3, true, true),
       ]);
       const enumerate = sinon
         .stub(h.cardEnumerator, "enumerateFromActivePlayerControl")
