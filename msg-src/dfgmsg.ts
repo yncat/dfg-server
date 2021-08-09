@@ -115,6 +115,20 @@ export function encodeTurnMessage(playerName: string): TurnMessage {
   };
 }
 
+export interface CardSelectRequest {
+  index: number;
+}
+
+export const CardSelectRequestDecoder: Decoder<CardSelectRequest> = object({
+  index: number(),
+});
+
+export function encodeCardSelectRequest(index: number): CardSelectRequest {
+  return {
+    index: index,
+  };
+}
+
 export class PayloadDecodeError extends Error {}
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function decodePayload<T>(

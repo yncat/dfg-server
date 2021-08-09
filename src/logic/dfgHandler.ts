@@ -77,6 +77,25 @@ export class DFGHandler {
     );
   }
 
+  public selectCardByIndex(index: number) {
+    if (!this.activePlayerControl) {
+      this.invalidControllerError();
+    }
+
+    if (
+      this.activePlayerControl.checkCardSelectability(index) ===
+      dfg.SelectabilityCheckResult.NOT_SELECTABLE
+    ) {
+      return;
+    }
+
+    if (this.activePlayerControl.isCardSelected(index)) {
+      this.activePlayerControl.deselectCard(index);
+      return;
+    }
+    this.activePlayerControl.selectCard(index);
+  }
+
   private gameInactiveError() {
     throw new InvalidGameStateError("game is inactive");
   }

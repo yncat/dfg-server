@@ -179,4 +179,86 @@ describe("DFGHandler", () => {
       }).to.throw("active player control is invalid");
     });
   });
+
+  describe("selectCardByIndex", () => {
+    it("can select a card", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const ics = sinon.fake((index: number) => {
+        return false;
+      });
+      const ccs = sinon.fake((index: number) => {
+        return dfg.SelectabilityCheckResult.SELECTABLE;
+      });
+      const sc = sinon.fake((index: number) => {});
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+        isCardSelected: ics,
+        checkCardSelectability: ccs,
+        selectCard: sc,
+      });
+      h.activePlayerControl = apc;
+      h.selectCardByIndex(0);
+      expect(ics.called).to.be.true;
+      expect(ics.firstCall.firstArg).to.eql(0);
+      expect(ccs.called).to.be.true;
+      expect(ccs.firstCall.firstArg).to.eql(0);
+      expect(sc.called).to.be.true;
+      expect(sc.firstCall.firstArg).to.eql(0);
+    });
+
+    it("can deselect a card", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const ics = sinon.fake((index: number) => {
+        return true;
+      });
+      const ccs = sinon.fake((index: number) => {
+        return dfg.SelectabilityCheckResult.SELECTABLE;
+      });
+      const dsc = sinon.fake((index: number) => {});
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+        isCardSelected: ics,
+        checkCardSelectability: ccs,
+        deselectCard: dsc,
+      });
+      h.activePlayerControl = apc;
+      h.selectCardByIndex(0);
+      expect(ics.called).to.be.true;
+      expect(ics.firstCall.firstArg).to.eql(0);
+      expect(ccs.called).to.be.true;
+      expect(ccs.firstCall.firstArg).to.eql(0);
+      expect(dsc.called).to.be.true;
+      expect(dsc.firstCall.firstArg).to.eql(0);
+    });
+
+    it("does nothing when card is not selectable", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const ics = sinon.fake((index: number) => {
+        return false;
+      });
+      const ccs = sinon.fake((index: number) => {
+        return dfg.SelectabilityCheckResult.NOT_SELECTABLE;
+      });
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+        isCardSelected: ics,
+        checkCardSelectability: ccs,
+      });
+      h.activePlayerControl = apc;
+      h.selectCardByIndex(0);
+      expect(ccs.called).to.be.true;
+      expect(ccs.firstCall.firstArg).to.eql(0);
+      expect(ics.called).to.be.false;
+    });
+
+    it("throws an error when activePlayerControl is not set", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.selectCardByIndex(0);
+      }).to.throw("active player control is invalid");
+    });
+  });
 });
