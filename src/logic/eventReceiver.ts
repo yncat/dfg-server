@@ -9,7 +9,7 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onNagare(): void {
-    console.log("onNagare");
+    this.roomProxy.broadcast("NagareMessage", "");
   }
 
   public onAgari(identifier: string): void {
