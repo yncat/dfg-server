@@ -1,7 +1,8 @@
 import * as dfg from "dfg-simulator";
 import sinon from "sinon";
 import { expect } from "chai";
-import { DFGHandler, EventReceiver } from "../src/logic/dfgHandler";
+import { DFGHandler } from "../src/logic/dfgHandler";
+import { EventReceiver } from "../src/logic/eventReceiver";
 import { RoomProxy } from "../src/logic/roomProxy";
 import { GameState } from "../src/rooms/schema/game";
 import { Player } from "../src/logic/player";
