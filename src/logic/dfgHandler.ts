@@ -146,6 +146,14 @@ export class DFGHandler {
     this.game.finishActivePlayerControl(this.activePlayerControl);
   }
 
+  public kickPlayerByIdentifier(identifier:string){
+    if (!this.game) {
+      this.gameInactiveError();
+    }
+
+    this.game.kickPlayerByIdentifier(identifier);
+  }
+
   private gameInactiveError() {
     throw new InvalidGameStateError("game is inactive");
   }

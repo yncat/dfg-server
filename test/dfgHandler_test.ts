@@ -448,4 +448,25 @@ describe("DFGHandler", () => {
       }).to.throw("active player control is invalid");
     });
   });
+
+  describe("kickPlayerByIdentifier", () => {
+    it("calls game.kickPlayerByIdentifier", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const kick = sinon.fake((identifier:string)=>{});
+      const g = <dfg.Game>(<unknown>{
+        kickPlayerByIdentifier:kick,
+      });
+      h.game = g;
+      h.kickPlayerByIdentifier(pi);
+      expect(kick.calledWith(pi)).to.be.true;
+    });
+
+    it("throws an error when game is not set", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.kickPlayerByIdentifier("ccaatt");
+      }).to.throw("game is inactive");
+    });
+  });
 });
