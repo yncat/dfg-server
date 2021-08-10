@@ -7,6 +7,22 @@ import {
   string,
 } from "@mojotech/json-type-validation";
 
+/*
+dfg message definitions
+
+# non-parameter messages
+以下のメッセージは、パラメータを持たないので、コードとしては定義していない。
+
+GameMasterMessage: ゲームマスターの権限をクライアントに与えるとき、そのクライアントに対して送信する。クライアントは、このメッセージを受信したら、ゲーム開始ボタンを表示する。
+YourTurnMessage: ゲーム中、ターンが回ってきたクライアントに対して送信する。クライアントは、このメッセージを受信したら、音を出したり、「自分のターンです」というようなガイダンスを出したりする。
+/*
+
+
+/*
+ChatRequest: チャット送信要求
+クライアントからサーバーへチャットを送る。サーバーは、全員に ChatMessage で返す。
+(parameter) message: 送信するメッセージ
+*/
 export interface ChatRequest {
   message: string;
 }
@@ -21,6 +37,12 @@ export function encodeChatRequest(message: string): ChatRequest {
   };
 }
 
+/*
+ChatMessage: チャット通知
+サーバーからのチャット通知。
+(parameter) playerName: チャットを送信したプレイヤーの名前
+(parameter) message: チャットメッセージ
+*/
 export interface ChatMessage {
   playerName: string;
   message: string;
@@ -41,6 +63,11 @@ export function encodeChatMessage(
   };
 }
 
+/*
+PlayerJoinedMessage: プレイヤー入室通知
+プレイヤーがルームに入室したときにサーバーから送られてくるメッセージ。すでにゲーム中のルームに誰かが入ってきた場合も送られてくる。
+(parameter) playerName: 入室したプレイヤーの名前。
+*/
 export interface PlayerJoinedMessage {
   playerName: string;
 }
@@ -57,6 +84,14 @@ export function encodePlayerJoinedMessage(
   };
 }
 
+/*
+SelectableCardMessage: カード情報+カード選択情報
+カードのスーとと番号 + 選択状態、選択可否の情報。出すカードを選ぶチェックボックスを描画するときに使う。メッセージ1つでカード1枚を表す。
+(parameter) cardMark: カードのマークを表す定数
+(parameter) cardNumber: カードの番号
+(parameter) isChecked: 選択状態かどうか
+(parameter) isCheckable:チェックボックスを操作可能にするべきかどうか
+*/
 export interface SelectableCardMessage {
   markEnum: number;
   cardNumber: number;
@@ -86,6 +121,11 @@ export function encodeSelectableCardMessage(
   };
 }
 
+/*
+CardListMessage: カードリストのアップデート通知
+カードを選ぶチェックボックスのリストの最新状態を表す。
+(parameter) cardList: カードリスト。 SelectableCardMessage の配列。
+*/
 export interface CardListMessage {
   cardList: SelectableCardMessage[];
 }
@@ -102,6 +142,11 @@ export function encodeCardListMessage(
   };
 }
 
+/*
+TurnMessage: ターン開始通知
+ターンの始まりを表す。
+(parameter) playerName: 次に行動するプレイヤーの名前
+*/
 export interface TurnMessage {
   playerName: string;
 }
@@ -116,6 +161,11 @@ export function encodeTurnMessage(playerName: string): TurnMessage {
   };
 }
 
+/*
+CardSelectRequest: カード選択リクエスト
+アクティブプレイヤーが特定のカードをカードリストから選択するときに、クライアントが送信するリクエスト。
+(parameter) index: 選択するカードの 0-start インデックス番号
+*/
 export interface CardSelectRequest {
   index: number;
 }
@@ -130,6 +180,12 @@ export function encodeCardSelectRequest(index: number): CardSelectRequest {
   };
 }
 
+/*
+CardMessage: 選択に関する情報がない単純なカードメッセージ
+スーとと数字の情報のみ。出すカードのペアを列挙するときに利用する。
+(parameter) markEnum: カードのスーとを表す定数
+(parameter) cardNumber: カード番号
+*/
 export interface CardMessage {
   markEnum: number;
   cardNumber: number;
@@ -150,6 +206,11 @@ export function encodeCardMessage(
   };
 }
 
+/*
+DiscardPairMessage: 出すカードのペア
+1セットの有効なプレイカードのペアを表す。
+(parameter) cardList: ペアとなるカード。 CardMessage の配列。
+*/
 export interface DiscardPairMessage {
   cardList: CardMessage[];
 }
@@ -166,6 +227,11 @@ export function encodeDiscardPairMessage(
   };
 }
 
+/*
+DiscardPairListMessage: プレイ可能なペア一覧メッセージ
+プレイ可能なカードのペアを列挙した結果を表す。クライアントは、このメッセージを受け取ったら、それぞれをボタンとして描画して、それらがプレイできるようにインターフェイスを提供する。
+(parameter) DiscardPairList: 有効なペアの一覧。 DiscardPairMessage の配列。
+*/
 export interface DiscardPairListMessage {
   discardPairList: DiscardPairMessage[];
 }
