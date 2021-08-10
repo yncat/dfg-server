@@ -130,6 +130,14 @@ export class DFGHandler {
     this.activePlayerControl.discard(dps[index]);
   }
 
+  public pass() {
+    if (!this.activePlayerControl) {
+      this.invalidControllerError();
+    }
+
+    this.activePlayerControl.pass();
+  }
+
   private gameInactiveError() {
     throw new InvalidGameStateError("game is inactive");
   }

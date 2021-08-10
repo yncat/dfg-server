@@ -397,7 +397,29 @@ describe("DFGHandler", () => {
     it("throws an error when activePlayerControl is not set", () => {
       const h = createDFGHandler();
       expect(() => {
-        h.discardCardByIndex(0);
+        h.discardByIndex(0);
+      }).to.throw("active player control is invalid");
+    });
+  });
+
+  describe("pass", () => {
+    it("calls activePlayerControl.pass", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const pass = sinon.fake();
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+        pass: pass,
+      });
+      h.activePlayerControl = apc;
+      h.pass();
+      expect(pass.called).to.be.true;
+    });
+
+    it("throws an error when activePlayerControl is not set", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.pass();
       }).to.throw("active player control is invalid");
     });
   });
