@@ -397,7 +397,7 @@ describe("DFGHandler", () => {
     it("throws an error when activePlayerControl is not set", () => {
       const h = createDFGHandler();
       expect(() => {
-        h.selectCardByIndex(0);
+        h.discardCardByIndex(0);
       }).to.throw("active player control is invalid");
     });
   });
