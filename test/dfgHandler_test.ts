@@ -453,9 +453,9 @@ describe("DFGHandler", () => {
     it("calls game.kickPlayerByIdentifier", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const kick = sinon.fake((identifier:string)=>{});
+      const kick = sinon.fake((identifier: string) => {});
       const g = <dfg.Game>(<unknown>{
-        kickPlayerByIdentifier:kick,
+        kickPlayerByIdentifier: kick,
       });
       h.game = g;
       h.kickPlayerByIdentifier(pi);
