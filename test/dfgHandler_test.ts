@@ -423,4 +423,29 @@ describe("DFGHandler", () => {
       }).to.throw("active player control is invalid");
     });
   });
+
+  describe("finishAction", () => {
+    it("calls game.finishActivePlayerControl", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const fapc = sinon.fake();
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+      });
+      const g = <dfg.Game>(<unknown>{
+        finishActivePlayerControl: fapc,
+      });
+      h.activePlayerControl = apc;
+      h.game = g;
+      h.finishAction();
+      expect(fapc.called).to.be.true;
+    });
+
+    it("throws an error when activePlayerControl is not set", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.finishAction();
+      }).to.throw("active player control is invalid");
+    });
+  });
 });

@@ -138,6 +138,14 @@ export class DFGHandler {
     this.activePlayerControl.pass();
   }
 
+  public finishAction() {
+    if (!this.activePlayerControl) {
+      this.invalidControllerError();
+    }
+
+    this.game.finishActivePlayerControl(this.activePlayerControl);
+  }
+
   private gameInactiveError() {
     throw new InvalidGameStateError("game is inactive");
   }
