@@ -26,7 +26,12 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onForbiddenAgari(identifier: string): void {
-    console.log("onForbiddenAgari");
+    this.roomProxy.broadcast(
+      "ForbiddenAgariMessage",
+      dfgmsg.encodeForbiddenAgariMessage(
+        this.playerMap.clientIDToPlayer(identifier).name
+      )
+    );
   }
 
   public onYagiri(identifier: string): void {

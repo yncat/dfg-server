@@ -274,6 +274,28 @@ export function encodeAgariMessage(playerName: string): AgariMessage {
   };
 }
 
+/*
+ForbiddenAgariMessage: 禁止あがりメッセージ
+プレイヤーが禁じ手で上がったときのメッセージ。順位の情報は、別のメッセージで送られてくる。
+(parameter) playerName: 禁じ手であがったプレイヤーの名前。
+*/
+export interface ForbiddenAgariMessage {
+  playerName: string;
+}
+
+export const ForbiddenAgariMessageDecoder: Decoder<ForbiddenAgariMessage> =
+  object({
+    playerName: string(),
+  });
+
+export function encodeForbiddenAgariMessage(
+  playerName: string
+): ForbiddenAgariMessage {
+  return {
+    playerName: playerName,
+  };
+}
+
 export class PayloadDecodeError extends Error {}
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function decodePayload<T>(
