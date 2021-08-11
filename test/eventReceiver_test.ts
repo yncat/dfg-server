@@ -79,3 +79,13 @@ describe("onJBack", () => {
     roomProxyMock.verify();
   });
 });
+
+describe("onKakumei", () => {
+  it("sends KakumeiMessage to everyone", () => {
+    const er = createEventReceiver();
+    const roomProxyMock = sinon.mock(er.roomProxy);
+    roomProxyMock.expects("broadcast").calledWithExactly("KakumeiMessage", "");
+    er.onKakumei("ccaatt");
+    roomProxyMock.verify();
+  });
+});

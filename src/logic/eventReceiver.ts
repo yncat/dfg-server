@@ -43,7 +43,7 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onKakumei(identifier: string): void {
-    console.log("onKakumei");
+    this.roomProxy.broadcast("KakumeiMessage", "");
   }
 
   public onStrengthInversion(strengthInverted: boolean): void {
