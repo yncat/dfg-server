@@ -1,11 +1,14 @@
 import * as dfg from "dfg-simulator";
 import { RoomProxy } from "./roomProxy";
 import { GameState } from "../rooms/schema/game";
+import { PlayerMap } from "./playerMap";
 
 export class EventReceiver implements dfg.EventReceiver {
   roomProxy: RoomProxy<GameState>;
-  constructor(roomProxy: RoomProxy<GameState>) {
+  playerMap: PlayerMap;
+  constructor(roomProxy: RoomProxy<GameState>, playerMap: PlayerMap) {
     this.roomProxy = roomProxy;
+    this.playerMap = playerMap;
   }
 
   public onNagare(): void {

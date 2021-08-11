@@ -15,7 +15,7 @@ export class DFGHandler {
   playerMap: PlayerMap;
   cardEnumerator: CardEnumerator;
   constructor(roomProxy: RoomProxy<GameState>, playerMap: PlayerMap) {
-    this.eventReceiver = new EventReceiver(roomProxy);
+    this.eventReceiver = new EventReceiver(roomProxy, playerMap);
     this.roomProxy = roomProxy;
     this.playerMap = playerMap;
     this.cardEnumerator = new CardEnumerator();
