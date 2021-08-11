@@ -89,3 +89,16 @@ describe("onKakumei", () => {
     roomProxyMock.verify();
   });
 });
+
+describe("onStrengthInversion", () => {
+  it("sends StrengthInversionMessage to everyone", () => {
+    const er = createEventReceiver();
+    const roomProxyMock = sinon.mock(er.roomProxy);
+    const msg = dfgmsg.encodeStrengthInversionMessage(true);
+    roomProxyMock
+      .expects("broadcast")
+      .calledWithExactly("StrengthInversionMessage", msg);
+    er.onStrengthInversion(true);
+    roomProxyMock.verify();
+  });
+});

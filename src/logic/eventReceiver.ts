@@ -47,7 +47,10 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onStrengthInversion(strengthInverted: boolean): void {
-    console.log("onStrengthInverted");
+    this.roomProxy.broadcast(
+      "StrengthInversionMessage",
+      dfgmsg.encodeStrengthInversionMessage(strengthInverted)
+    );
   }
 
   public onDiscard(identifier: string, discardPair: dfg.DiscardPair): void {

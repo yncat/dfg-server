@@ -298,6 +298,28 @@ export function encodeForbiddenAgariMessage(
   };
 }
 
+/*
+StrengthInversionMessage: 強さ変化メッセージ
+カードの強さが変化したときのメッセージ。
+(parameter) isStrengthInverted: true のとき、3が一番強い。 false のとき、2が一番強い。
+*/
+export interface StrengthInversionMessage {
+  isStrengthInverted: boolean;
+}
+
+export const StrengthInversionMessageDecoder: Decoder<StrengthInversionMessage> =
+  object({
+    isStrengthInverted: boolean(),
+  });
+
+export function encodeStrengthInversionMessage(
+  isStrengthInverted: boolean
+): StrengthInversionMessage {
+  return {
+    isStrengthInverted: isStrengthInverted,
+  };
+}
+
 export class PayloadDecodeError extends Error {}
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function decodePayload<T>(
