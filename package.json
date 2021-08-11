@@ -47,7 +47,7 @@
     "chai": "^4.3.4",
     "colyseus": "^0.14.20",
     "cors": "^2.8.5",
-    "dfg-simulator": "0.1.23",
+    "dfg-simulator": "0.1.25",
     "eslint": "^7.31.0",
     "express": "^4.16.4",
     "prettier": "^2.3.2",
