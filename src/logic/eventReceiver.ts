@@ -35,7 +35,7 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onYagiri(identifier: string): void {
-    console.log("onYagiri");
+    this.roomProxy.broadcast("YagiriMessage", "");
   }
 
   public onJBack(identifier: string): void {

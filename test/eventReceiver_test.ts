@@ -59,3 +59,13 @@ describe("onForbiddenAgari", () => {
     roomProxyMock.verify();
   });
 });
+
+describe("onYagiri", () => {
+  it("sends YagiriMessage to everyone", () => {
+    const er = createEventReceiver();
+    const roomProxyMock = sinon.mock(er.roomProxy);
+    roomProxyMock.expects("broadcast").calledWithExactly("YagiriMessage", "");
+    er.onYagiri("ccaatt");
+    roomProxyMock.verify();
+  });
+});
