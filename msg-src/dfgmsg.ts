@@ -255,6 +255,25 @@ export function encodeDiscardPairListMessage(
   };
 }
 
+/*
+AgariMessage: あがりメッセージ
+プレイヤーが上がったときのメッセージ。順位の情報は、別のメッセージで送られてくる。
+(parameter) playerName: あがったプレイヤーの名前。
+*/
+export interface AgariMessage {
+  playerName: string;
+}
+
+export const AgariMessageDecoder: Decoder<AgariMessage> = object({
+  playerName: string(),
+});
+
+export function encodeAgariMessage(playerName: string): AgariMessage {
+  return {
+    playerName: playerName,
+  };
+}
+
 export class PayloadDecodeError extends Error {}
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function decodePayload<T>(

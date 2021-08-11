@@ -1,4 +1,5 @@
 import * as dfg from "dfg-simulator";
+import * as dfgmsg from "../../msg-src/dfgmsg";
 import { RoomProxy } from "./roomProxy";
 import { GameState } from "../rooms/schema/game";
 import { PlayerMap } from "./playerMap";
@@ -16,7 +17,12 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onAgari(identifier: string): void {
-    console.log("onAgari");
+    this.roomProxy.broadcast(
+      "AgariMessage",
+      dfgmsg.encodeAgariMessage(
+        this.playerMap.clientIDToPlayer(identifier).name
+      )
+    );
   }
 
   public onForbiddenAgari(identifier: string): void {
