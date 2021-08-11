@@ -39,7 +39,7 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onJBack(identifier: string): void {
-    console.log("onJBack");
+    this.roomProxy.broadcast("JBackMessage", "");
   }
 
   public onKakumei(identifier: string): void {

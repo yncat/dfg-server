@@ -69,3 +69,13 @@ describe("onYagiri", () => {
     roomProxyMock.verify();
   });
 });
+
+describe("onJBack", () => {
+  it("sends JBackMessage to everyone", () => {
+    const er = createEventReceiver();
+    const roomProxyMock = sinon.mock(er.roomProxy);
+    roomProxyMock.expects("broadcast").calledWithExactly("JBackMessage", "");
+    er.onJBack("ccaatt");
+    roomProxyMock.verify();
+  });
+});
