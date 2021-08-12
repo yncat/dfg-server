@@ -53,8 +53,23 @@ export class EventReceiver implements dfg.EventReceiver {
     );
   }
 
-  public onDiscard(identifier: string, discardPair: dfg.DiscardPair): void {
-    console.log("onDiscard");
+  public onDiscard(
+    identifier: string,
+    discardPair: dfg.DiscardPair,
+    remainingHandCount: number
+  ): void {
+    this.roomProxy.broadcast(
+      "DiscardMessage",
+      dfgmsg.encodeDiscardMessage(
+        this.playerMap.clientIDToPlayer(identifier).name,
+        dfgmsg.encodeDiscardPairMessage(
+          discardPair.cards.map((v) => {
+            return dfgmsg.encodeCardMessage(v.mark, v.cardNumber);
+          })
+        ),
+        remainingHandCount
+      )
+    );
   }
 
   public onPass(identifier: string): void {

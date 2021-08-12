@@ -102,3 +102,33 @@ describe("onStrengthInversion", () => {
     roomProxyMock.verify();
   });
 });
+
+describe("onDiscard", () => {
+  it("sends DiscardMessage to everyone", () => {
+    const pi = "ccaatt";
+    const pn = "cat";
+    const c1 = dfg.createCard(dfg.CardMark.SPADES, 5);
+    const c2 = dfg.createCard(dfg.CardMark.HEARTS, 5);
+    const msg = dfgmsg.encodeDiscardMessage(
+      pn,
+      dfgmsg.encodeDiscardPairMessage([
+        dfgmsg.encodeCardMessage(c1.mark, c1.cardNumber),
+        dfgmsg.encodeCardMessage(c2.mark, c2.cardNumber),
+      ]),
+      5
+    );
+    const player = <Player>{
+      name: pn,
+    };
+    const dp = <dfg.DiscardPair>(<unknown>{
+      cards: [c1, c2],
+    });
+    const er = createEventReceiver();
+    const roomProxyMock = sinon.mock(er.roomProxy);
+    roomProxyMock.expects("broadcast").calledWithExactly("DiscardMessage", msg);
+    const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
+    er.onDiscard(pi, dp, 5);
+    expect(c2p.calledWithExactly(pi)).to.be.true;
+    roomProxyMock.verify();
+  });
+});
