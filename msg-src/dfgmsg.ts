@@ -328,26 +328,45 @@ DiscardMessage: カードプレイメッセージ。
 (parameter) remainingHandCount: 出した後、手札に残るカードの枚数。
 */
 export interface DiscardMessage {
-  playerName:string;
+  playerName: string;
   discardPair: DiscardPairMessage;
   remainingHandCount: number;
 }
 
 export const DiscardMessageDecoder: Decoder<DiscardMessage> = object({
-  playerName:string(),
+  playerName: string(),
   discardPair: DiscardPairMessageDecoder,
   remainingHandCount: number(),
 });
 
 export function encodeDiscardMessage(
-  playerName:string,
+  playerName: string,
   discardPair: DiscardPairMessage,
   remainingHandCount: number
 ): DiscardMessage {
   return {
-    playerName:playerName,
+    playerName: playerName,
     discardPair: discardPair,
     remainingHandCount: remainingHandCount,
+  };
+}
+
+/*
+PassMessage: パスメッセージ
+プレイヤーがパスしたときのメッセージ。
+(parameter) playerName: パスしたプレイヤーの名前。
+*/
+export interface PassMessage {
+  playerName: string;
+}
+
+export const PassMessageDecoder: Decoder<PassMessage> = object({
+  playerName: string(),
+});
+
+export function encodePassMessage(playerName: string): PassMessage {
+  return {
+    playerName: playerName,
   };
 }
 

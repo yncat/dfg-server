@@ -132,3 +132,21 @@ describe("onDiscard", () => {
     roomProxyMock.verify();
   });
 });
+
+describe("onPass", () => {
+  it("sends PassMessage to everyone", () => {
+    const pi = "ccaatt";
+    const pn = "cat";
+    const msg = dfgmsg.encodePassMessage(pn);
+    const player = <Player>{
+      name: pn,
+    };
+    const er = createEventReceiver();
+    const roomProxyMock = sinon.mock(er.roomProxy);
+    roomProxyMock.expects("broadcast").calledWithExactly("PassMessage", msg);
+    const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
+    er.onPass(pi);
+    expect(c2p.calledWithExactly(pi)).to.be.true;
+    roomProxyMock.verify();
+  });
+});

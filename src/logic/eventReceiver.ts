@@ -73,7 +73,12 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onPass(identifier: string): void {
-    console.log("onPass");
+    this.roomProxy.broadcast(
+      "PassMessage",
+      dfgmsg.encodePassMessage(
+        this.playerMap.clientIDToPlayer(identifier).name
+      )
+    );
   }
 
   public onGameEnd(): void {
