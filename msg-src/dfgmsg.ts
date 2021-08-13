@@ -8,6 +8,7 @@ import {
   oneOf,
   string,
 } from "@mojotech/json-type-validation";
+import { Rank } from "dfg-simulator/dist/rank";
 
 /*
 dfg enum definitions 
@@ -25,6 +26,14 @@ export const CardMark = {
   WILD: 5,
 } as const;
 export type CardMark = typeof CardMark[keyof typeof CardMark];
+export const CardMarkDecoder = oneOf(
+  constant(CardMark.CLUBS),
+  constant(CardMark.DIAMONDS),
+  constant(CardMark.HEARTS),
+  constant(CardMark.SPADES),
+  constant(CardMark.JOKER),
+  constant(CardMark.WILD)
+);
 
 /*
 プレイヤーのランク
@@ -39,6 +48,14 @@ export const RankType = {
   DAIFUGO: 5,
 } as const;
 export type RankType = typeof RankType[keyof typeof RankType];
+export const RankTypeDecoder = oneOf(
+  constant(RankType.UNDETERMINED),
+  constant(RankType.DAIHINMIN),
+  constant(RankType.HINMIN),
+  constant(RankType.HEIMIN),
+  constant(RankType.FUGO),
+  constant(RankType.DAIFUGO)
+);
 
 /*
 dfg message definitions
@@ -142,14 +159,7 @@ export interface SelectableCardMessage {
 
 export const SelectableCardMessageDecoder: Decoder<SelectableCardMessage> =
   object({
-    mark: oneOf(
-      constant(CardMark.CLUBS),
-      constant(CardMark.DIAMONDS),
-      constant(CardMark.HEARTS),
-      constant(CardMark.SPADES),
-      constant(CardMark.JOKER),
-      constant(CardMark.WILD)
-    ),
+    mark: CardMarkDecoder,
     cardNumber: number(),
     isChecked: boolean(),
     isCheckable: boolean(),
@@ -240,14 +250,7 @@ export interface CardMessage {
 }
 
 export const CardMessageDecoder: Decoder<CardMessage> = object({
-  mark: oneOf(
-    constant(CardMark.CLUBS),
-    constant(CardMark.DIAMONDS),
-    constant(CardMark.HEARTS),
-    constant(CardMark.SPADES),
-    constant(CardMark.JOKER),
-    constant(CardMark.WILD)
-  ),
+  mark: CardMarkDecoder,
   cardNumber: number(),
 });
 
@@ -435,6 +438,38 @@ export function encodePlayerKickedMessage(
 ): PlayerKickedMessage {
   return {
     playerName: playerName,
+  };
+}
+
+/*
+PlayerRankChangedMessage: ランク変更メッセージ
+プレイヤーのランクが変化したとき(上がってランクが付いたときも含む)送信されるメッセージ。
+(parameter) playerName: ランクが変化したプレイヤーの名前。
+(parameter) before: 変更前のランク。変更前にランクが付いていなかったときは RankType.UNDETERMINED という値 (実際には 0) が入る。
+(parameter) after: 変更後のランク。 RankType.xx の値。
+*/
+export interface PlayerRankChangedMessage {
+  playerName: string;
+  before: RankType;
+  after: RankType;
+}
+
+export const PlayerRankChangedMessageDecoder: Decoder<PlayerRankChangedMessage> =
+  object({
+    playerName: string(),
+    before: RankTypeDecoder,
+    after: RankTypeDecoder,
+  });
+
+export function encodePlayerRankChangedMessage(
+  playerName: string,
+  before: RankType,
+  after: RankType
+): PlayerRankChangedMessage {
+  return {
+    playerName: playerName,
+    before: before,
+    after: after,
   };
 }
 
