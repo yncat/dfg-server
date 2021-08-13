@@ -7,8 +7,6 @@ import {
   object,
   oneOf,
   string,
-  Result,
-  union,
 } from "@mojotech/json-type-validation";
 
 /*
