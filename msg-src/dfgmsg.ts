@@ -371,6 +371,25 @@ export function encodePassMessage(playerName: string): PassMessage {
   };
 }
 
+/*
+PlayerKickedMessage: プレイヤーキックメッセージ
+プレイヤーが接続落ちなどでキックされた時のメッセージ。
+(parameter) playerName: キックされたプレイヤーの名前。
+*/
+export interface PlayerKickedMessage {
+  playerName: string;
+}
+
+export const PlayerKickedMessageDecoder: Decoder<PlayerKickedMessage> = object({
+  playerName: string(),
+});
+
+export function encodePlayerKickedMessage(playerName: string): PlayerKickedMessage {
+  return {
+    playerName: playerName,
+  };
+}
+
 export class PayloadDecodeError extends Error {}
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function decodePayload<T>(

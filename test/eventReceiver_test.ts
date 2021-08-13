@@ -161,3 +161,22 @@ describe("onGameEnd", () => {
   });
 });
 
+describe("onPlayerKicked", () => {
+  it("sends PlayerKickedMessage to everyone", () => {
+    const pi = "ccaatt";
+    const pn = "cat";
+    const msg = dfgmsg.encodePlayerKickedMessage(pn);
+    const player = <Player>{
+      name: pn,
+    };
+    const er = createEventReceiver();
+    const roomProxyMock = sinon.mock(er.roomProxy);
+    roomProxyMock
+      .expects("broadcast")
+      .calledWithExactly("PlayerKickedMessage", msg);
+    const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
+    er.onPlayerKicked(pi);
+    expect(c2p.calledWithExactly(pi)).to.be.true;
+    roomProxyMock.verify();
+  });
+});

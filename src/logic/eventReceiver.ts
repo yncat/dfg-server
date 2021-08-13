@@ -84,7 +84,10 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onPlayerKicked(identifier: string): void {
-    console.log("onPlayerKicked");
+    this.roomProxy.broadcast(
+      "PlayerKickedMessage",
+      dfgmsg.encodePlayerKickedMessage(this.playerMap.clientIDToPlayer(identifier).name)
+    );
   }
 
   public onPlayerRankChanged(
