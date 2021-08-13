@@ -26,7 +26,6 @@ Request がサーバーからクライアントに送られたり、 Message が
 - GameEndMessage: ゲームが終了したときに全員に送信する。順位は、別のメッセージで通知される。
 /*
 
-
 /*
 ChatRequest: チャット送信要求
 クライアントからサーバーへチャットを送る。サーバーは、全員に ChatMessage で返す。
@@ -384,7 +383,9 @@ export const PlayerKickedMessageDecoder: Decoder<PlayerKickedMessage> = object({
   playerName: string(),
 });
 
-export function encodePlayerKickedMessage(playerName: string): PlayerKickedMessage {
+export function encodePlayerKickedMessage(
+  playerName: string
+): PlayerKickedMessage {
   return {
     playerName: playerName,
   };
@@ -413,3 +414,36 @@ export function decodePayload<T>(
   }
   return ret.result;
 }
+
+/*
+enum definitions
+json-type-validation のなかでは、 number として扱う。
+encode / decode 時にタイプは付けられるし、 out of range の大作に必要以上にシビアになることもない( internal なので) と考えている。
+*/
+
+/*
+カードのマーク(スーと)
+*/
+export const CardMark = {
+  CLUBS: 0,
+  DIAMONDS: 1,
+  HEARTS: 2,
+  SPADES: 3,
+  JOKER: 4,
+  WILD: 5,
+} as const;
+export type CardMark = typeof CardMark[keyof typeof CardMark];
+
+/*
+プレイヤーのランク
+*/
+
+export const RankType = {
+  UNDETERMINED: 0,
+  DAIHINMIN: 1,
+  HINMIN: 2,
+  HEIMIN: 3,
+  FUGO: 4,
+  DAIFUGO: 5,
+} as const;
+export type RankType = typeof RankType[keyof typeof RankType];
