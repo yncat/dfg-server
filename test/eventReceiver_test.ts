@@ -150,3 +150,14 @@ describe("onPass", () => {
     roomProxyMock.verify();
   });
 });
+
+describe("onGameEnd", () => {
+  it("sends GameEndMessage to everyone", () => {
+    const er = createEventReceiver();
+    const roomProxyMock = sinon.mock(er.roomProxy);
+    roomProxyMock.expects("broadcast").calledWithExactly("GameEndMessage", "");
+    er.onGameEnd();
+    roomProxyMock.verify();
+  });
+});
+
