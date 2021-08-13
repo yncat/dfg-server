@@ -1,11 +1,46 @@
 import {
   array,
   boolean,
+  constant,
   Decoder,
   number,
   object,
+  oneOf,
   string,
+  Result,
+  union,
 } from "@mojotech/json-type-validation";
+
+/*
+dfg enum definitions 
+*/
+
+/*
+カードのマーク(スーと)
+*/
+export const CardMark = {
+  CLUBS: 0,
+  DIAMONDS: 1,
+  HEARTS: 2,
+  SPADES: 3,
+  JOKER: 4,
+  WILD: 5,
+} as const;
+export type CardMark = typeof CardMark[keyof typeof CardMark];
+
+/*
+プレイヤーのランク
+*/
+
+export const RankType = {
+  UNDETERMINED: 0,
+  DAIHINMIN: 1,
+  HINMIN: 2,
+  HEIMIN: 3,
+  FUGO: 4,
+  DAIFUGO: 5,
+} as const;
+export type RankType = typeof RankType[keyof typeof RankType];
 
 /*
 dfg message definitions
@@ -101,7 +136,7 @@ SelectableCardMessage: カード情報+カード選択情報
 (parameter) isCheckable:チェックボックスを操作可能にするべきかどうか
 */
 export interface SelectableCardMessage {
-  markEnum: number;
+  mark: CardMark;
   cardNumber: number;
   isChecked: boolean;
   isCheckable: boolean;
@@ -109,20 +144,27 @@ export interface SelectableCardMessage {
 
 export const SelectableCardMessageDecoder: Decoder<SelectableCardMessage> =
   object({
-    markEnum: number(),
+    mark: oneOf(
+      constant(CardMark.CLUBS),
+      constant(CardMark.DIAMONDS),
+      constant(CardMark.HEARTS),
+      constant(CardMark.SPADES),
+      constant(CardMark.JOKER),
+      constant(CardMark.WILD)
+    ),
     cardNumber: number(),
     isChecked: boolean(),
     isCheckable: boolean(),
   });
 
 export function encodeSelectableCardMessage(
-  markEnum: number,
+  mark: CardMark,
   cardNumber: number,
   isChecked: boolean,
   isCheckable: boolean
 ): SelectableCardMessage {
   return {
-    markEnum: markEnum,
+    mark: mark,
     cardNumber: cardNumber,
     isChecked: isChecked,
     isCheckable: isCheckable,
@@ -191,25 +233,32 @@ export function encodeCardSelectRequest(index: number): CardSelectRequest {
 /*
 CardMessage: 選択に関する情報がない単純なカードメッセージ
 スーとと数字の情報のみ。出すカードのペアを列挙するときに利用する。
-(parameter) markEnum: カードのスーとを表す定数
+(parameter) mark: カードのスーとを表す定数
 (parameter) cardNumber: カード番号
 */
 export interface CardMessage {
-  markEnum: number;
+  mark: CardMark;
   cardNumber: number;
 }
 
 export const CardMessageDecoder: Decoder<CardMessage> = object({
-  markEnum: number(),
+  mark: oneOf(
+    constant(CardMark.CLUBS),
+    constant(CardMark.DIAMONDS),
+    constant(CardMark.HEARTS),
+    constant(CardMark.SPADES),
+    constant(CardMark.JOKER),
+    constant(CardMark.WILD)
+  ),
   cardNumber: number(),
 });
 
 export function encodeCardMessage(
-  markEnum: number,
+  mark: CardMark,
   cardNumber: number
 ): CardMessage {
   return {
-    markEnum: markEnum,
+    mark: mark,
     cardNumber: cardNumber,
   };
 }
@@ -420,30 +469,3 @@ enum definitions
 json-type-validation のなかでは、 number として扱う。
 encode / decode 時にタイプは付けられるし、 out of range の大作に必要以上にシビアになることもない( internal なので) と考えている。
 */
-
-/*
-カードのマーク(スーと)
-*/
-export const CardMark = {
-  CLUBS: 0,
-  DIAMONDS: 1,
-  HEARTS: 2,
-  SPADES: 3,
-  JOKER: 4,
-  WILD: 5,
-} as const;
-export type CardMark = typeof CardMark[keyof typeof CardMark];
-
-/*
-プレイヤーのランク
-*/
-
-export const RankType = {
-  UNDETERMINED: 0,
-  DAIHINMIN: 1,
-  HINMIN: 2,
-  HEIMIN: 3,
-  FUGO: 4,
-  DAIFUGO: 5,
-} as const;
-export type RankType = typeof RankType[keyof typeof RankType];

@@ -13,11 +13,11 @@ describe("CardEnumerator", () => {
     const msg = ce.enumerateFromHand(h);
     expect(msg.cardList).not.to.be.null;
     const cl = msg.cardList;
-    expect(cl[0].markEnum).to.eql(dfg.CardMark.SPADES);
+    expect(cl[0].mark).to.eql(dfg.CardMark.SPADES);
     expect(cl[0].cardNumber).to.eql(4);
     expect(cl[0].isChecked).to.be.false;
     expect(cl[0].isCheckable).to.be.false;
-    expect(cl[1].markEnum).to.eql(dfg.CardMark.SPADES);
+    expect(cl[1].mark).to.eql(dfg.CardMark.SPADES);
     expect(cl[1].cardNumber).to.eql(5);
     expect(cl[1].isChecked).to.be.false;
     expect(cl[1].isCheckable).to.be.false;
@@ -51,7 +51,7 @@ describe("CardEnumerator", () => {
     const msg = ce.enumerateFromActivePlayerControl(apc);
     expect(msg.cardList).not.to.be.null;
     msg.cardList.forEach((v, i) => {
-      expect(v.markEnum).to.eql(cards[i].mark);
+      expect(v.mark).to.eql(cards[i].mark);
       expect(v.cardNumber).to.eql(cards[i].cardNumber);
       expect(v.isCheckable).to.eql(resultSelectableStates[i]);
       expect(v.isChecked).to.eql(selectStates[i]);
