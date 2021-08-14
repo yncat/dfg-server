@@ -311,7 +311,7 @@ describe("e2e test", () => {
       expect(cl2.called).to.be.false;
     });
 
-    it("can select a card", async () => {
+    it("can select and deselect a card", async () => {
       const room = await colyseus.createRoom("game_room", {});
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
@@ -349,6 +349,13 @@ describe("e2e test", () => {
       const card2 = discard.cardList[0];
       expect(card.mark).to.eql(card2.mark);
       expect(card.cardNumber).to.eql(card2.cardNumber);
+      mrm.resetHistory();
+      activePlayer.send("CardSelectRequest", msg);
+      await forMilliseconds(100);
+      expect(cl.calledOnce).to.be.true;
+      expect(cl.firstCall.lastArg.cardList[0].isChecked).to.be.false;
+      expect(dp.calledOnce).to.be.true;
+      expect(dp.firstCall.lastArg.discardPairList.length).to.eql(0);
     });
   });
 });
