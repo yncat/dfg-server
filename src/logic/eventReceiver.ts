@@ -115,6 +115,12 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onCardsProvided(identifier: string, providedCount: number): void {
-    console.log("onCardProvided");
+    this.roomProxy.broadcast(
+      "CardsProvidedMessage",
+      dfgmsg.encodeCardsProvidedMessage(
+        this.playerMap.clientIDToPlayer(identifier).name,
+        providedCount
+      )
+    );
   }
 }

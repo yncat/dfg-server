@@ -499,6 +499,33 @@ export function encodeInitialInfoMessage(
   };
 }
 
+/*
+CardsProvidedMessage: カード配布メッセージ
+特定のプレイヤーにカードが配られたときの通知メッセージ。
+(parameter) playerName: カードが配られたプレイヤーの名前。
+(parameter) cardCount: 配られたカードの枚数。
+*/
+export interface CardsProvidedMessage {
+  playerName:string;
+  cardCount:number;
+}
+
+export const CardsProvidedMessageDecoder: Decoder<CardsProvidedMessage> = object({
+  playerName:string(),
+  cardCount:number(),
+});
+
+export function encodeCardsProvidedMessage(
+  playerName:string,
+  cardCount:number
+): CardsProvidedMessage {
+  return {
+    playerName:playerName,
+    cardCount:cardCount,
+  };
+}
+
+
 export class PayloadDecodeError extends Error {}
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function decodePayload<T>(
