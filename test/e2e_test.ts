@@ -155,5 +155,39 @@ describe("e2e test", () => {
       expect(cfn1.firstCall.lastArg).to.eql(want);
       expect(cfn2.firstCall.lastArg).to.eql(want);
     });
+
+    it("game master can start the game", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const fk = sinon.fake((message: any) => {});
+      client1.onMessage("PlayerJoinedMessage", fk);
+      client1.onMessage("GameMasterMessage", fk);
+      const ii1 = sinon.fake((message: any) => {});
+      const cp1 = sinon.fake((message: any) => {});
+      client1.onMessage("InitialInfoMessage", ii1);
+      client1.onMessage("CardsProvidedMessage", cp1);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      client2.onMessage("PlayerJoinedMessage", fk);
+      const ii2 = sinon.fake((message: any) => {});
+      const cp2 = sinon.fake((message: any) => {});
+      client2.onMessage("InitialInfoMessage", ii2);
+      client2.onMessage("CardsProvidedMessage", cp2);
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      expect(ii1.called).to.be.true;
+      expect(ii2.called).to.be.true;
+      expect(ii1.firstCall.firstArg.playerCount).to.eql(2);
+      expect(ii1.firstCall.firstArg.deckCount).to.eql(1);
+      expect(ii2.firstCall.firstArg.playerCount).to.eql(2);
+      expect(ii2.firstCall.firstArg.deckCount).to.eql(1);
+      expect(cp1.callCount).to.eql(2);
+      expect(cp2.callCount).to.eql(2);
+      expect(cp1.firstCall.firstArg.cardCount).to.eql(27);
+      expect(cp1.secondCall.firstArg.cardCount).to.eql(27);
+      expect(cp2.firstCall.firstArg.cardCount).to.eql(27);
+      expect(cp2.secondCall.firstArg.cardCount).to.eql(27);
+    });
   });
 });

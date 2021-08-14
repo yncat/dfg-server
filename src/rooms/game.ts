@@ -25,6 +25,8 @@ export class GameRoom extends Room<GameState> {
     const rp = new RoomProxy<GameState>(this);
     this.dfgHandler = new DFGHandler(rp, this.playerMap);
     this.setState(new GameState());
+
+    // message handlers
     this.onMessage("chatRequest", (client, payload) => {
       const req = dfgmsg.decodePayload<dfgmsg.ChatRequest>(
         payload,
@@ -41,6 +43,19 @@ export class GameRoom extends Room<GameState> {
           this.playerMap.clientIDToPlayer(client.id).name
         )
       );
+    });
+
+    this.onMessage("GameStartRequest", (client, payload) => {
+      if (client !== this.masterClient) {
+        return;
+      }
+      if (this.dfgHandler.isGameActive()) {
+        return;
+      }
+      const ids = this.clients.map((v) => {
+        return v.id;
+      });
+      this.dfgHandler.startGame(ids);
     });
   }
 

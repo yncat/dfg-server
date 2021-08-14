@@ -58,7 +58,7 @@ export const RankTypeDecoder = oneOf(
 );
 
 /*
-dfg message definitions
+dfg request / message definitions
 
 # Naming conventions
 **Request は、クライアントからサーバーに送信するもの。
@@ -68,6 +68,7 @@ Request がサーバーからクライアントに送られたり、 Message が
 # non-parameter messages
 以下のメッセージは、パラメータを持たないので、コードとしては定義していない。
 - GameMasterMessage: ゲームマスターの権限をクライアントに与えるとき、そのクライアントに対して送信する。クライアントは、このメッセージを受信したら、ゲーム開始ボタンを表示する。
+- GameStartRequest: ゲームマスターのクライアントが、ゲーム開始を要求するときに送信する。
 - YourTurnMessage: ゲーム中、ターンが回ってきたクライアントに対して送信する。クライアントは、このメッセージを受信したら、音を出したり、「自分のターンです」というようなガイダンスを出したりする。
 - NagareMessage: 場のカードが流れたときに全員に送信する。
 - YagiriMessage: 8切りが発生したときに全員に送信する。
@@ -506,25 +507,25 @@ CardsProvidedMessage: カード配布メッセージ
 (parameter) cardCount: 配られたカードの枚数。
 */
 export interface CardsProvidedMessage {
-  playerName:string;
-  cardCount:number;
+  playerName: string;
+  cardCount: number;
 }
 
-export const CardsProvidedMessageDecoder: Decoder<CardsProvidedMessage> = object({
-  playerName:string(),
-  cardCount:number(),
-});
+export const CardsProvidedMessageDecoder: Decoder<CardsProvidedMessage> =
+  object({
+    playerName: string(),
+    cardCount: number(),
+  });
 
 export function encodeCardsProvidedMessage(
-  playerName:string,
-  cardCount:number
+  playerName: string,
+  cardCount: number
 ): CardsProvidedMessage {
   return {
-    playerName:playerName,
-    cardCount:cardCount,
+    playerName: playerName,
+    cardCount: cardCount,
   };
 }
-
 
 export class PayloadDecodeError extends Error {}
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
