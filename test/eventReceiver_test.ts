@@ -180,3 +180,27 @@ describe("onPlayerKicked", () => {
     roomProxyMock.verify();
   });
 });
+
+describe("onPlayerRankChanged", () => {
+  it("sends PlayerRankChangedMessage to everyone", () => {
+    const pi = "ccaatt";
+    const pn = "cat";
+    const msg = dfgmsg.encodePlayerRankChangedMessage(
+      pn,
+      dfgmsg.RankType.UNDETERMINED,
+      dfgmsg.RankType.DAIFUGO
+    );
+    const player = <Player>{
+      name: pn,
+    };
+    const er = createEventReceiver();
+    const roomProxyMock = sinon.mock(er.roomProxy);
+    roomProxyMock
+      .expects("broadcast")
+      .calledWithExactly("PlayerRankChangedMessage", msg);
+    const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
+    er.onPlayerRankChanged(pi, dfg.RankType.UNDETERMINED, dfg.RankType.DAIFUGO);
+    expect(c2p.calledWithExactly(pi)).to.be.true;
+    roomProxyMock.verify();
+  });
+});

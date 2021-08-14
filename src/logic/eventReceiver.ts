@@ -86,7 +86,9 @@ export class EventReceiver implements dfg.EventReceiver {
   public onPlayerKicked(identifier: string): void {
     this.roomProxy.broadcast(
       "PlayerKickedMessage",
-      dfgmsg.encodePlayerKickedMessage(this.playerMap.clientIDToPlayer(identifier).name)
+      dfgmsg.encodePlayerKickedMessage(
+        this.playerMap.clientIDToPlayer(identifier).name
+      )
     );
   }
 
@@ -95,7 +97,14 @@ export class EventReceiver implements dfg.EventReceiver {
     before: dfg.RankType,
     after: dfg.RankType
   ): void {
-    console.log("onPlayerRankChanged");
+    this.roomProxy.broadcast(
+      "PlayerRankChangedMessage",
+      dfgmsg.encodePlayerRankChangedMessage(
+        this.playerMap.clientIDToPlayer(identifier).name,
+        before,
+        after
+      )
+    );
   }
 
   public onInitialInfoProvided(playerCount: number, deckCount: number): void {
