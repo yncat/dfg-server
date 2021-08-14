@@ -223,10 +223,6 @@ describe("e2e test", () => {
       expect(cp1.secondCall.firstArg.cardCount).to.eql(27);
       expect(cp2.firstCall.firstArg.cardCount).to.eql(27);
       expect(cp2.secondCall.firstArg.cardCount).to.eql(27);
-      const cl1 = mrm.getFake(client1, "CardListMessage");
-      const cl2 = mrm.getFake(client2, "CardListMessage");
-      expect(cl1.calledOnce).to.be.true;
-      expect(cl2.calledOnce).to.be.true;
       const t1 = mrm.getFake(client1, "TurnMessage");
       const t2 = mrm.getFake(client2, "TurnMessage");
       expect(t1.calledOnce).to.be.true;
@@ -240,6 +236,10 @@ describe("e2e test", () => {
       expect(mrm.getFake(activePlayer, "YourTurnMessage").calledOnce).to.be
         .true;
       expect(mrm.getFake(inactivePlayer, "YourTurnMessage").called).to.be.false;
+      expect(mrm.getFake(activePlayer, "CardListMessage").calledTwice).to.be
+        .true;
+      expect(mrm.getFake(inactivePlayer, "CardListMessage").calledOnce).to.be
+        .true;
     });
 
     /*
