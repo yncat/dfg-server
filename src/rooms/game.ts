@@ -101,7 +101,10 @@ export class GameRoom extends Room<GameState> {
         return;
       }
 
-      this.dfgHandler.discardByIndex(req.index);
+      // 有効なDiscardPairがないときに呼ぶと失敗する。それを検出したら success = false でかえってくるので逃げる。
+      if (!this.dfgHandler.discardByIndex(req.index)) {
+        return;
+      }
       this.dfgHandler.finishAction();
     });
   }

@@ -357,6 +357,61 @@ describe("e2e test", () => {
       expect(dp.firstCall.lastArg.discardPairList.length).to.eql(0);
     });
 
+    it("does nothing when game is inactive", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+        ]
+      );
+      const msg = dfgmsg.encodeCardSelectRequest(0);
+      client1.send("CardSelectRequest", msg);
+      await forMilliseconds(100);
+      const cl1 = mrm.getFake(client1, "CardListMessage");
+      expect(cl1.called).to.be.false;
+    });
+
+    it("does nothing when the player is not currently active", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      const inactivePlayer =
+        getActivePlayer(room, client1, client2) === client1 ? client2 : client1;
+      const msg = dfgmsg.encodeCardSelectRequest(0);
+      inactivePlayer.send("CardSelectRequest", msg);
+      await forMilliseconds(100);
+      const cl = mrm.getFake(inactivePlayer, "CardListMessage");
+      expect(cl.called).to.be.false;
+    });
+
     it("can play a pair of cards", async () => {
       const room = await colyseus.createRoom("game_room", {});
       const mrm = new MessageReceiverMap();
@@ -418,6 +473,96 @@ describe("e2e test", () => {
       // 二人に配って２７枚、１枚出したので、残り２６枚
       expect(dc1.firstCall.lastArg.remainingHandCount).to.eql(26);
       expect(dc2.firstCall.lastArg.remainingHandCount).to.eql(26);
+    });
+
+    it("does nothing when the game is not active", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+          "DiscardMessage",
+        ]
+      );
+      client1.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+      await forMilliseconds(100);
+      const dc1 = mrm.getFake(client1, "DiscardMessage");
+      const dc2 = mrm.getFake(client2, "DiscardMessage");
+      expect(dc1.called).to.be.false;
+      expect(dc2.called).to.be.false;
+    });
+
+    it("does nothing when the player is not active at the moment", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+          "DiscardMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      const inactivePlayer =
+        getActivePlayer(room, client1, client2) === client1 ? client2 : client1;
+      inactivePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+      await forMilliseconds(100);
+      const dc1 = mrm.getFake(client1, "DiscardMessage");
+      const dc2 = mrm.getFake(client2, "DiscardMessage");
+      expect(dc1.called).to.be.false;
+      expect(dc2.called).to.be.false;
+    });
+
+    it("does nothing when no cards are selected or there's no available discard pairs", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+          "DiscardMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      const activePlayer = getActivePlayer(room, client1, client2);
+      activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+      await forMilliseconds(100);
+      const dc1 = mrm.getFake(client1, "DiscardMessage");
+      const dc2 = mrm.getFake(client2, "DiscardMessage");
+      expect(dc1.called).to.be.false;
+      expect(dc2.called).to.be.false;
     });
   });
 });

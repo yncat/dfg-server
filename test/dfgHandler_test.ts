@@ -347,7 +347,7 @@ describe("DFGHandler", () => {
   });
 
   describe("discardByIndex", () => {
-    it("can set discard info to activePlayerControl", () => {
+    it("can set discard info to activePlayerControl and returns true", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
@@ -364,13 +364,14 @@ describe("DFGHandler", () => {
         discard: dc,
       });
       h.activePlayerControl = apc;
-      h.discardByIndex(0);
+      const ret = h.discardByIndex(0);
+      expect(ret).to.be.true;
       expect(edc.called).to.be.true;
       expect(dc.called).to.be.true;
       expect(dc.firstCall.firstArg).to.eql(dp1);
     });
 
-    it("does nothing when index is out of range", () => {
+    it("does nothing and returns false when index is out of range", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
@@ -387,7 +388,8 @@ describe("DFGHandler", () => {
         discard: dc,
       });
       h.activePlayerControl = apc;
-      h.discardByIndex(1);
+      const ret = h.discardByIndex(1);
+      expect(ret).to.be.false;
       expect(edc.called).to.be.true;
       expect(dc.called).to.be.false;
     });

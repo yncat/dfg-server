@@ -120,7 +120,8 @@ export class DFGHandler {
     );
   }
 
-  public discardByIndex(index: number): void {
+  public discardByIndex(index: number): boolean {
+    // 有効なDiscardPairがないときに呼ぶと、 false を返すようにする。タイミング問題で変なメッセージが送られても、落ちる前に逃げるようにするため。
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
@@ -129,10 +130,11 @@ export class DFGHandler {
     }
     const dps = this.activePlayerControl.enumerateDiscardPairs();
     if (index >= dps.length) {
-      return;
+      return false;
     }
 
     this.activePlayerControl.discard(dps[index]);
+    return true;
   }
 
   public pass(): void {
