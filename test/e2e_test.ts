@@ -9,6 +9,7 @@ import { ColyseusTestServer, boot } from "@colyseus/testing";
 import appConfig from "../src/arena.config";
 import * as dfgmsg from "../msg-src/dfgmsg";
 import { ServerError } from "colyseus";
+import { GameRoom } from "../src/rooms/game";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function dummyMessageHandler(message: any) {}
@@ -23,7 +24,7 @@ function forMilliseconds(milliseconds: number): Promise<void> {
 }
 
 interface OnMessageRegisterable {
-  id: string;
+  sessionId: string;
   onMessage: (message: string | number, clbk: (payload: any) => void) => void;
 }
 
@@ -40,7 +41,7 @@ class MessageReceiverMap {
     clientList.forEach((v) => {
       messageList.forEach((w) => {
         const f = createMessageReceiver();
-        this.mp.set(v.id + "_" + w, f);
+        this.mp.set(v.sessionId + "_" + w, f);
         v.onMessage(w, f);
       });
     });
@@ -50,7 +51,7 @@ class MessageReceiverMap {
     client: OnMessageRegisterable,
     message: string
   ): sinon.SinonSpy<any, any[]> {
-    const f = this.mp.get(client.id + "_" + message);
+    const f = this.mp.get(client.sessionId + "_" + message);
     if (!f) {
       throw new Error("failure on MessageReceiverMap resolution");
     }
@@ -230,6 +231,15 @@ describe("e2e test", () => {
       const t2 = mrm.getFake(client2, "TurnMessage");
       expect(t1.calledOnce).to.be.true;
       expect(t2.calledOnce).to.be.true;
+      const activePlayer =
+        (room as GameRoom).dfgHandler.activePlayerControl.playerIdentifier ===
+        client1.sessionId
+          ? client1
+          : client2;
+      const inactivePlayer = activePlayer === client1 ? client2 : client1;
+      expect(mrm.getFake(activePlayer, "YourTurnMessage").calledOnce).to.be
+        .true;
+      expect(mrm.getFake(inactivePlayer, "YourTurnMessage").called).to.be.false;
     });
 
     /*

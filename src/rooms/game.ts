@@ -15,10 +15,10 @@ import { DFGHandler } from "../logic/dfgHandler";
 import { RoomProxy } from "../logic/roomProxy";
 
 export class GameRoom extends Room<GameState> {
-  private chatHandler: ChatHandler;
-  private playerMap: PlayerMap;
-  private masterClient: Client;
-  private dfgHandler: DFGHandler;
+  chatHandler: ChatHandler;
+  playerMap: PlayerMap;
+  masterClient: Client;
+  dfgHandler: DFGHandler;
   onCreate(options: any) {
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
