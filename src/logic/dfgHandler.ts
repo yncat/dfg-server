@@ -30,6 +30,10 @@ export class DFGHandler {
     this.game = this.createGame(clientIDList, this.eventReceiver, rc);
   }
 
+  public isGameActive(): boolean {
+    return this.game ? true : false;
+  }
+
   public updateCardsForEveryone() {
     if (!this.game) {
       this.gameInactiveError();

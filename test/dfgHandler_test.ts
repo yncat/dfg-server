@@ -56,6 +56,20 @@ describe("DFGHandler", () => {
     expect(cg.called).to.be.true;
   });
 
+  describe("isGameActive", () => {
+    it("returns true when the game is active", () => {
+      const h = createDFGHandler();
+      const g = <dfg.Game>(<unknown>{});
+      h.game = g;
+      expect(h.isGameActive()).to.be.true;
+    });
+
+    it("returns false when the game is not active", () => {
+      const h = createDFGHandler();
+      expect(h.isGameActive()).to.be.false;
+    });
+  });
+
   describe("updateHandForEveryone", () => {
     it("can update hand info for everyone", () => {
       const p1 = dfg.createPlayer("a");
