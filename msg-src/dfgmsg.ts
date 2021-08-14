@@ -8,7 +8,6 @@ import {
   oneOf,
   string,
 } from "@mojotech/json-type-validation";
-import { Rank } from "dfg-simulator/dist/rank";
 
 /*
 dfg enum definitions 
@@ -527,10 +526,10 @@ export function encodeCardsProvidedMessage(
   };
 }
 
+
 export class PayloadDecodeError extends Error {}
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function decodePayload<T>(
-  encoded: any,
+  encoded: any, // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
   decoder: Decoder<T>
 ): T | PayloadDecodeError {
   const ret = decoder.run(encoded);

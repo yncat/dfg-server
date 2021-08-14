@@ -22,7 +22,7 @@ export class DFGHandler {
     this.game = null;
   }
 
-  public startGame(clientIDList: string[]) {
+  public startGame(clientIDList: string[]):void {
     const rc = dfg.createDefaultRuleConfig();
     rc.jBack = true;
     rc.kakumei = true;
@@ -34,7 +34,7 @@ export class DFGHandler {
     return this.game ? true : false;
   }
 
-  public updateCardsForEveryone() {
+  public updateCardsForEveryone():void {
     if (!this.game) {
       this.gameInactiveError();
     }
@@ -46,7 +46,7 @@ export class DFGHandler {
     });
   }
 
-  public prepareNextPlayer() {
+  public prepareNextPlayer():void {
     if (!this.game) {
       this.gameInactiveError();
     }
@@ -58,7 +58,7 @@ export class DFGHandler {
     this.roomProxy.broadcast("TurnMessage", msg);
   }
 
-  public notifyToActivePlayer() {
+  public notifyToActivePlayer():void {
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
@@ -69,7 +69,7 @@ export class DFGHandler {
     );
   }
 
-  public updateHandForActivePlayer() {
+  public updateHandForActivePlayer():void {
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
@@ -82,7 +82,7 @@ export class DFGHandler {
     );
   }
 
-  public selectCardByIndex(index: number) {
+  public selectCardByIndex(index: number):void {
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
@@ -101,7 +101,7 @@ export class DFGHandler {
     this.activePlayerControl.selectCard(index);
   }
 
-  public enumerateDiscardPairs() {
+  public enumerateDiscardPairs():void {
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
@@ -120,7 +120,7 @@ export class DFGHandler {
     );
   }
 
-  public discardByIndex(index: number) {
+  public discardByIndex(index: number):void {
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
@@ -135,7 +135,7 @@ export class DFGHandler {
     this.activePlayerControl.discard(dps[index]);
   }
 
-  public pass() {
+  public pass():void {
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
@@ -143,7 +143,7 @@ export class DFGHandler {
     this.activePlayerControl.pass();
   }
 
-  public finishAction() {
+  public finishAction():void {
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
@@ -151,7 +151,7 @@ export class DFGHandler {
     this.game.finishActivePlayerControl(this.activePlayerControl);
   }
 
-  public kickPlayerByIdentifier(identifier: string) {
+  public kickPlayerByIdentifier(identifier: string):void {
     if (!this.game) {
       this.gameInactiveError();
     }

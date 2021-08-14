@@ -31,9 +31,6 @@ export class CardEnumerator {
   }
 
   private isSelectable(selectability: dfg.SelectabilityCheckResult) {
-    const ret =
-      selectability === dfg.SelectabilityCheckResult.SELECTABLE ||
-      selectability === dfg.SelectabilityCheckResult.ALREADY_SELECTED;
     return (
       selectability === dfg.SelectabilityCheckResult.SELECTABLE ||
       selectability === dfg.SelectabilityCheckResult.ALREADY_SELECTED
