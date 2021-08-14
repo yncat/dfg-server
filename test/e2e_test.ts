@@ -13,6 +13,11 @@ import { ServerError } from "colyseus";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function dummyMessageHandler(message: any) {}
 
+function createMessageReceiver(){
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  return sinon.fake((message: any) => {});
+}
+
 function forMilliseconds(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
@@ -43,12 +48,10 @@ describe("e2e test", () => {
     it("handle chat message", async () => {
       const room = await colyseus.createRoom("global_room", {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const cfn1 = sinon.fake((message: any) => {});
+      const cfn1 = createMessageReceiver();
       client1.onMessage("ChatMessage", cfn1);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const cfn2 = sinon.fake((message: any) => {});
+      const cfn2 = createMessageReceiver();
       client2.onMessage("ChatMessage", cfn2);
       client1.send("chatRequest", dfgmsg.encodeChatRequest("hello"));
       await Promise.all([
@@ -65,8 +68,7 @@ describe("e2e test", () => {
   describe("gameRoom", () => {
     it("connecting into the game room", async () => {
       const room = await colyseus.createRoom("game_room", {});
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const clbk = sinon.fake((message: any) => {});
+      const clbk = createMessageReceiver();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("GameMasterMessage", clbk);
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
@@ -75,8 +77,7 @@ describe("e2e test", () => {
 
     it("send GameMasterMessage to the first connected player", async () => {
       const room = await colyseus.createRoom("game_room", {});
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const clbk = sinon.fake((message: any) => {});
+      const clbk = createMessageReceiver();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("GameMasterMessage", clbk);
       await client1.waitForMessage("GameMasterMessage");
@@ -86,13 +87,11 @@ describe("e2e test", () => {
     it("broadcast PlayerJoinedMessage when second player joins", async () => {
       const room = await colyseus.createRoom("game_room", {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const cfn1 = sinon.fake((message: any) => {});
+      const cfn1 = createMessageReceiver();
       client1.onMessage("PlayerJoinedMessage", cfn1);
       client1.onMessage("GameMasterMessage", dummyMessageHandler);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const cfn2 = sinon.fake((message: any) => {});
+      const cfn2 = createMessageReceiver();
       client2.onMessage("PlayerJoinedMessage", cfn2);
       await Promise.all([
         client1.waitForMessage("PlayerJoinedMessage"),
@@ -109,15 +108,13 @@ describe("e2e test", () => {
     it("close room when master client disconnects", async () => {
       const room = await colyseus.createRoom("game_room", {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       client1.onMessage("GameMasterMessage", dummyMessageHandler);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       client2.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const disconnected = sinon.fake((code: number) => {});
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const masterDisconnectedMessage = sinon.fake((message: any) => {});
+      const masterDisconnectedMessage = createMessageReceiver();
       client2.onLeave(disconnected);
       client2.onMessage("MasterDisconnectedMessage", masterDisconnectedMessage);
       await Promise.all([
@@ -137,13 +134,11 @@ describe("e2e test", () => {
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("GameMasterMessage", dummyMessageHandler);
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const cfn1 = sinon.fake((message: any) => {});
+      const cfn1 = createMessageReceiver();
       client1.onMessage("ChatMessage", cfn1);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       client2.onMessage("PlayerJoinedMessage", dummyMessageHandler);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const cfn2 = sinon.fake((message: any) => {});
+      const cfn2 = createMessageReceiver();
       client2.onMessage("ChatMessage", cfn2);
       client1.send("chatRequest", dfgmsg.encodeChatRequest("hello"));
       await Promise.all([
@@ -159,22 +154,20 @@ describe("e2e test", () => {
     it("game master can start the game", async () => {
       const room = await colyseus.createRoom("game_room", {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const fk = sinon.fake((message: any) => {});
+      const fk = createMessageReceiver();
       client1.onMessage("PlayerJoinedMessage", fk);
       client1.onMessage("GameMasterMessage", fk);
-      const ii1 = sinon.fake((message: any) => {});
-      const cp1 = sinon.fake((message: any) => {});
-      const cl1 = sinon.fake((message: any) => {});
+      const ii1 = createMessageReceiver();
+      const cp1 = createMessageReceiver();
+      const cl1 = createMessageReceiver();
       client1.onMessage("InitialInfoMessage", ii1);
       client1.onMessage("CardsProvidedMessage", cp1);
       client1.onMessage("CardListMessage", cl1);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       client2.onMessage("PlayerJoinedMessage", fk);
-      const ii2 = sinon.fake((message: any) => {});
-      const cp2 = sinon.fake((message: any) => {});
-      const cl2 = sinon.fake((message: any) => {});
+      const ii2 = createMessageReceiver();
+      const cp2 =createMessageReceiver();
+      const cl2 = createMessageReceiver();
       client2.onMessage("InitialInfoMessage", ii2);
       client2.onMessage("CardsProvidedMessage", cp2);
       client2.onMessage("CardListMessage", cl2);
