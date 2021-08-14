@@ -56,6 +56,7 @@ export class GameRoom extends Room<GameState> {
         return v.id;
       });
       this.dfgHandler.startGame(ids);
+      this.dfgHandler.updateCardsForEveryone();
     });
   }
 
