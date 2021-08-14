@@ -146,7 +146,7 @@ export function encodePlayerJoinedMessage(
 /*
 SelectableCardMessage: カード情報+カード選択情報
 カードのスーとと番号 + 選択状態、選択可否の情報。出すカードを選ぶチェックボックスを描画するときに使う。メッセージ1つでカード1枚を表す。
-(parameter) cardMark: カードのマークを表す定数
+(parameter) mark: カードのマークを表す定数
 (parameter) cardNumber: カードの番号
 (parameter) isChecked: 選択状態かどうか
 (parameter) isCheckable:チェックボックスを操作可能にするべきかどうか

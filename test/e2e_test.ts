@@ -330,6 +330,7 @@ describe("e2e test", () => {
           "CardListMessage",
           "TurnMessage",
           "YourTurnMessage",
+          "DiscardPairListMessage",
         ]
       );
       client1.send("GameStartRequest");
@@ -342,7 +343,16 @@ describe("e2e test", () => {
       const cl = mrm.getFake(activePlayer, "CardListMessage");
       expect(cl.calledOnce).to.be.true;
       expect(cl.firstCall.lastArg.cardList[0].isChecked).to.be.true;
-      expect(cl.firstCall.lastArg.cardList[0].isCheckable).to.be.true;
+      const card = cl.firstCall.lastArg.cardList[0];
+      expect(card.isCheckable).to.be.true;
+      const dp = mrm.getFake(activePlayer, "DiscardPairListMessage");
+      expect(dp.calledOnce).to.be.true;
+      expect(dp.firstCall.lastArg.discardPairList.length).to.eql(1);
+      const discard = dp.firstCall.lastArg.discardPairList[0];
+      expect(discard.cardList.length).to.eql(1);
+      const card2 = discard.cardList[0];
+      expect(card.mark).to.eql(card2.mark);
+      expect(card.cardNumber).to.eql(card2.cardNumber);
     });
   });
 });

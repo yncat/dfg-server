@@ -80,6 +80,7 @@ export class GameRoom extends Room<GameState> {
 
       this.dfgHandler.selectCardByIndex(req.index);
       this.dfgHandler.updateHandForActivePlayer();
+      this.dfgHandler.enumerateDiscardPairs();
     });
   }
 
