@@ -22,6 +22,42 @@ function forMilliseconds(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+interface OnMessageRegisterable {
+  id: string;
+  onMessage: (message: string | number, clbk: (payload: any) => void) => void;
+}
+
+class MessageReceiverMap {
+  mp: Map<string, sinon.SinonSpy<any[], any>>;
+  constructor() {
+    this.mp = new Map();
+  }
+
+  public registerFake(
+    clientList: OnMessageRegisterable[],
+    messageList: string[]
+  ) {
+    clientList.forEach((v) => {
+      messageList.forEach((w) => {
+        const f = createMessageReceiver();
+        this.mp.set(v.id + "_" + w, f);
+        v.onMessage(w, f);
+      });
+    });
+  }
+
+  public getFake(
+    client: OnMessageRegisterable,
+    message: string
+  ): sinon.SinonSpy<any, any[]> {
+    const f = this.mp.get(client.id + "_" + message);
+    if (!f) {
+      throw new Error("failure on MessageReceiverMap resolution");
+    }
+    return f;
+  }
+}
+
 describe("e2e test", () => {
   let colyseus: ColyseusTestServer;
 
@@ -153,44 +189,45 @@ describe("e2e test", () => {
 
     it("game master can start the game", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      const fk = createMessageReceiver();
-      client1.onMessage("PlayerJoinedMessage", fk);
-      client1.onMessage("GameMasterMessage", fk);
-      const ii1 = createMessageReceiver();
-      const cp1 = createMessageReceiver();
-      const cl1 = createMessageReceiver();
-      const t1 = createMessageReceiver();
-      client1.onMessage("InitialInfoMessage", ii1);
-      client1.onMessage("CardsProvidedMessage", cp1);
-      client1.onMessage("CardListMessage", cl1);
-      client1.onMessage("TurnMessage", t1);
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      client2.onMessage("PlayerJoinedMessage", fk);
-      const ii2 = createMessageReceiver();
-      const cp2 = createMessageReceiver();
-      const cl2 = createMessageReceiver();
-      const t2 = createMessageReceiver();
-      client2.onMessage("InitialInfoMessage", ii2);
-      client2.onMessage("CardsProvidedMessage", cp2);
-      client2.onMessage("CardListMessage", cl2);
-      client2.onMessage("TurnMessage", t2);
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+        ]
+      );
       client1.send("GameStartRequest");
       await forMilliseconds(300);
+      const ii1 = mrm.getFake(client1, "InitialInfoMessage");
+      const ii2 = mrm.getFake(client2, "InitialInfoMessage");
       expect(ii1.calledOnce).to.be.true;
       expect(ii2.calledOnce).to.be.true;
       expect(ii1.firstCall.firstArg.playerCount).to.eql(2);
       expect(ii1.firstCall.firstArg.deckCount).to.eql(1);
       expect(ii2.firstCall.firstArg.playerCount).to.eql(2);
       expect(ii2.firstCall.firstArg.deckCount).to.eql(1);
+      const cp1 = mrm.getFake(client1, "CardsProvidedMessage");
+      const cp2 = mrm.getFake(client2, "CardsProvidedMessage");
       expect(cp1.calledTwice).to.be.true;
       expect(cp2.calledTwice).to.be.true;
       expect(cp1.firstCall.firstArg.cardCount).to.eql(27);
       expect(cp1.secondCall.firstArg.cardCount).to.eql(27);
       expect(cp2.firstCall.firstArg.cardCount).to.eql(27);
       expect(cp2.secondCall.firstArg.cardCount).to.eql(27);
+      const cl1 = mrm.getFake(client1, "CardListMessage");
+      const cl2 = mrm.getFake(client2, "CardListMessage");
       expect(cl1.calledOnce).to.be.true;
       expect(cl2.calledOnce).to.be.true;
+      const t1 = mrm.getFake(client1, "TurnMessage");
+      const t2 = mrm.getFake(client2, "TurnMessage");
       expect(t1.calledOnce).to.be.true;
       expect(t2.calledOnce).to.be.true;
     });

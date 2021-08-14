@@ -58,6 +58,7 @@ export class GameRoom extends Room<GameState> {
       this.dfgHandler.startGame(ids);
       this.dfgHandler.updateCardsForEveryone();
       this.dfgHandler.prepareNextPlayer();
+      this.dfgHandler.notifyToActivePlayer();
     });
   }
 
