@@ -13,8 +13,8 @@ import { ServerError } from "colyseus";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function dummyMessageHandler(message: any) {}
 
-function createMessageReceiver(){
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function createMessageReceiver() {
   return sinon.fake((message: any) => {});
 }
 
@@ -166,7 +166,7 @@ describe("e2e test", () => {
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       client2.onMessage("PlayerJoinedMessage", fk);
       const ii2 = createMessageReceiver();
-      const cp2 =createMessageReceiver();
+      const cp2 = createMessageReceiver();
       const cl2 = createMessageReceiver();
       client2.onMessage("InitialInfoMessage", ii2);
       client2.onMessage("CardsProvidedMessage", cp2);
