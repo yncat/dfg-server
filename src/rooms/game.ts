@@ -61,6 +61,26 @@ export class GameRoom extends Room<GameState> {
       this.dfgHandler.notifyToActivePlayer();
       this.dfgHandler.updateHandForActivePlayer();
     });
+
+    this.onMessage("CardSelectRequest", (client, payload) => {
+      if (!this.dfgHandler.isGameActive()) {
+        return;
+      }
+      if (this.dfgHandler.activePlayerControl.playerIdentifier !== client.id) {
+        return;
+      }
+      const req = dfgmsg.decodePayload<dfgmsg.CardSelectRequest>(
+        payload,
+        dfgmsg.CardSelectRequestDecoder
+      );
+      if (!isDecodeSuccess<dfgmsg.CardSelectRequest>(req)) {
+        reportErrorWithDefaultReporter(req);
+        return;
+      }
+
+      this.dfgHandler.selectCardByIndex(req.index);
+      this.dfgHandler.updateHandForActivePlayer();
+    });
   }
 
   onJoin(client: Client, options: any) {

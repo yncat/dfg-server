@@ -23,9 +23,21 @@ function forMilliseconds(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-interface OnMessageRegisterable {
+interface TestClient {
   sessionId: string;
   onMessage: (message: string | number, clbk: (payload: any) => void) => void;
+  send: (message: string, payload: any) => void;
+}
+
+function getActivePlayer(
+  room: unknown,
+  client1: TestClient,
+  client2: TestClient
+): TestClient {
+  return (room as GameRoom).dfgHandler.activePlayerControl.playerIdentifier ===
+    client1.sessionId
+    ? client1
+    : client2;
 }
 
 class MessageReceiverMap {
@@ -34,10 +46,7 @@ class MessageReceiverMap {
     this.mp = new Map();
   }
 
-  public registerFake(
-    clientList: OnMessageRegisterable[],
-    messageList: string[]
-  ) {
+  public registerFake(clientList: TestClient[], messageList: string[]) {
     clientList.forEach((v) => {
       messageList.forEach((w) => {
         const f = createMessageReceiver();
@@ -48,7 +57,7 @@ class MessageReceiverMap {
   }
 
   public getFake(
-    client: OnMessageRegisterable,
+    client: TestClient,
     message: string
   ): sinon.SinonSpy<any, any[]> {
     const f = this.mp.get(client.sessionId + "_" + message);
@@ -56,6 +65,15 @@ class MessageReceiverMap {
       throw new Error("failure on MessageReceiverMap resolution");
     }
     return f;
+  }
+
+  public resetHistory() {
+    const itr = this.mp.values();
+    let f = itr.next();
+    while (!f.done) {
+      f.value.resetHistory();
+      f = itr.next();
+    }
   }
 }
 
@@ -227,11 +245,7 @@ describe("e2e test", () => {
       const t2 = mrm.getFake(client2, "TurnMessage");
       expect(t1.calledOnce).to.be.true;
       expect(t2.calledOnce).to.be.true;
-      const activePlayer =
-        (room as GameRoom).dfgHandler.activePlayerControl.playerIdentifier ===
-        client1.sessionId
-          ? client1
-          : client2;
+      const activePlayer = getActivePlayer(room, client1, client2);
       const inactivePlayer = activePlayer === client1 ? client2 : client1;
       expect(mrm.getFake(activePlayer, "YourTurnMessage").calledOnce).to.be
         .true;
@@ -299,6 +313,36 @@ describe("e2e test", () => {
       expect(cp2.called).to.be.false;
       expect(cl1.called).to.be.false;
       expect(cl2.called).to.be.false;
+    });
+
+    it("can select a card", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      const activePlayer = getActivePlayer(room, client1, client2);
+      const msg = dfgmsg.encodeCardSelectRequest(0);
+      activePlayer.send("CardSelectRequest", msg);
+      await forMilliseconds(100);
+      const cl = mrm.getFake(activePlayer, "CardListMessage");
+      expect(cl.calledOnce).to.be.true;
+      expect(cl.firstCall.lastArg.cardList[0].isChecked).to.be.true;
+      expect(cl.firstCall.lastArg.cardList[0].isCheckable).to.be.true;
     });
   });
 });

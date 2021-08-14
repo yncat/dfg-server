@@ -94,6 +94,7 @@ export class DFGHandler {
       return;
     }
 
+
     if (this.activePlayerControl.isCardSelected(index)) {
       this.activePlayerControl.deselectCard(index);
       return;
