@@ -242,46 +242,34 @@ describe("e2e test", () => {
         .true;
     });
 
-    /*
-    it("sending multiple GameStartRequest yields the same result", async () => {
+    it("does nothing when the request sent twice", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      const fk = createMessageReceiver();
-      client1.onMessage("PlayerJoinedMessage", fk);
-      client1.onMessage("GameMasterMessage", fk);
-      const ii1 = createMessageReceiver();
-      const cp1 = createMessageReceiver();
-      const cl1 = createMessageReceiver();
-      client1.onMessage("InitialInfoMessage", ii1);
-      client1.onMessage("CardsProvidedMessage", cp1);
-      client1.onMessage("CardListMessage", cl1);
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      client2.onMessage("PlayerJoinedMessage", fk);
-      const ii2 = createMessageReceiver();
-      const cp2 = createMessageReceiver();
-      const cl2 = createMessageReceiver();
-      client2.onMessage("InitialInfoMessage", ii2);
-      client2.onMessage("CardsProvidedMessage", cp2);
-      client2.onMessage("CardListMessage", cl2);
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+        ]
+      );
       client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      const ii1 = mrm.getFake(client1, "InitialInfoMessage");
+      const ii2 = mrm.getFake(client2, "InitialInfoMessage");
+      expect(ii1.calledOnce).to.be.true;
+      expect(ii2.calledOnce).to.be.true;
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       expect(ii1.calledOnce).to.be.true;
       expect(ii2.calledOnce).to.be.true;
-      expect(ii1.firstCall.firstArg.playerCount).to.eql(2);
-      expect(ii1.firstCall.firstArg.deckCount).to.eql(1);
-      expect(ii2.firstCall.firstArg.playerCount).to.eql(2);
-      expect(ii2.firstCall.firstArg.deckCount).to.eql(1);
-      expect(cp1.calledTwice).to.be.true;
-      expect(cp2.calledTwice).to.be.true;
-      expect(cp1.firstCall.firstArg.cardCount).to.eql(27);
-      expect(cp1.secondCall.firstArg.cardCount).to.eql(27);
-      expect(cp2.firstCall.firstArg.cardCount).to.eql(27);
-      expect(cp2.secondCall.firstArg.cardCount).to.eql(27);
-      expect(cl1.calledOnce).to.be.true;
-      expect(cl2.calledOnce).to.be.true;
     });
-    */
 
     it("non-game-master cannot start the game", async () => {
       const room = await colyseus.createRoom("game_room", {});
