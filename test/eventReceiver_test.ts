@@ -204,3 +204,16 @@ describe("onPlayerRankChanged", () => {
     roomProxyMock.verify();
   });
 });
+
+describe("onInitialInfoProvided", () => {
+  it("sends InitialInfoMessage to everyone", () => {
+    const er = createEventReceiver();
+    const msg = dfgmsg.encodeInitialInfoMessage(4, 1);
+    const roomProxyMock = sinon.mock(er.roomProxy);
+    roomProxyMock
+      .expects("broadcast")
+      .calledWithExactly("InitialInfoMessage", msg);
+    er.onInitialInfoProvided(4, 1);
+    roomProxyMock.verify();
+  });
+});

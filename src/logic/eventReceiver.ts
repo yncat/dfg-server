@@ -108,7 +108,10 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onInitialInfoProvided(playerCount: number, deckCount: number): void {
-    console.log("onInitialInfoProvided");
+    this.roomProxy.broadcast(
+      "InitialInfoMessage",
+      dfgmsg.encodeInitialInfoMessage(playerCount, deckCount)
+    );
   }
 
   public onCardsProvided(identifier: string, providedCount: number): void {

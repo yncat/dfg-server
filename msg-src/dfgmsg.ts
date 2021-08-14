@@ -473,6 +473,32 @@ export function encodePlayerRankChangedMessage(
   };
 }
 
+/*
+InitialInfoMessage: ゲーム開始情報メッセージ
+ゲーム開始時、初期情報を伝達するメッセージ。
+(parameter) playerCount: ゲームに参加するプレイヤーの数。
+(parameter) deckCount: 使用するデッキの数。
+*/
+export interface InitialInfoMessage {
+  playerCount: number;
+  deckCount: number;
+}
+
+export const InitialInfoMessageDecoder: Decoder<InitialInfoMessage> = object({
+  playerCount: number(),
+  deckCount: number(),
+});
+
+export function encodeInitialInfoMessage(
+  playerCount: number,
+  deckCount: number
+): InitialInfoMessage {
+  return {
+    playerCount: playerCount,
+    deckCount: deckCount,
+  };
+}
+
 export class PayloadDecodeError extends Error {}
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function decodePayload<T>(
@@ -496,9 +522,3 @@ export function decodePayload<T>(
   }
   return ret.result;
 }
-
-/*
-enum definitions
-json-type-validation のなかでは、 number として扱う。
-encode / decode 時にタイプは付けられるし、 out of range の大作に必要以上にシビアになることもない( internal なので) と考えている。
-*/
