@@ -84,6 +84,26 @@ export class GameRoom extends Room<GameState> {
       this.dfgHandler.updateHandForActivePlayer();
       this.dfgHandler.enumerateDiscardPairs();
     });
+
+    this.onMessage("DiscardRequest", (client, payload) => {
+      if (!this.dfgHandler.isGameActive()) {
+        return;
+      }
+      if (this.dfgHandler.activePlayerControl.playerIdentifier !== client.id) {
+        return;
+      }
+      const req = dfgmsg.decodePayload<dfgmsg.DiscardRequest>(
+        payload,
+        dfgmsg.DiscardRequestDecoder
+      );
+      if (!isDecodeSuccess<dfgmsg.DiscardRequest>(req)) {
+        reportErrorWithDefaultReporter(req);
+        return;
+      }
+
+      this.dfgHandler.discardByIndex(req.index);
+      this.dfgHandler.finishAction();
+    });
   }
 
   onJoin(client: Client, options: any) {

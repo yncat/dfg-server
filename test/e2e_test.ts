@@ -356,5 +356,68 @@ describe("e2e test", () => {
       expect(dp.calledOnce).to.be.true;
       expect(dp.firstCall.lastArg.discardPairList.length).to.eql(0);
     });
+
+    it("can play a pair of cards", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+          "DiscardMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      const activePlayer = getActivePlayer(room, client1, client2);
+      const msg = dfgmsg.encodeCardSelectRequest(0);
+      activePlayer.send("CardSelectRequest", msg);
+      await forMilliseconds(100);
+      const cl = mrm.getFake(activePlayer, "CardListMessage");
+      expect(cl.calledOnce).to.be.true;
+      const card = dfgmsg.decodePayload<dfgmsg.SelectableCardMessage>(
+        cl.firstCall.lastArg.cardList[0],
+        dfgmsg.SelectableCardMessageDecoder
+      ) as dfgmsg.SelectableCardMessage;
+      const dp = mrm.getFake(activePlayer, "DiscardPairListMessage"); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      expect(dp.calledOnce).to.be.true;
+      mrm.resetHistory();
+      activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+      await forMilliseconds(100);
+      const dc1 = mrm.getFake(client1, "DiscardMessage");
+      const dc2 = mrm.getFake(client2, "DiscardMessage");
+      expect(dc1.calledOnce).to.be.true;
+      expect(dc2.calledOnce).to.be.true;
+      expect(dc1.firstCall.lastArg.discardPair.cardList.length).to.eql(1);
+      expect(dc2.firstCall.lastArg.discardPair.cardList.length).to.eql(1);
+      const dcm1 = dfgmsg.decodePayload<dfgmsg.CardMessage>(
+        dc1.firstCall.lastArg.discardPair.cardList[0],
+        dfgmsg.CardMessageDecoder
+      ) as dfgmsg.CardMessage;
+      const dcm2 = dfgmsg.decodePayload<dfgmsg.CardMessage>(
+        dc2.firstCall.lastArg.discardPair.cardList[0],
+        dfgmsg.CardMessageDecoder
+      ) as dfgmsg.CardMessage;
+      expect(dcm1.mark).to.eql(card.mark);
+      expect(dcm1.cardNumber).to.eql(card.cardNumber);
+      expect(dcm2.mark).to.eql(card.mark);
+      expect(dcm2.cardNumber).to.eql(card.cardNumber);
+      const activePlayerName = activePlayer === client1 ? "cat" : "dog";
+      expect(dc1.firstCall.lastArg.playerName).to.eql(activePlayerName);
+      expect(dc2.firstCall.lastArg.playerName).to.eql(activePlayerName);
+      // 二人に配って２７枚、１枚出したので、残り２６枚
+      expect(dc1.firstCall.lastArg.remainingHandCount).to.eql(26);
+      expect(dc2.firstCall.lastArg.remainingHandCount).to.eql(26);
+    });
   });
 });

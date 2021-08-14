@@ -239,6 +239,25 @@ export function encodeCardSelectRequest(index: number): CardSelectRequest {
 }
 
 /*
+DiscardRequest: カードプレイリクエスト
+アクティブプレイヤーがカードをプレイするリクエスト。
+(parameter) index: 選択するプレイ可能なペアの 0-start インデックス番号。DiscardPairListMessageで通知された最新の情報に基づく。
+*/
+export interface DiscardRequest {
+  index: number;
+}
+
+export const DiscardRequestDecoder: Decoder<DiscardRequest> = object({
+  index: number(),
+});
+
+export function encodeDiscardRequest(index: number): DiscardRequest {
+  return {
+    index: index,
+  };
+}
+
+/*
 CardMessage: 選択に関する情報がない単純なカードメッセージ
 スーとと数字の情報のみ。出すカードのペアを列挙するときに利用する。
 (parameter) mark: カードのスーとを表す定数
@@ -525,7 +544,6 @@ export function encodeCardsProvidedMessage(
     cardCount: cardCount,
   };
 }
-
 
 export class PayloadDecodeError extends Error {}
 export function decodePayload<T>(
