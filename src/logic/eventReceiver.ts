@@ -36,7 +36,6 @@ export class EventReceiver implements dfg.EventReceiver {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public onYagiri(identifier: string): void {
-    
     this.roomProxy.broadcast("YagiriMessage", "");
   }
 

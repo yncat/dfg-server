@@ -226,7 +226,7 @@ describe("DFGHandler", () => {
     it("can deselect a card", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const ics = sinon.fake((index: number) => {
         return true;
       });
