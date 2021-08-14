@@ -34,15 +34,19 @@ export class EventReceiver implements dfg.EventReceiver {
     );
   }
 
-  public onYagiri(identifier: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public onYagiri(identifier: string): void {
+    
     this.roomProxy.broadcast("YagiriMessage", "");
   }
 
-  public onJBack(identifier: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public onJBack(identifier: string): void {
     this.roomProxy.broadcast("JBackMessage", "");
   }
 
-  public onKakumei(identifier: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public onKakumei(identifier: string): void {
     this.roomProxy.broadcast("KakumeiMessage", "");
   }
 

@@ -7,8 +7,10 @@ export class Player {
 
 export class PlayerConversionError extends Error {}
 
-export function createPlayerFromClientOptions(options: any): Player { // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-  if (!options.playerName) { // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+export function createPlayerFromClientOptions(options: any): Player {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (!options.playerName) {
     throw new PlayerConversionError("playerName is required");
   }
 

@@ -198,10 +198,12 @@ describe("DFGHandler", () => {
     it("can select a card", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const ics = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const ics = sinon.fake((index: number) => {
         return false;
       });
-      const ccs = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const ccs = sinon.fake((index: number) => {
         return dfg.SelectabilityCheckResult.SELECTABLE;
       });
       const sc = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -224,10 +226,12 @@ describe("DFGHandler", () => {
     it("can deselect a card", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const ics = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const ics = sinon.fake((index: number) => {
         return true;
       });
-      const ccs = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const ccs = sinon.fake((index: number) => {
         return dfg.SelectabilityCheckResult.SELECTABLE;
       });
       const dsc = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -250,10 +254,12 @@ describe("DFGHandler", () => {
     it("does nothing when card is not selectable", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const ics = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const ics = sinon.fake((index: number) => {
         return false;
       });
-      const ccs = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const ccs = sinon.fake((index: number) => {
         return dfg.SelectabilityCheckResult.NOT_SELECTABLE;
       });
       const apc = <dfg.ActivePlayerControl>(<unknown>{

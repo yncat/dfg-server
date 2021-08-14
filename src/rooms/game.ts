@@ -13,12 +13,14 @@ import { reportErrorWithDefaultReporter } from "../logic/errorReporter";
 import { DFGHandler } from "../logic/dfgHandler";
 import { RoomProxy } from "../logic/roomProxy";
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export class GameRoom extends Room<GameState> {
   chatHandler: ChatHandler;
   playerMap: PlayerMap;
   masterClient: Client;
   dfgHandler: DFGHandler;
-  onCreate(options: any) { // eslint-disable-line @typescript-eslint/no-unused-vars
+  onCreate(options: any) {
+    /* eslint-enable @typescript-eslint/no-unused-vars */
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
     const rp = new RoomProxy<GameState>(this);
@@ -44,7 +46,8 @@ export class GameRoom extends Room<GameState> {
       );
     });
 
-    this.onMessage("GameStartRequest", (client, payload) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    this.onMessage("GameStartRequest", (client, payload) => {
       if (client !== this.masterClient) {
         return;
       }
@@ -98,7 +101,8 @@ export class GameRoom extends Room<GameState> {
     this.state.playerCount = this.clients.length;
   }
 
-  onLeave(client: Client, consented: boolean) { // eslint-disable-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onLeave(client: Client, consented: boolean) {
     this.playerMap.delete(client.id);
     if (client === this.masterClient) {
       this.broadcast("MasterDisconnectedMessage", "");

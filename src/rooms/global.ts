@@ -39,7 +39,8 @@ export class GlobalRoom extends Room<GlobalState> {
     });
   }
 
-  onAuth(client: Client, options: any, request: http.IncomingMessage): boolean { // eslint-disable-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onAuth(client: Client, options: any, request: http.IncomingMessage): boolean {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!options.playerName) {
       return false;
@@ -52,7 +53,8 @@ export class GlobalRoom extends Room<GlobalState> {
     this.state.playerCount = this.clients.length;
   }
 
-  onLeave(client: Client, consented: boolean) { // eslint-disable-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onLeave(client: Client, consented: boolean) {
     this.playerMap.delete(client.id);
   }
 
