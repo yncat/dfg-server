@@ -160,17 +160,21 @@ describe("e2e test", () => {
       const ii1 = createMessageReceiver();
       const cp1 = createMessageReceiver();
       const cl1 = createMessageReceiver();
+      const t1 = createMessageReceiver();
       client1.onMessage("InitialInfoMessage", ii1);
       client1.onMessage("CardsProvidedMessage", cp1);
       client1.onMessage("CardListMessage", cl1);
+      client1.onMessage("TurnMessage", t1);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       client2.onMessage("PlayerJoinedMessage", fk);
       const ii2 = createMessageReceiver();
       const cp2 = createMessageReceiver();
       const cl2 = createMessageReceiver();
+      const t2 = createMessageReceiver();
       client2.onMessage("InitialInfoMessage", ii2);
       client2.onMessage("CardsProvidedMessage", cp2);
       client2.onMessage("CardListMessage", cl2);
+      client2.onMessage("TurnMessage", t2);
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       expect(ii1.calledOnce).to.be.true;
@@ -187,8 +191,11 @@ describe("e2e test", () => {
       expect(cp2.secondCall.firstArg.cardCount).to.eql(27);
       expect(cl1.calledOnce).to.be.true;
       expect(cl2.calledOnce).to.be.true;
+      expect(t1.calledOnce).to.be.true;
+      expect(t2.calledOnce).to.be.true;
     });
 
+    /*
     it("sending multiple GameStartRequest yields the same result", async () => {
       const room = await colyseus.createRoom("game_room", {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
@@ -227,6 +234,7 @@ describe("e2e test", () => {
       expect(cl1.calledOnce).to.be.true;
       expect(cl2.calledOnce).to.be.true;
     });
+    */
 
     it("non-game-master cannot start the game", async () => {
       const room = await colyseus.createRoom("game_room", {});
