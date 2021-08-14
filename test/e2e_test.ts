@@ -148,11 +148,7 @@ describe("e2e test", () => {
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       const cfn2 = createMessageReceiver();
       client2.onMessage("PlayerJoinedMessage", cfn2);
-      await Promise.all([
-        client1.waitForMessage("PlayerJoinedMessage"),
-        client2.waitForMessage("PlayerJoinedMessage"),
-        room.waitForNextPatch(),
-      ]);
+      await forMilliseconds(300);
       const want = { playerName: "dog" };
       expect(cfn1.called).to.be.true;
       expect(cfn2.called).to.be.true;
