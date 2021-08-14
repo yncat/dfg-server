@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { PlayerMap } from "../src/logic/playerMap";
-import { Client } from "colyseus";
 import { Player } from "../src/logic/player";
 
 describe("PlayerMap", () => {

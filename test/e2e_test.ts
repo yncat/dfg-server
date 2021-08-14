@@ -8,7 +8,6 @@ import { ColyseusTestServer, boot } from "@colyseus/testing";
 // import your "arena.config.ts" file here.
 import appConfig from "../src/arena.config";
 import * as dfgmsg from "../msg-src/dfgmsg";
-import { ServerError } from "colyseus";
 import { GameRoom } from "../src/rooms/game";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -16,7 +15,7 @@ function dummyMessageHandler(message: any) {}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createMessageReceiver() {
-  return sinon.fake((message: any) => {});
+  return sinon.fake((message: any) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
 }
 
 function forMilliseconds(milliseconds: number): Promise<void> {
@@ -64,14 +63,14 @@ class MessageReceiverMap {
     if (!f) {
       throw new Error("failure on MessageReceiverMap resolution");
     }
-    return f;
+    return f; // eslint-disable-line @typescript-eslint/no-unsafe-return
   }
 
   public resetHistory() {
     const itr = this.mp.values();
     let f = itr.next();
     while (!f.done) {
-      f.value.resetHistory();
+      f.value.resetHistory(); // eslint-disable-line @typescript-eslint/no-unsafe-call
       f = itr.next();
     }
   }
@@ -339,14 +338,14 @@ describe("e2e test", () => {
       const cl = mrm.getFake(activePlayer, "CardListMessage");
       expect(cl.calledOnce).to.be.true;
       expect(cl.firstCall.lastArg.cardList[0].isChecked).to.be.true;
-      const card = cl.firstCall.lastArg.cardList[0];
+      const card = cl.firstCall.lastArg.cardList[0]; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
       expect(card.isCheckable).to.be.true;
-      const dp = mrm.getFake(activePlayer, "DiscardPairListMessage");
+      const dp = mrm.getFake(activePlayer, "DiscardPairListMessage"); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
       expect(dp.calledOnce).to.be.true;
       expect(dp.firstCall.lastArg.discardPairList.length).to.eql(1);
-      const discard = dp.firstCall.lastArg.discardPairList[0];
+      const discard = dp.firstCall.lastArg.discardPairList[0]; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
       expect(discard.cardList.length).to.eql(1);
-      const card2 = discard.cardList[0];
+      const card2 = discard.cardList[0]; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
       expect(card.mark).to.eql(card2.mark);
       expect(card.cardNumber).to.eql(card2.cardNumber);
       mrm.resetHistory();

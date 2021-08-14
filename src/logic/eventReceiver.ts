@@ -34,15 +34,15 @@ export class EventReceiver implements dfg.EventReceiver {
     );
   }
 
-  public onYagiri(identifier: string): void {
+  public onYagiri(identifier: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
     this.roomProxy.broadcast("YagiriMessage", "");
   }
 
-  public onJBack(identifier: string): void {
+  public onJBack(identifier: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
     this.roomProxy.broadcast("JBackMessage", "");
   }
 
-  public onKakumei(identifier: string): void {
+  public onKakumei(identifier: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
     this.roomProxy.broadcast("KakumeiMessage", "");
   }
 

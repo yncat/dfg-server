@@ -11,14 +11,14 @@ export class RoomProxy<T extends Schema> {
     this.room = room;
   }
 
-  public broadcast(message: string, obj: any): void {
+  public broadcast(message: string, obj: any): void { // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     if (!this.room) {
       return;
     }
     this.room.broadcast(message, obj);
   }
 
-  public send(clientID: string, type: string, message: any) {
+  public send(clientID: string, type: string, message: any):void { // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     if (!this.room) {
       return;
     }

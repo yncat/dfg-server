@@ -2,8 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
-import { Room, Client, ServerError } from "colyseus";
-import http from "http";
+import { Room, Client } from "colyseus";
 import * as dfgmsg from "../../msg-src/dfgmsg";
 import { ChatHandler } from "../logic/chatHandler";
 import { PlayerMap } from "../logic/playerMap";
@@ -19,7 +18,7 @@ export class GameRoom extends Room<GameState> {
   playerMap: PlayerMap;
   masterClient: Client;
   dfgHandler: DFGHandler;
-  onCreate(options: any) {
+  onCreate(options: any) { // eslint-disable-line @typescript-eslint/no-unused-vars
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
     const rp = new RoomProxy<GameState>(this);
@@ -45,7 +44,7 @@ export class GameRoom extends Room<GameState> {
       );
     });
 
-    this.onMessage("GameStartRequest", (client, payload) => {
+    this.onMessage("GameStartRequest", (client, payload) => { // eslint-disable-line @typescript-eslint/no-unused-vars
       if (client !== this.masterClient) {
         return;
       }
@@ -99,7 +98,7 @@ export class GameRoom extends Room<GameState> {
     this.state.playerCount = this.clients.length;
   }
 
-  onLeave(client: Client, consented: boolean) {
+  onLeave(client: Client, consented: boolean) { // eslint-disable-line @typescript-eslint/no-unused-vars
     this.playerMap.delete(client.id);
     if (client === this.masterClient) {
       this.broadcast("MasterDisconnectedMessage", "");

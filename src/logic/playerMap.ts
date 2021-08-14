@@ -7,11 +7,11 @@ export class PlayerMap {
     this.clientPlayerMap = new Map();
   }
 
-  public add(clientID: string, player: Player) {
+  public add(clientID: string, player: Player):void {
     this.clientPlayerMap.set(clientID, player);
   }
 
-  public delete(clientID: string) {
+  public delete(clientID: string):void {
     this.clientPlayerMap.delete(clientID);
   }
 

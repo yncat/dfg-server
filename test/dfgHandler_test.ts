@@ -2,7 +2,6 @@ import * as dfg from "dfg-simulator";
 import sinon from "sinon";
 import { expect } from "chai";
 import { DFGHandler } from "../src/logic/dfgHandler";
-import { EventReceiver } from "../src/logic/eventReceiver";
 import { RoomProxy } from "../src/logic/roomProxy";
 import { GameState } from "../src/rooms/schema/game";
 import { Player } from "../src/logic/player";
@@ -44,9 +43,9 @@ describe("DFGHandler", () => {
     const g = createGame();
     const cg = sinon.fake(
       (
-        clientIDList: string[],
-        eventReceiver: dfg.EventReceiver,
-        ruleConfig: dfg.RuleConfig
+        clientIDList: string[], // eslint-disable-line @typescript-eslint/no-unused-vars
+        eventReceiver: dfg.EventReceiver, // eslint-disable-line @typescript-eslint/no-unused-vars
+        ruleConfig: dfg.RuleConfig // eslint-disable-line @typescript-eslint/no-unused-vars
       ) => {
         return g;
       }
@@ -179,7 +178,7 @@ describe("DFGHandler", () => {
       const msg = dfgmsg.encodeCardListMessage([
         dfgmsg.encodeSelectableCardMessage(dfg.CardMark.SPADES, 3, true, true),
       ]);
-      const enumerate = sinon
+      sinon
         .stub(h.cardEnumerator, "enumerateFromActivePlayerControl")
         .returns(msg);
       roomProxyMock.expects("send").withExactArgs(pi, "CardListMessage", msg);
@@ -199,13 +198,13 @@ describe("DFGHandler", () => {
     it("can select a card", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const ics = sinon.fake((index: number) => {
+      const ics = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         return false;
       });
-      const ccs = sinon.fake((index: number) => {
+      const ccs = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         return dfg.SelectabilityCheckResult.SELECTABLE;
       });
-      const sc = sinon.fake((index: number) => {});
+      const sc = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
         isCardSelected: ics,
@@ -225,13 +224,13 @@ describe("DFGHandler", () => {
     it("can deselect a card", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const ics = sinon.fake((index: number) => {
+      const ics = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         return true;
       });
-      const ccs = sinon.fake((index: number) => {
+      const ccs = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         return dfg.SelectabilityCheckResult.SELECTABLE;
       });
-      const dsc = sinon.fake((index: number) => {});
+      const dsc = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
         isCardSelected: ics,
@@ -251,10 +250,10 @@ describe("DFGHandler", () => {
     it("does nothing when card is not selectable", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const ics = sinon.fake((index: number) => {
+      const ics = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         return false;
       });
-      const ccs = sinon.fake((index: number) => {
+      const ccs = sinon.fake((index: number) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         return dfg.SelectabilityCheckResult.NOT_SELECTABLE;
       });
       const apc = <dfg.ActivePlayerControl>(<unknown>{
@@ -352,7 +351,7 @@ describe("DFGHandler", () => {
       const edc = sinon.fake(() => {
         return [dp1];
       });
-      const dc = sinon.fake((dp: dfg.DiscardPair) => {});
+      const dc = sinon.fake((dp: dfg.DiscardPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
         enumerateDiscardPairs: edc,
@@ -375,7 +374,7 @@ describe("DFGHandler", () => {
       const edc = sinon.fake(() => {
         return [dp1];
       });
-      const dc = sinon.fake((dp: dfg.DiscardPair) => {});
+      const dc = sinon.fake((dp: dfg.DiscardPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
         enumerateDiscardPairs: edc,
@@ -397,7 +396,7 @@ describe("DFGHandler", () => {
       const edc = sinon.fake(() => {
         return [dp1];
       });
-      const dc = sinon.fake((dp: dfg.DiscardPair) => {});
+      const dc = sinon.fake((dp: dfg.DiscardPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
         enumerateDiscardPairs: edc,
@@ -468,7 +467,7 @@ describe("DFGHandler", () => {
     it("calls game.kickPlayerByIdentifier", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const kick = sinon.fake((identifier: string) => {});
+      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
       });
