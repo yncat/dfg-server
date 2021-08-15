@@ -564,5 +564,96 @@ describe("e2e test", () => {
       expect(dc1.called).to.be.false;
       expect(dc2.called).to.be.false;
     });
+
+    it("can pass", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+          "PassMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      const activePlayer = getActivePlayer(room, client1, client2);
+      activePlayer.send("PassRequest", "");
+      await forMilliseconds(100);
+      const ps1 = mrm.getFake(client1, "PassMessage");
+      const ps2 = mrm.getFake(client2, "PassMessage");
+      expect(ps1.calledOnce).to.be.true;
+      expect(ps2.calledOnce).to.be.true;
+      const activePlayerName = activePlayer === client1 ? "cat" : "dog";
+      expect(ps1.firstCall.lastArg.playerName).to.eql(activePlayerName);
+      expect(ps2.firstCall.lastArg.playerName).to.eql(activePlayerName);
+    });
+
+    it("does nothing when the game is not active", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "PassMessage",
+        ]
+      );
+      client1.send("PassRequest", "");
+      await forMilliseconds(100);
+      const ps1 = mrm.getFake(client1, "PassMessage");
+      const ps2 = mrm.getFake(client2, "PassMessage");
+      expect(ps1.called).to.be.false;
+      expect(ps2.called).to.be.false;
+    });
+
+    it("does nothing when the player is not active at the moment", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "PassMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      const inactivePlayer =
+        getActivePlayer(room, client1, client2) === client1 ? client2 : client1;
+      inactivePlayer.send("PassRequest", "");
+      await forMilliseconds(100);
+      const ps1 = mrm.getFake(client1, "PassMessage");
+      const ps2 = mrm.getFake(client2, "PassMessage");
+      expect(ps1.called).to.be.false;
+      expect(ps2.called).to.be.false;
+    });
   });
 });

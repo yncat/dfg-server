@@ -107,6 +107,18 @@ export class GameRoom extends Room<GameState> {
       }
       this.dfgHandler.finishAction();
     });
+
+    this.onMessage("PassRequest", (client, payload) => {
+      if (!this.dfgHandler.isGameActive()) {
+        return;
+      }
+      if (this.dfgHandler.activePlayerControl.playerIdentifier !== client.id) {
+        return;
+      }
+
+      this.dfgHandler.pass();
+      this.dfgHandler.finishAction();
+    });
   }
 
   onJoin(client: Client, options: any) {
