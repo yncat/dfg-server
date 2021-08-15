@@ -18,6 +18,11 @@ function createMessageReceiver() {
   return sinon.fake((message: any) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
 }
 
+function setRoomOptionsForTest(r: unknown, skipKickOnLeave: boolean) {
+  const room = r as GameRoom;
+  room.setRoomOptionsForTest(skipKickOnLeave);
+}
+
 function forMilliseconds(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
@@ -122,6 +127,7 @@ describe("e2e test", () => {
   describe("gameRoom", () => {
     it("connecting into the game room", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const clbk = createMessageReceiver();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("GameMasterMessage", clbk);
@@ -131,6 +137,7 @@ describe("e2e test", () => {
 
     it("send GameMasterMessage to the first connected player", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const clbk = createMessageReceiver();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("GameMasterMessage", clbk);
@@ -140,6 +147,7 @@ describe("e2e test", () => {
 
     it("broadcast PlayerJoinedMessage when second player joins", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       const cfn1 = createMessageReceiver();
       client1.onMessage("PlayerJoinedMessage", cfn1);
@@ -157,6 +165,7 @@ describe("e2e test", () => {
 
     it("close room when master client disconnects", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       client1.onMessage("GameMasterMessage", dummyMessageHandler);
@@ -181,6 +190,7 @@ describe("e2e test", () => {
 
     it("handle chat message", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("GameMasterMessage", dummyMessageHandler);
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
@@ -203,6 +213,7 @@ describe("e2e test", () => {
 
     it("game master can start the game", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -253,6 +264,7 @@ describe("e2e test", () => {
 
     it("does nothing when the request sent twice", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -282,6 +294,7 @@ describe("e2e test", () => {
 
     it("non-game-master cannot start the game", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       const fk = createMessageReceiver();
       client1.onMessage("PlayerJoinedMessage", fk);
@@ -312,6 +325,7 @@ describe("e2e test", () => {
 
     it("can select and deselect a card", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -359,6 +373,7 @@ describe("e2e test", () => {
 
     it("does nothing when game is inactive", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -384,6 +399,7 @@ describe("e2e test", () => {
 
     it("does nothing when the player is not currently active", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -414,6 +430,7 @@ describe("e2e test", () => {
 
     it("can play a pair of cards", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -477,6 +494,7 @@ describe("e2e test", () => {
 
     it("does nothing when the game is not active", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -504,6 +522,7 @@ describe("e2e test", () => {
 
     it("does nothing when the player is not active at the moment", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -536,6 +555,7 @@ describe("e2e test", () => {
 
     it("does nothing when no cards are selected or there's no available discard pairs", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -567,6 +587,7 @@ describe("e2e test", () => {
 
     it("can pass", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -601,6 +622,7 @@ describe("e2e test", () => {
 
     it("does nothing when the game is not active", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
@@ -627,6 +649,7 @@ describe("e2e test", () => {
 
     it("does nothing when the player is not active at the moment", async () => {
       const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);

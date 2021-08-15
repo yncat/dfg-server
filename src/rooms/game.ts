@@ -13,14 +13,20 @@ import { reportErrorWithDefaultReporter } from "../logic/errorReporter";
 import { DFGHandler } from "../logic/dfgHandler";
 import { RoomProxy } from "../logic/roomProxy";
 
+interface RoomOptionsForTest {
+  skipKickOnLeave: boolean;
+}
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export class GameRoom extends Room<GameState> {
   chatHandler: ChatHandler;
   playerMap: PlayerMap;
   masterClient: Client;
   dfgHandler: DFGHandler;
+  roomOptionsForTest: RoomOptionsForTest;
   onCreate(options: any) {
     /* eslint-enable @typescript-eslint/no-unused-vars */
+    this.roomOptionsForTest = { skipKickOnLeave: false };
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
     const rp = new RoomProxy<GameState>(this);
@@ -138,6 +144,12 @@ export class GameRoom extends Room<GameState> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLeave(client: Client, consented: boolean) {
+    if (
+      !this.roomOptionsForTest.skipKickOnLeave &&
+      this.dfgHandler.isGameActive()
+    ) {
+      this.dfgHandler.kickPlayerByIdentifier(client.id);
+    }
     this.playerMap.delete(client.id);
     if (client === this.masterClient) {
       this.broadcast("MasterDisconnectedMessage", "");
@@ -146,4 +158,8 @@ export class GameRoom extends Room<GameState> {
   }
 
   onDispose() {}
+
+  public setRoomOptionsForTest(skipKickOnLeave: boolean) {
+    this.roomOptionsForTest = { skipKickOnLeave };
+  }
 }
