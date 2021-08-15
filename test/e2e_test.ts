@@ -678,5 +678,46 @@ describe("e2e test", () => {
       expect(ps1.called).to.be.false;
       expect(ps2.called).to.be.false;
     });
+
+    it("left player is kicked", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+          "PlayerKickedMessage",
+          "PlayerRankChangedMessage",
+          "GameEndMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      const msg1 = dfgmsg.encodePlayerKickedMessage("dog");
+      client2.leave(true);
+      await forMilliseconds(100);
+      const k = mrm.getFake(client1, "PlayerKickedMessage");
+      expect(k.calledOnce).to.be.true;
+      expect(k.firstCall.lastArg).to.eql(msg1);
+      expect(mrm.getFake(client1, "GameEndMessage").calledOnce).to.be.true;
+      const msg2 = dfgmsg.encodePlayerRankChangedMessage(
+        "cat",
+        dfgmsg.RankType.UNDETERMINED,
+        dfgmsg.RankType.DAIFUGO
+      );
+      const rc = mrm.getFake(client1, "PlayerRankChangedMessage");
+      expect(rc.calledOnce).to.be.true;
+      expect(rc.firstCall.lastArg).to.eql(msg2);
+    });
   });
 });

@@ -9,7 +9,11 @@ import { PlayerMap } from "../src/logic/playerMap";
 import * as dfgmsg from "../msg-src/dfgmsg";
 
 function createEventReceiver(): EventReceiver {
-  return new EventReceiver(new RoomProxy<GameState>(), new PlayerMap(), ()=>{});
+  return new EventReceiver(
+    new RoomProxy<GameState>(),
+    new PlayerMap(),
+    () => {}
+  );
 }
 
 describe("onNagare", () => {
@@ -157,7 +161,7 @@ describe("onGameEnd", () => {
     const roomProxyMock = sinon.mock(er.roomProxy);
     roomProxyMock.expects("broadcast").calledWithExactly("GameEndMessage", "");
     const f = sinon.fake();
-    er.gameEndedCallback=f;
+    er.gameEndedCallback = f;
     er.onGameEnd();
     roomProxyMock.verify();
     expect(f.called).to.be.true;

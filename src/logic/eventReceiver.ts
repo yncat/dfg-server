@@ -7,11 +7,15 @@ import { PlayerMap } from "./playerMap";
 export class EventReceiver implements dfg.EventReceiver {
   roomProxy: RoomProxy<GameState>;
   playerMap: PlayerMap;
-  gameEndedCallback:()=>void;
-  constructor(roomProxy: RoomProxy<GameState>, playerMap: PlayerMap, gameEndedCallback:()=>void) {
+  gameEndedCallback: () => void;
+  constructor(
+    roomProxy: RoomProxy<GameState>,
+    playerMap: PlayerMap,
+    gameEndedCallback: () => void
+  ) {
     this.roomProxy = roomProxy;
     this.playerMap = playerMap;
-    this.gameEndedCallback=gameEndedCallback;
+    this.gameEndedCallback = gameEndedCallback;
   }
 
   public onNagare(): void {
