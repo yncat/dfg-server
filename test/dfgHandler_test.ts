@@ -491,4 +491,14 @@ describe("DFGHandler", () => {
       }).to.throw("game is inactive");
     });
   });
+
+  describe("detecting game end", () => {
+    it("make the game instance null when eventReceiver.onGameEnd is called", () => {
+      const h = createDFGHandler();
+      const g = <dfg.Game>(<unknown>{});
+      h.game = g;
+      h.eventReceiver.onGameEnd();
+      expect(h.game).to.be.null;
+    });
+  });
 });

@@ -7,9 +7,11 @@ import { PlayerMap } from "./playerMap";
 export class EventReceiver implements dfg.EventReceiver {
   roomProxy: RoomProxy<GameState>;
   playerMap: PlayerMap;
-  constructor(roomProxy: RoomProxy<GameState>, playerMap: PlayerMap) {
+  gameEndedCallback:()=>void;
+  constructor(roomProxy: RoomProxy<GameState>, playerMap: PlayerMap, gameEndedCallback:()=>void) {
     this.roomProxy = roomProxy;
     this.playerMap = playerMap;
+    this.gameEndedCallback=gameEndedCallback;
   }
 
   public onNagare(): void {
@@ -84,6 +86,7 @@ export class EventReceiver implements dfg.EventReceiver {
 
   public onGameEnd(): void {
     this.roomProxy.broadcast("GameEndMessage", "");
+    this.gameEndedCallback();
   }
 
   public onPlayerKicked(identifier: string): void {
