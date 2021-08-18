@@ -88,8 +88,25 @@ export class EventReceiver implements dfg.EventReceiver {
     );
   }
 
-  public onGameEnd(): void {
-    this.roomProxy.broadcast("GameEndMessage", "");
+  public onGameEnd(result: dfg.Result): void {
+    const msg = dfgmsg.encodeGameEndMessage(
+      result.getIdentifiersByRank(dfg.RankType.DAIFUGO).map((v) => {
+        return this.playerMap.clientIDToPlayer(v).name;
+      }),
+      result.getIdentifiersByRank(dfg.RankType.FUGO).map((v) => {
+        return this.playerMap.clientIDToPlayer(v).name;
+      }),
+      result.getIdentifiersByRank(dfg.RankType.HEIMIN).map((v) => {
+        return this.playerMap.clientIDToPlayer(v).name;
+      }),
+      result.getIdentifiersByRank(dfg.RankType.HINMIN).map((v) => {
+        return this.playerMap.clientIDToPlayer(v).name;
+      }),
+      result.getIdentifiersByRank(dfg.RankType.DAIHINMIN).map((v) => {
+        return this.playerMap.clientIDToPlayer(v).name;
+      })
+    );
+    this.roomProxy.broadcast("GameEndMessage", msg);
     this.gameEndedCallback();
   }
 

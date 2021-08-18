@@ -8,7 +8,9 @@ import { ColyseusTestServer, boot } from "@colyseus/testing";
 // import your "arena.config.ts" file here.
 import appConfig from "../src/arena.config";
 import * as dfgmsg from "../msg-src/dfgmsg";
+import * as dfg from "dfg-simulator";
 import { GameRoom } from "../src/rooms/game";
+import { resolveModuleName } from "typescript";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function dummyMessageHandler(message: any) {}
@@ -79,6 +81,29 @@ class MessageReceiverMap {
       f = itr.next();
     }
   }
+}
+
+function createGameBeforeAgari(
+  client1: TestClient,
+  client2: TestClient,
+  er: dfg.EventReceiver
+) {
+  const p1 = dfg.createPlayer(client1.sessionId);
+  const p2 = dfg.createPlayer(client2.sessionId);
+  p1.hand.give(dfg.createCard(dfg.CardMark.DIAMONDS, 4));
+  p2.hand.give(dfg.createCard(dfg.CardMark.CLUBS, 5));
+  return dfg.createGameCustom({
+    players: [p1, p2],
+    activePlayerIndex: 0,
+    activePlayerActionCount: 0,
+    discardStack: dfg.createDiscardStack(),
+    lastDiscarderIdentifier: "",
+    strengthInverted: false,
+    agariPlayerIdentifiers: [],
+    penalizedPlayerIdentifiers: [],
+    eventReceiver: er,
+    ruleConfig: dfg.createDefaultRuleConfig(),
+  });
 }
 
 describe("e2e test", () => {
@@ -679,7 +704,7 @@ describe("e2e test", () => {
       expect(ps2.called).to.be.false;
     });
 
-    it("left player is kicked", async () => {
+    it("the player who left is kicked", async () => {
       const room = await colyseus.createRoom("game_room", {});
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
@@ -718,6 +743,57 @@ describe("e2e test", () => {
       const rc = mrm.getFake(client1, "PlayerRankChangedMessage");
       expect(rc.calledOnce).to.be.true;
       expect(rc.firstCall.lastArg).to.eql(msg2);
+    });
+
+    it("can process agari", async () => {
+      const room = (await colyseus.createRoom("game_room", {})) as GameRoom;
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+          "PlayerKickedMessage",
+          "PlayerRankChangedMessage",
+          "DiscardMessage",
+          "AgariMessage",
+          "GameEndMessage",
+        ]
+      );
+      const g = createGameBeforeAgari(
+        client1,
+        client2,
+        room.dfgHandler.eventReceiver
+      );
+      room.dfgHandler.game = g;
+      room.dfgHandler.prepareNextPlayer();
+      room.dfgHandler.selectCardByIndex(0);
+      await forMilliseconds(100);
+      mrm.resetHistory();
+      client1.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+      await forMilliseconds(100);
+      const ag1 = mrm.getFake(client1, "AgariMessage");
+      const ag2 = mrm.getFake(client2, "AgariMessage");
+      expect(ag1.calledOnce).to.be.true;
+      expect(ag2.calledOnce).to.be.true;
+      const agmsg = dfgmsg.encodeAgariMessage("cat");
+      expect(ag1.firstCall.lastArg).to.eql(agmsg);
+      expect(ag2.firstCall.lastArg).to.eql(agmsg);
+      const endmsg = dfgmsg.encodeGameEndMessage(["cat"], [], [], [], ["dog"]);
+      const end1 = mrm.getFake(client1, "GameEndMessage");
+      const end2 = mrm.getFake(client2, "GameEndMessage");
+      expect(end1.calledOnce).to.be.true;
+      expect(end2.calledOnce).to.be.true;
+      expect(end1.firstCall.lastArg).to.eql(endmsg);
+      expect(end2.firstCall.lastArg).to.eql(endmsg);
     });
   });
 });

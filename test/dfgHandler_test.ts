@@ -497,7 +497,7 @@ describe("DFGHandler", () => {
       const h = createDFGHandler();
       const g = <dfg.Game>(<unknown>{});
       h.game = g;
-      h.eventReceiver.onGameEnd();
+      h.eventReceiver.onGameEnd(dfg.createResult([]));
       expect(h.game).to.be.null;
     });
   });

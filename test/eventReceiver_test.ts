@@ -158,11 +158,20 @@ describe("onPass", () => {
 describe("onGameEnd", () => {
   it("sends GameEndMessage to everyone and calls gameEndedCallback", () => {
     const er = createEventReceiver();
+    er.playerMap.clientIDToPlayer = sinon.fake((identifier: string) => {
+      return identifier === "a" ? "cat" : "dog";
+    });
+    const p1 = dfg.createPlayer("a");
+    p1.rank.force(dfg.RankType.DAIFUGO);
+    const p2 = dfg.createPlayer("b");
+    p2.rank.force(dfg.RankType.DAIHINMIN);
+    const r = dfg.createResult([p1, p2]);
+    const msg = dfgmsg.encodeGameEndMessage(["cat"], [], [], [], ["dog"]);
     const roomProxyMock = sinon.mock(er.roomProxy);
-    roomProxyMock.expects("broadcast").calledWithExactly("GameEndMessage", "");
+    roomProxyMock.expects("broadcast").calledWithExactly("GameEndMessage", msg);
     const f = sinon.fake();
     er.gameEndedCallback = f;
-    er.onGameEnd();
+    er.onGameEnd(r);
     roomProxyMock.verify();
     expect(f.called).to.be.true;
   });
