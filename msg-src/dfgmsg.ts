@@ -546,6 +546,47 @@ export function encodeCardsProvidedMessage(
   };
 }
 
+/*
+GameEndMessage: ゲーム終了メッセージ
+ゲーム終了&結果通知メッセージ
+(parameter) daifugoNameList: 大富豪となったプレイヤー名のリスト。リストではあるが、今のところ一人だけ。
+(parameter) fugoNameList: 富豪となったプレイヤー名のリスト。
+(parameter) heiminNameList: 平民となったプレイヤー名のリスト。
+(parameter) hinminNameList: 貧民となったプレイヤー名のリスト。
+(parameter) daihinminNameList: 大貧民となったプレイヤー名のリスト。リストではあるが、今のところ一人。
+*/
+export interface GameEndMessage {
+  daifugoNameList: string[];
+  fugoNameList: string[];
+  heiminNameList: string[];
+  hinminNameList: string[];
+  daihinminNameList: string[];
+}
+
+export const GameEndMessageDecoder: Decoder<GameEndMessage> = object({
+  daifugoNameList: array(string()),
+  fugoNameList: array(string()),
+  heiminNameList: array(string()),
+  hinminNameList: array(string()),
+  daihinminNameList: array(string()),
+});
+
+export function encodeGameEndMessage(
+  daifugoNameList: string[],
+  fugoNameList: string[],
+  heiminNameList: string[],
+  hinminNameList: string[],
+  daihinminNameList: string[]
+): GameEndMessage {
+  return {
+    daifugoNameList,
+    fugoNameList,
+    heiminNameList,
+    hinminNameList,
+    daihinminNameList,
+  };
+}
+
 export class PayloadDecodeError extends Error {}
 export function decodePayload<T>(
   encoded: any, // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
