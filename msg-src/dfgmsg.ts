@@ -92,7 +92,7 @@ export const ChatRequestDecoder: Decoder<ChatRequest> = object({
 
 export function encodeChatRequest(message: string): ChatRequest {
   return {
-    message: message,
+    message,
   };
 }
 
@@ -117,8 +117,8 @@ export function encodeChatMessage(
   message: string
 ): ChatMessage {
   return {
-    playerName: playerName,
-    message: message,
+    playerName,
+    message,
   };
 }
 
@@ -139,7 +139,7 @@ export function encodePlayerJoinedMessage(
   playerName: string
 ): PlayerJoinedMessage {
   return {
-    playerName: playerName,
+    playerName,
   };
 }
 
@@ -173,10 +173,10 @@ export function encodeSelectableCardMessage(
   isCheckable: boolean
 ): SelectableCardMessage {
   return {
-    mark: mark,
-    cardNumber: cardNumber,
-    isChecked: isChecked,
-    isCheckable: isCheckable,
+    mark,
+    cardNumber,
+    isChecked,
+    isCheckable,
   };
 }
 
@@ -197,7 +197,7 @@ export function encodeCardListMessage(
   cardList: SelectableCardMessage[]
 ): CardListMessage {
   return {
-    cardList: cardList,
+    cardList,
   };
 }
 
@@ -216,7 +216,7 @@ export const TurnMessageDecoder: Decoder<TurnMessage> = object({
 
 export function encodeTurnMessage(playerName: string): TurnMessage {
   return {
-    playerName: playerName,
+    playerName,
   };
 }
 
@@ -235,7 +235,7 @@ export const CardSelectRequestDecoder: Decoder<CardSelectRequest> = object({
 
 export function encodeCardSelectRequest(index: number): CardSelectRequest {
   return {
-    index: index,
+    index,
   };
 }
 
@@ -254,7 +254,7 @@ export const DiscardRequestDecoder: Decoder<DiscardRequest> = object({
 
 export function encodeDiscardRequest(index: number): DiscardRequest {
   return {
-    index: index,
+    index,
   };
 }
 
@@ -279,8 +279,8 @@ export function encodeCardMessage(
   cardNumber: number
 ): CardMessage {
   return {
-    mark: mark,
-    cardNumber: cardNumber,
+    mark,
+    cardNumber,
   };
 }
 
@@ -301,7 +301,7 @@ export function encodeDiscardPairMessage(
   cardList: CardMessage[]
 ): DiscardPairMessage {
   return {
-    cardList: cardList,
+    cardList,
   };
 }
 
@@ -323,7 +323,7 @@ export function encodeDiscardPairListMessage(
   discardPairList: DiscardPairMessage[]
 ): DiscardPairListMessage {
   return {
-    discardPairList: discardPairList,
+    discardPairList,
   };
 }
 
@@ -342,7 +342,7 @@ export const AgariMessageDecoder: Decoder<AgariMessage> = object({
 
 export function encodeAgariMessage(playerName: string): AgariMessage {
   return {
-    playerName: playerName,
+    playerName,
   };
 }
 
@@ -364,7 +364,7 @@ export function encodeForbiddenAgariMessage(
   playerName: string
 ): ForbiddenAgariMessage {
   return {
-    playerName: playerName,
+    playerName,
   };
 }
 
@@ -386,7 +386,7 @@ export function encodeStrengthInversionMessage(
   isStrengthInverted: boolean
 ): StrengthInversionMessage {
   return {
-    isStrengthInverted: isStrengthInverted,
+    isStrengthInverted,
   };
 }
 
@@ -415,9 +415,9 @@ export function encodeDiscardMessage(
   remainingHandCount: number
 ): DiscardMessage {
   return {
-    playerName: playerName,
-    discardPair: discardPair,
-    remainingHandCount: remainingHandCount,
+    playerName,
+    discardPair,
+    remainingHandCount,
   };
 }
 
@@ -436,7 +436,7 @@ export const PassMessageDecoder: Decoder<PassMessage> = object({
 
 export function encodePassMessage(playerName: string): PassMessage {
   return {
-    playerName: playerName,
+    playerName,
   };
 }
 
@@ -457,7 +457,7 @@ export function encodePlayerKickedMessage(
   playerName: string
 ): PlayerKickedMessage {
   return {
-    playerName: playerName,
+    playerName,
   };
 }
 
@@ -487,9 +487,9 @@ export function encodePlayerRankChangedMessage(
   after: RankType
 ): PlayerRankChangedMessage {
   return {
-    playerName: playerName,
-    before: before,
-    after: after,
+    playerName,
+    before,
+    after,
   };
 }
 
@@ -514,8 +514,8 @@ export function encodeInitialInfoMessage(
   deckCount: number
 ): InitialInfoMessage {
   return {
-    playerCount: playerCount,
-    deckCount: deckCount,
+    playerCount,
+    deckCount,
   };
 }
 
@@ -541,8 +541,8 @@ export function encodeCardsProvidedMessage(
   cardCount: number
 ): CardsProvidedMessage {
   return {
-    playerName: playerName,
-    cardCount: cardCount,
+    playerName,
+    cardCount,
   };
 }
 
