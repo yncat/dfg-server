@@ -65,9 +65,7 @@ export class GameRoom extends Room<GameState> {
       });
       this.dfgHandler.startGame(ids);
       this.dfgHandler.updateCardsForEveryone();
-      this.dfgHandler.prepareNextPlayer();
-      this.dfgHandler.notifyToActivePlayer();
-      this.dfgHandler.updateHandForActivePlayer();
+      this.handleNextPlayer();
     });
 
     this.onMessage("CardSelectRequest", (client, payload) => {
@@ -112,6 +110,10 @@ export class GameRoom extends Room<GameState> {
         return;
       }
       this.dfgHandler.finishAction();
+      if (this.dfgHandler.isGameActive()) {
+        // カードを出した後、まだゲームが続いていれば、次のプレイヤーに回す処理をする
+        this.handleNextPlayer();
+      }
     });
 
     this.onMessage("PassRequest", (client, payload) => {
@@ -124,6 +126,7 @@ export class GameRoom extends Room<GameState> {
 
       this.dfgHandler.pass();
       this.dfgHandler.finishAction();
+      this.handleNextPlayer();
     });
   }
 
@@ -161,5 +164,11 @@ export class GameRoom extends Room<GameState> {
 
   public setRoomOptionsForTest(skipKickOnLeave: boolean) {
     this.roomOptionsForTest = { skipKickOnLeave };
+  }
+
+  private handleNextPlayer() {
+    this.dfgHandler.prepareNextPlayer();
+    this.dfgHandler.notifyToActivePlayer();
+    this.dfgHandler.updateHandForActivePlayer();
   }
 }

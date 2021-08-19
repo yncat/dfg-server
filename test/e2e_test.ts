@@ -515,6 +515,9 @@ describe("e2e test", () => {
       // 二人に配って２７枚、１枚出したので、残り２６枚
       expect(dc1.firstCall.lastArg.remainingHandCount).to.eql(26);
       expect(dc2.firstCall.lastArg.remainingHandCount).to.eql(26);
+      // 次のプレイヤーにターンが移っているか
+      const nextPlayer = activePlayer === client1 ? client2 : client1;
+      expect(mrm.getFake(nextPlayer, "YourTurnMessage").calledOnce).to.be.true;
     });
 
     it("does nothing when the game is not active", async () => {
@@ -643,6 +646,9 @@ describe("e2e test", () => {
       const activePlayerName = activePlayer === client1 ? "cat" : "dog";
       expect(ps1.firstCall.lastArg.playerName).to.eql(activePlayerName);
       expect(ps2.firstCall.lastArg.playerName).to.eql(activePlayerName);
+      // 次のプレイヤーにターンが移っているか
+      const nextPlayer = activePlayer === client1 ? client2 : client1;
+      expect(mrm.getFake(nextPlayer, "YourTurnMessage").calledOnce).to.be.true;
     });
 
     it("does nothing when the game is not active", async () => {
