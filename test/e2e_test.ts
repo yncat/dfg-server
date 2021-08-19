@@ -800,6 +800,8 @@ describe("e2e test", () => {
       expect(end2.calledOnce).to.be.true;
       expect(end1.firstCall.lastArg).to.eql(endmsg);
       expect(end2.firstCall.lastArg).to.eql(endmsg);
+      // 次のプレイヤーにターンが回っていないことを見る
+      expect(mrm.getFake(client2,"YourTurnMessage").called).to.be.false;
     });
   });
 });
