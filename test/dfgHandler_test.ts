@@ -472,7 +472,7 @@ describe("DFGHandler", () => {
   });
 
   describe("kickPlayerByIdentifier", () => {
-    it("calls game.kickPlayerByIdentifier", () => {
+    it("calls game.kickPlayerByIdentifier and returns true when kicking the active player", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -480,8 +480,43 @@ describe("DFGHandler", () => {
         kickPlayerByIdentifier: kick,
       });
       h.game = g;
-      h.kickPlayerByIdentifier(pi);
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+      });
+      h.activePlayerControl = apc;
+      const ret = h.kickPlayerByIdentifier(pi);
       expect(kick.calledWith(pi)).to.be.true;
+      expect(ret).to.be.true;
+    });
+
+    it("calls game.kickPlayerByIdentifier and returns false when kicking the inactive player", () => {
+      const pi = "ccaatt";
+      const inactivePi = "ddoogg";
+      const h = createDFGHandler();
+      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const g = <dfg.Game>(<unknown>{
+        kickPlayerByIdentifier: kick,
+      });
+      h.game = g;
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+      });
+      h.activePlayerControl = apc;
+      const ret = h.kickPlayerByIdentifier(inactivePi);
+      expect(kick.calledWith(inactivePi)).to.be.true;
+      expect(ret).to.be.false;
+    });
+
+    it("throws an error when activePlayerControl is not set", () => {
+      const h = createDFGHandler();
+      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const g = <dfg.Game>(<unknown>{
+        kickPlayerByIdentifier: kick,
+      });
+      h.game=g;
+      expect(() => {
+        h.kickPlayerByIdentifier("ccaatt");
+      }).to.throw("active player control is invalid");
     });
 
     it("throws an error when game is not set", () => {

@@ -155,12 +155,18 @@ export class DFGHandler {
     this.game.finishActivePlayerControl(this.activePlayerControl);
   }
 
-  public kickPlayerByIdentifier(identifier: string): void {
+  public kickPlayerByIdentifier(identifier: string): boolean {
+    // 次のプレイヤーにターンを移さなければいけないとき、trueを返す。
     if (!this.game) {
       this.gameInactiveError();
     }
+    if (!this.activePlayerControl) {
+      this.invalidControllerError();
+    }
 
+    const mustHandleNextPlayer = identifier === this.activePlayerControl.playerIdentifier; // 現在捜査中のプレイヤーがキックされる場合、次のプレイヤーにターンを回さなければならない
     this.game.kickPlayerByIdentifier(identifier);
+    return mustHandleNextPlayer;
   }
 
   private gameInactiveError() {

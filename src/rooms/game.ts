@@ -151,7 +151,10 @@ export class GameRoom extends Room<GameState> {
       !this.roomOptionsForTest.skipKickOnLeave &&
       this.dfgHandler.isGameActive()
     ) {
-      this.dfgHandler.kickPlayerByIdentifier(client.id);
+      const mustHandleNextPlayer = this.dfgHandler.kickPlayerByIdentifier(client.id);
+      if(mustHandleNextPlayer){
+        this.handleNextPlayer();
+      }
     }
     this.playerMap.delete(client.id);
     if (client === this.masterClient) {
