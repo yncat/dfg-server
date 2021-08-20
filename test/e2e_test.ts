@@ -10,7 +10,6 @@ import appConfig from "../src/arena.config";
 import * as dfgmsg from "../msg-src/dfgmsg";
 import * as dfg from "dfg-simulator";
 import { GameRoom } from "../src/rooms/game";
-import { resolveModuleName } from "typescript";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function dummyMessageHandler(message: any) {}
@@ -735,7 +734,7 @@ describe("e2e test", () => {
       await forMilliseconds(300);
       mrm.resetHistory();
       const msg1 = dfgmsg.encodePlayerKickedMessage("dog");
-      client2.leave(true);
+      void client2.leave(true);
       await forMilliseconds(100);
       const k = mrm.getFake(client1, "PlayerKickedMessage");
       expect(k.calledOnce).to.be.true;

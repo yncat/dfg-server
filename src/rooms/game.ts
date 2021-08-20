@@ -116,6 +116,7 @@ export class GameRoom extends Room<GameState> {
       }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.onMessage("PassRequest", (client, payload) => {
       if (!this.dfgHandler.isGameActive()) {
         return;
