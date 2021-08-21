@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Authorization</title>
+  </head>
+  <script>
+	window.onload = function () {
+	  document.getElementById("code_input").focus();
+	};
+  </script>
+
+  <body>
+    <h1>Authorization</h1>
+    <p>Enter authorization code.</p>
+    <form>
+      <label
+        >Authorization code:
+        <input type="text" name="code" maxlength="6" id="code_input"
+      /></label>
+      <input type="submit" value="Authorize" />
+    </form>
+  </body>
+</html>
