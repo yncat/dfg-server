@@ -11,7 +11,8 @@
     "test": "mocha --require ts-node/register test/**_test.ts --exit --timeout 15000 --reporter dot",
     "fmt-lint": "prettier -c test/**/*.ts src/**/*.ts",
     "fmt": "prettier -w src/**/*.ts test/**/*.ts",
-    "lint": "eslint . --ext ts"
+    "lint": "eslint . --ext ts",
+    "otp-secret-generate": "node tools/otp_secret_generate.js"
   },
   "author": "Yukio Nozawa",
   "license": "UNLICENSED",
