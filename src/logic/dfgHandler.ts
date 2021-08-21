@@ -164,7 +164,8 @@ export class DFGHandler {
       this.invalidControllerError();
     }
 
-    const mustHandleNextPlayer = identifier === this.activePlayerControl.playerIdentifier; // 現在捜査中のプレイヤーがキックされる場合、次のプレイヤーにターンを回さなければならない
+    const mustHandleNextPlayer =
+      identifier === this.activePlayerControl.playerIdentifier; // 現在捜査中のプレイヤーがキックされる場合、次のプレイヤーにターンを回さなければならない
     this.game.kickPlayerByIdentifier(identifier);
     return mustHandleNextPlayer;
   }

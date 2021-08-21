@@ -152,15 +152,16 @@ export class GameRoom extends Room<GameState> {
       !this.roomOptionsForTest.skipKickOnLeave &&
       this.dfgHandler.isGameActive()
     ) {
-      const mustHandleNextPlayer = this.dfgHandler.kickPlayerByIdentifier(client.id);
-      if(mustHandleNextPlayer){
+      const mustHandleNextPlayer = this.dfgHandler.kickPlayerByIdentifier(
+        client.id
+      );
+      if (mustHandleNextPlayer) {
         this.handleNextPlayer();
       }
     }
     this.playerMap.delete(client.id);
     if (client === this.masterClient) {
-      this.broadcast("MasterDisconnectedMessage", "");
-      void this.disconnect();
+      this.handleGameMasterSwitch();
     }
   }
 
@@ -174,5 +175,15 @@ export class GameRoom extends Room<GameState> {
     this.dfgHandler.prepareNextPlayer();
     this.dfgHandler.notifyToActivePlayer();
     this.dfgHandler.updateHandForActivePlayer();
+  }
+
+  private handleGameMasterSwitch() {
+    if (this.clients.length === 0) {
+      return;
+    }
+
+    const nextClient = this.clients[0];
+    this.masterClient = nextClient;
+    nextClient.send("GameMasterMessage", "");
   }
 }

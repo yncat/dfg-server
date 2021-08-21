@@ -513,7 +513,7 @@ describe("DFGHandler", () => {
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
       });
-      h.game=g;
+      h.game = g;
       expect(() => {
         h.kickPlayerByIdentifier("ccaatt");
       }).to.throw("active player control is invalid");

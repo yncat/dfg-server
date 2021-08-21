@@ -187,7 +187,7 @@ describe("e2e test", () => {
       expect(cfn2.firstCall.lastArg).to.eql(want);
     });
 
-    it("close room when master client disconnects", async () => {
+    it("master's loss moves master client to another player who joined next", async () => {
       const room = await colyseus.createRoom("game_room", {});
       setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
@@ -195,21 +195,12 @@ describe("e2e test", () => {
       client1.onMessage("GameMasterMessage", dummyMessageHandler);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       client2.onMessage("PlayerJoinedMessage", dummyMessageHandler);
+      const mas = createMessageReceiver();
+      client2.onMessage("GameMasterMessage", mas);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const disconnected = sinon.fake((code: number) => {});
-      const masterDisconnectedMessage = createMessageReceiver();
-      client2.onLeave(disconnected);
-      client2.onMessage("MasterDisconnectedMessage", masterDisconnectedMessage);
-      await Promise.all([
-        client1.waitForMessage("PlayerJoinedMessage"),
-        client2.waitForMessage("PlayerJoinedMessage"),
-        room.waitForNextPatch(),
-      ]);
       void client1.leave();
-      await client2.waitForMessage("MasterDisconnectedMessage");
-      expect(masterDisconnectedMessage.called).to.be.true;
       await forMilliseconds(100);
-      expect(disconnected.called).to.be.true;
+      expect(mas.called).to.be.true;
     });
 
     it("handle chat message", async () => {
@@ -800,7 +791,7 @@ describe("e2e test", () => {
       expect(end1.firstCall.lastArg).to.eql(endmsg);
       expect(end2.firstCall.lastArg).to.eql(endmsg);
       // 次のプレイヤーにターンが回っていないことを見る
-      expect(mrm.getFake(client2,"YourTurnMessage").called).to.be.false;
+      expect(mrm.getFake(client2, "YourTurnMessage").called).to.be.false;
     });
   });
 });
