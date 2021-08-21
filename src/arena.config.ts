@@ -1,5 +1,7 @@
 import Arena from "@colyseus/arena";
 import { monitor } from "@colyseus/monitor";
+import { Request } from "express";
+import { authenticator } from "otplib";
 
 /**
  * Import your Room files
@@ -31,7 +33,13 @@ export default Arena({
      * It is recommended to protect this route with a password.
      * Read more: https://docs.colyseus.io/tools/monitor/
      */
-    app.use("/colyseus", monitor());
+    app.use("/monitor", (req, res, next) => {
+      if (authOK(req)) {
+        monitor()(req, res, next);
+      } else {
+        res.sendFile(__dirname + "/monitor_auth.html");
+      }
+    });
   },
 
   beforeListen: () => {
@@ -40,3 +48,10 @@ export default Arena({
      */
   },
 });
+
+function authOK(req: Request) {
+  if (!req.query.code) {
+    return false;
+  }
+  return authenticator.check(req.query.code as string, process.env["DFG_OTP_SECRET"]);
+}
