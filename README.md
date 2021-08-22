@@ -2,7 +2,7 @@
 
 ## Environment variables
 
-- DFG_OTP_SECRET: TOTP secret key for admin authorization. Can be generated using npm run otp-secret-generate.
+- DFG_OTP_SECRET: TOTP secret key for admin authorization. Can be generated using npm run otp-secret-generate. Currently unused.
 
 ## npm scripts
 

@@ -33,7 +33,7 @@ export default Arena({
      * It is recommended to protect this route with a password.
      * Read more: https://docs.colyseus.io/tools/monitor/
      */
-    app.use("/monitor", auth, monitor());
+    app.use("/monitor", monitor());
   },
 
   beforeListen: () => {
@@ -49,18 +49,4 @@ function auth(req: Request, res: Response, next: NextFunction) {
   } else {
     res.sendFile(__dirname + "/monitor_auth.html");
   }
-}
-
-function authOK(req: Request) {
-  console.log("auth");
-  if (!req.query.code) {
-    return false;
-  }
-  console.log("code: " + req.query.code);
-  const r = authenticator.check(
-    req.query.code as string,
-    process.env["DFG_OTP_SECRET"]
-  );
-  console.log("auth ret: " + r);
-  return r;
 }
