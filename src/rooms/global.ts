@@ -11,6 +11,7 @@ import { createPlayerFromClientOptions } from "../logic/player";
 import { GlobalState } from "./schema/global";
 import { reportErrorWithDefaultReporter } from "../logic/errorReporter";
 import http from "http";
+import { createDefaultAuthAdapter } from "../logic/authAdapters";
 
 export class GlobalRoom extends Room<GlobalState> {
   private chatHandler: ChatHandler;
@@ -42,10 +43,7 @@ export class GlobalRoom extends Room<GlobalState> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onAuth(client: Client, options: any, request: http.IncomingMessage): boolean {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (!options.playerName) {
-      return false;
-    }
-    return true;
+    return createDefaultAuthAdapter().authorize(options);
   }
 
   onJoin(client: Client, options: any) {
