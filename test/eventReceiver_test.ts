@@ -6,7 +6,7 @@ import { RoomProxy } from "../src/logic/roomProxy";
 import { GameState } from "../src/rooms/schema/game";
 import { Player } from "../src/logic/player";
 import { PlayerMap } from "../src/logic/playerMap";
-import * as dfgmsg from "../msg-src/dfgmsg";
+import * as dfgmsg from "dfg-messages";
 
 function createEventReceiver(): EventReceiver {
   return new EventReceiver(

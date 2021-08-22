@@ -1,4 +1,4 @@
-import { PayloadDecodeError } from "../../msg-src/dfgmsg";
+import { PayloadDecodeError } from "dfg-messages";
 
 export function isDecodeSuccess<T>(
   decoded: T | PayloadDecodeError

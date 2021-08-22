@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ChatHandler } from "../src/logic/chatHandler";
-import * as dfgmsg from "../msg-src/dfgmsg";
+import * as dfgmsg from "dfg-messages";
 
 describe("ChatHandler", () => {
   it("can generate chat message from request and player name", () => {

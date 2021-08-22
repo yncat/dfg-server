@@ -3,7 +3,7 @@ import { GameState } from "../rooms/schema/game";
 import { RoomProxy } from "./roomProxy";
 import { PlayerMap } from "./playerMap";
 import { CardEnumerator } from "./cardEnumerator";
-import * as dfgmsg from "../../msg-src/dfgmsg";
+import * as dfgmsg from "dfg-messages";
 import { EventReceiver } from "./eventReceiver";
 
 class InvalidGameStateError extends Error {}

@@ -1,4 +1,4 @@
-import * as dfgmsg from "../../msg-src/dfgmsg";
+import * as dfgmsg from "dfg-messages";
 
 export class ChatHandler {
   public generateChatMessage(

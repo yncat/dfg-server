@@ -1,5 +1,5 @@
 import * as dfg from "dfg-simulator";
-import * as dfgmsg from "../../msg-src/dfgmsg";
+import * as dfgmsg from "dfg-messages";
 import { RoomProxy } from "./roomProxy";
 import { GameState } from "../rooms/schema/game";
 import { PlayerMap } from "./playerMap";

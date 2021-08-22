@@ -1,5 +1,5 @@
 import * as dfg from "dfg-simulator";
-import * as dfgmsg from "../../msg-src/dfgmsg";
+import * as dfgmsg from "dfg-messages";
 
 export class CardEnumerator {
   public enumerateFromHand(hand: dfg.Hand): dfgmsg.CardListMessage {

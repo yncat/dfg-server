@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { isDecodeSuccess } from "../src/logic/decodeValidator";
-import * as dfgmsg from "../msg-src/dfgmsg";
+import * as dfgmsg from "dfg-messages";
 
 describe("DecodeValidator", () => {
   it("returns true when payload is successfully decoded", () => {

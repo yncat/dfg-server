@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 import { Room, Client } from "colyseus";
-import * as dfgmsg from "../../msg-src/dfgmsg";
+import * as dfgmsg from "dfg-messages";
 import { isDecodeSuccess } from "../logic/decodeValidator";
 import { ChatHandler } from "../logic/chatHandler";
 import { PlayerMap } from "../logic/playerMap";
