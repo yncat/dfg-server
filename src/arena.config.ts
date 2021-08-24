@@ -1,7 +1,5 @@
 import Arena from "@colyseus/arena";
 import { monitor } from "@colyseus/monitor";
-import { Request, Response, NextFunction } from "express";
-import { authenticator } from "otplib";
 
 /**
  * Import your Room files
@@ -42,11 +40,3 @@ export default Arena({
      */
   },
 });
-
-function auth(req: Request, res: Response, next: NextFunction) {
-  if (authOK(req)) {
-    next();
-  } else {
-    res.sendFile(__dirname + "/monitor_auth.html");
-  }
-}
