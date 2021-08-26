@@ -128,6 +128,25 @@ describe("e2e test", () => {
       expect(client1.sessionId).to.eql(room.clients[0].sessionId);
     });
 
+    it("handle RoomCreatedRequest", async () => {
+      const room = await colyseus.createRoom("global_room", {});
+      const client1 = await colyseus.connectTo(room, { playerName: "cat" });
+      const cfn1 = createMessageReceiver();
+      client1.onMessage("RoomCreatedMessage", cfn1);
+      const client2 = await colyseus.connectTo(room, { playerName: "dog" });
+      const cfn2 = createMessageReceiver();
+      client2.onMessage("RoomCreatedMessage", cfn2);
+      client1.send("RoomCreatedRequest", "");
+      await Promise.all([
+        client1.waitForMessage("RoomCreatedMessage"),
+        client2.waitForMessage("RoomCreatedMessage"),
+        room.waitForNextPatch(),
+      ]);
+      const want = { playerName: "cat" };
+      expect(cfn1.firstCall.lastArg).to.eql(want);
+      expect(cfn2.firstCall.lastArg).to.eql(want);
+    });
+
     it("handle chat message", async () => {
       const room = await colyseus.createRoom("global_room", {});
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });

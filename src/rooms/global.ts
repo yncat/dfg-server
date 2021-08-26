@@ -21,6 +21,17 @@ export class GlobalRoom extends Room<GlobalState> {
     this.setState(new GlobalState());
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    this.onMessage("RoomCreatedRequest", (client, payload) => {
+      this.broadcast(
+        "RoomCreatedMessage",
+        dfgmsg.encodeRoomCreatedMessage(
+          this.playerMap.clientIDToPlayer(client.id).name
+        )
+      );
+    });
+
     this.onMessage("chatRequest", (client, payload) => {
       const req = dfgmsg.decodePayload<dfgmsg.ChatRequest>(
         payload,
