@@ -65,6 +65,7 @@ export class GlobalRoom extends Room<GlobalState> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLeave(client: Client, consented: boolean) {
     this.playerMap.delete(client.id);
+    this.state.playerCount = this.clients.length;
   }
 
   onDispose() {}
