@@ -155,7 +155,7 @@ describe("e2e test", () => {
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       const cfn2 = createMessageReceiver();
       client2.onMessage("ChatMessage", cfn2);
-      client1.send("chatRequest", dfgmsg.encodeChatRequest("hello"));
+      client1.send("ChatRequest", dfgmsg.encodeChatRequest("hello"));
       await Promise.all([
         client1.waitForMessage("ChatMessage"),
         client2.waitForMessage("ChatMessage"),
@@ -234,7 +234,7 @@ describe("e2e test", () => {
       client2.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       const cfn2 = createMessageReceiver();
       client2.onMessage("ChatMessage", cfn2);
-      client1.send("chatRequest", dfgmsg.encodeChatRequest("hello"));
+      client1.send("ChatRequest", dfgmsg.encodeChatRequest("hello"));
       await Promise.all([
         client1.waitForMessage("ChatMessage"),
         client2.waitForMessage("ChatMessage"),

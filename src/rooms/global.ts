@@ -32,7 +32,7 @@ export class GlobalRoom extends Room<GlobalState> {
       );
     });
 
-    this.onMessage("chatRequest", (client, payload) => {
+    this.onMessage("ChatRequest", (client, payload) => {
       const req = dfgmsg.decodePayload<dfgmsg.ChatRequest>(
         payload,
         dfgmsg.ChatRequestDecoder
