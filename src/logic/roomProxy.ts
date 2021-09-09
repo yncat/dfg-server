@@ -28,11 +28,12 @@ export class RoomProxy<T extends Schema> {
     c.send(type, message);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
   public setMetadata(meta: Partial<any>) {
     if (!this.room) {
       return;
     }
-    this.room.setMetadata(meta);
+    void this.room.setMetadata(meta);
   }
 
   private findClientByID(clientID: string): Client {
