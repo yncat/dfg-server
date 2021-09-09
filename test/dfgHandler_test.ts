@@ -535,5 +535,17 @@ describe("DFGHandler", () => {
       h.eventReceiver.onGameEnd(dfg.createResult([]));
       expect(h.game).to.be.null;
     });
+
+    it("updates the room metadata", () => {
+      const h = createDFGHandler();
+      const g = <dfg.Game>(<unknown>{});
+      h.game = g;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      roomProxyMock
+        .expects("setMetadata")
+        .calledWith(dfgmsg.encodeGameRoomMetadata(dfgmsg.RoomState.WAITING));
+      h.eventReceiver.onGameEnd(dfg.createResult([]));
+      roomProxyMock.verify();
+    });
   });
 });

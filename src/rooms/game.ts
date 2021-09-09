@@ -32,6 +32,7 @@ export class GameRoom extends Room<GameState> {
     const rp = new RoomProxy<GameState>(this);
     this.dfgHandler = new DFGHandler(rp, this.playerMap);
     this.setState(new GameState());
+    this.setMetadata(dfgmsg.encodeGameRoomMetadata(dfgmsg.RoomState.WAITING));
 
     // message handlers
     this.onMessage("ChatRequest", (client, payload) => {
@@ -64,6 +65,7 @@ export class GameRoom extends Room<GameState> {
         return v.id;
       });
       this.dfgHandler.startGame(ids);
+      this.setMetadata(dfgmsg.encodeGameRoomMetadata(dfgmsg.RoomState.PLAYING));
       this.dfgHandler.updateCardsForEveryone();
       this.handleNextPlayer();
     });

@@ -28,6 +28,13 @@ export class RoomProxy<T extends Schema> {
     c.send(type, message);
   }
 
+  public setMetadata(meta: Partial<any>) {
+    if (!this.room) {
+      return;
+    }
+    this.room.setMetadata(meta);
+  }
+
   private findClientByID(clientID: string): Client {
     const cl = this.room.clients.filter((v) => {
       return v.id === clientID;

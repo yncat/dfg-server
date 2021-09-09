@@ -17,6 +17,9 @@ export class DFGHandler {
   constructor(roomProxy: RoomProxy<GameState>, playerMap: PlayerMap) {
     this.eventReceiver = new EventReceiver(roomProxy, playerMap, () => {
       this.game = null;
+      this.roomProxy.setMetadata(
+        dfgmsg.encodeGameRoomMetadata(dfgmsg.RoomState.WAITING)
+      );
     });
     this.roomProxy = roomProxy;
     this.playerMap = playerMap;
