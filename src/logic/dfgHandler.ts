@@ -1,5 +1,5 @@
 import * as dfg from "dfg-simulator";
-import { GameState } from "../rooms/schema/game";
+import { GameRoom } from "../rooms/interface";
 import { RoomProxy } from "./roomProxy";
 import { PlayerMap } from "./playerMap";
 import { CardEnumerator } from "./cardEnumerator";
@@ -11,15 +11,17 @@ export class DFGHandler {
   game: dfg.Game | null;
   activePlayerControl: dfg.ActivePlayerControl | null;
   eventReceiver: dfg.EventReceiver;
-  roomProxy: RoomProxy<GameState>;
+  roomProxy: RoomProxy<GameRoom>;
   playerMap: PlayerMap;
   cardEnumerator: CardEnumerator;
-  constructor(roomProxy: RoomProxy<GameState>, playerMap: PlayerMap) {
+  constructor(roomProxy: RoomProxy<GameRoom>, playerMap: PlayerMap) {
     this.eventReceiver = new EventReceiver(roomProxy, playerMap, () => {
       this.game = null;
-      this.roomProxy.setMetadata(
-        dfgmsg.encodeGameRoomMetadata(dfgmsg.RoomState.WAITING)
-      );
+      const rm = this.roomProxy.roomOrNull();
+      if (rm) {
+        rm.editableMetadata.values.roomState = dfgmsg.RoomState.WAITING;
+        this.roomProxy.setMetadata(rm.editableMetadata.produce());
+      }
     });
     this.roomProxy = roomProxy;
     this.playerMap = playerMap;

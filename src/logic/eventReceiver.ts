@@ -1,15 +1,15 @@
 import * as dfg from "dfg-simulator";
 import * as dfgmsg from "dfg-messages";
 import { RoomProxy } from "./roomProxy";
-import { GameState } from "../rooms/schema/game";
+import { GameRoom } from "../rooms/interface";
 import { PlayerMap } from "./playerMap";
 
 export class EventReceiver implements dfg.EventReceiver {
-  roomProxy: RoomProxy<GameState>;
+  roomProxy: RoomProxy<GameRoom>;
   playerMap: PlayerMap;
   gameEndedCallback: () => void;
   constructor(
-    roomProxy: RoomProxy<GameState>,
+    roomProxy: RoomProxy<GameRoom>,
     playerMap: PlayerMap,
     gameEndedCallback: () => void
   ) {

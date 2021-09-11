@@ -1,13 +1,14 @@
 import { Room, Client } from "colyseus";
 import { Schema } from "@colyseus/schema";
+import { EditableMetadata } from "./editableMetadata";
 
 // Colyseus.roomへの直接の呼び出しを避けることで、テストを書きやすいようにするためのプロキシ。
 
 class ClientNotFoundError extends Error {}
 
-export class RoomProxy<T extends Schema> {
-  room: Room<T> | null;
-  constructor(room: Room<T> | null = null) {
+export class RoomProxy<T extends Room<any>> {
+  private room: T | null;
+  constructor(room: T | null = null) {
     this.room = room;
   }
 
@@ -28,12 +29,15 @@ export class RoomProxy<T extends Schema> {
     c.send(type, message);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
   public setMetadata(meta: Partial<any>) {
     if (!this.room) {
       return;
     }
-    void this.room.setMetadata(meta);
+    this.room.setMetadata(meta);
+  }
+
+  public roomOrNull(): T | null {
+    return this.room;
   }
 
   private findClientByID(clientID: string): Client {

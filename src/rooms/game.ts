@@ -12,6 +12,7 @@ import { isDecodeSuccess } from "../logic/decodeValidator";
 import { reportErrorWithDefaultReporter } from "../logic/errorReporter";
 import { DFGHandler } from "../logic/dfgHandler";
 import { RoomProxy } from "../logic/roomProxy";
+import { EditableMetadata } from "../logic/editableMetadata";
 
 interface RoomOptionsForTest {
   skipKickOnLeave: boolean;
@@ -23,16 +24,20 @@ export class GameRoom extends Room<GameState> {
   playerMap: PlayerMap;
   masterClient: Client;
   dfgHandler: DFGHandler;
+  editableMetadata: EditableMetadata<dfgmsg.GameRoomMetadata>;
   roomOptionsForTest: RoomOptionsForTest;
   onCreate(options: any) {
     /* eslint-enable @typescript-eslint/no-unused-vars */
     this.roomOptionsForTest = { skipKickOnLeave: false };
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
-    const rp = new RoomProxy<GameState>(this);
+    const rp = new RoomProxy<GameRoom>(this);
     this.dfgHandler = new DFGHandler(rp, this.playerMap);
+    this.editableMetadata = new EditableMetadata<dfgmsg.GameRoomMetadata>(
+      dfgmsg.encodeGameRoomMetadata("", dfgmsg.RoomState.WAITING)
+    );
     this.setState(new GameState());
-    void this.setMetadata(dfgmsg.encodeGameRoomMetadata(dfgmsg.RoomState.WAITING));
+    void this.setMetadata(this.editableMetadata.produce());
 
     // message handlers
     this.onMessage("ChatRequest", (client, payload) => {
@@ -65,7 +70,8 @@ export class GameRoom extends Room<GameState> {
         return v.id;
       });
       this.dfgHandler.startGame(ids);
-      void this.setMetadata(dfgmsg.encodeGameRoomMetadata(dfgmsg.RoomState.PLAYING));
+      this.editableMetadata.values.roomState = dfgmsg.RoomState.PLAYING;
+      void this.setMetadata(this.editableMetadata.produce());
       this.dfgHandler.updateCardsForEveryone();
       this.handleNextPlayer();
     });
@@ -138,6 +144,8 @@ export class GameRoom extends Room<GameState> {
       // first player in this room will become the game master
       client.send("GameMasterMessage", "");
       this.masterClient = client;
+      this.editableMetadata.values.owner = options.playerName;
+      void this.setMetadata(this.editableMetadata.produce());
     } else {
       this.broadcast(
         "PlayerJoinedMessage",
@@ -187,5 +195,9 @@ export class GameRoom extends Room<GameState> {
     const nextClient = this.clients[0];
     this.masterClient = nextClient;
     nextClient.send("GameMasterMessage", "");
+    this.editableMetadata.values.owner = this.playerMap.clientIDToPlayer(
+      this.masterClient.id
+    ).name;
+    void this.setMetadata(this.editableMetadata.produce());
   }
 }

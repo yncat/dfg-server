@@ -216,10 +216,13 @@ describe("e2e test", () => {
       client2.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       const mas = createMessageReceiver();
       client2.onMessage("GameMasterMessage", mas);
+      await forMilliseconds(100);
+      expect(room.metadata.owner).to.eql("cat");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       void client1.leave();
       await forMilliseconds(100);
       expect(mas.called).to.be.true;
+      expect(room.metadata.owner).to.eql("dog");
     });
 
     it("handle chat message", async () => {

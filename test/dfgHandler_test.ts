@@ -3,13 +3,15 @@ import sinon from "sinon";
 import { expect } from "chai";
 import { DFGHandler } from "../src/logic/dfgHandler";
 import { RoomProxy } from "../src/logic/roomProxy";
-import { GameState } from "../src/rooms/schema/game";
 import { Player } from "../src/logic/player";
 import { PlayerMap } from "../src/logic/playerMap";
+import { GameRoom } from "../src/rooms/interface";
 import * as dfgmsg from "dfg-messages";
+import { EditableMetadata } from "../src/logic/editableMetadata";
+import { BLOCK_SCOPED_SYMBOL } from "@babel/types";
 
 function createDFGHandler(): DFGHandler {
-  const rp = new RoomProxy<GameState>();
+  const rp = new RoomProxy<GameRoom>();
   const pm = new PlayerMap();
   const h = new DFGHandler(rp, pm);
   return h;
@@ -538,12 +540,23 @@ describe("DFGHandler", () => {
 
     it("updates the room metadata", () => {
       const h = createDFGHandler();
+      const em = new EditableMetadata<dfgmsg.GameRoomMetadata>(
+        dfgmsg.encodeGameRoomMetadata("cat", dfgmsg.RoomState.PLAYING)
+      );
+      const bc = sinon.fake((message: string, obj: any) => {});
+      const rm = <GameRoom>(<unknown>{
+        editableMetadata: em,
+        broadcast: bc,
+      });
+      h["roomProxy"]["room"] = rm;
       const g = <dfg.Game>(<unknown>{});
       h.game = g;
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock
         .expects("setMetadata")
-        .calledWith(dfgmsg.encodeGameRoomMetadata(dfgmsg.RoomState.WAITING));
+        .calledWith(
+          dfgmsg.encodeGameRoomMetadata("cat", dfgmsg.RoomState.WAITING)
+        );
       h.eventReceiver.onGameEnd(dfg.createResult([]));
       roomProxyMock.verify();
     });

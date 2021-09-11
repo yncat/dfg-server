@@ -3,14 +3,14 @@ import sinon from "sinon";
 import { expect } from "chai";
 import { EventReceiver } from "../src/logic/eventReceiver";
 import { RoomProxy } from "../src/logic/roomProxy";
-import { GameState } from "../src/rooms/schema/game";
+import { GameRoom } from "../src/rooms/interface";
 import { Player } from "../src/logic/player";
 import { PlayerMap } from "../src/logic/playerMap";
 import * as dfgmsg from "dfg-messages";
 
 function createEventReceiver(): EventReceiver {
   return new EventReceiver(
-    new RoomProxy<GameState>(),
+    new RoomProxy<GameRoom>(),
     new PlayerMap(),
     () => {}
   );
