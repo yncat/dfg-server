@@ -8,7 +8,6 @@ import { PlayerMap } from "../src/logic/playerMap";
 import { GameRoom } from "../src/rooms/interface";
 import * as dfgmsg from "dfg-messages";
 import { EditableMetadata } from "../src/logic/editableMetadata";
-import { BLOCK_SCOPED_SYMBOL } from "@babel/types";
 
 function createDFGHandler(): DFGHandler {
   const rp = new RoomProxy<GameRoom>();
@@ -543,6 +542,7 @@ describe("DFGHandler", () => {
       const em = new EditableMetadata<dfgmsg.GameRoomMetadata>(
         dfgmsg.encodeGameRoomMetadata("cat", dfgmsg.RoomState.PLAYING)
       );
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
       const bc = sinon.fake((message: string, obj: any) => {});
       const rm = <GameRoom>(<unknown>{
         editableMetadata: em,

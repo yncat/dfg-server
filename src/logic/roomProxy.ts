@@ -1,12 +1,12 @@
 import { Room, Client } from "colyseus";
 import { Schema } from "@colyseus/schema";
-import { EditableMetadata } from "./editableMetadata";
 
 // Colyseus.roomへの直接の呼び出しを避けることで、テストを書きやすいようにするためのプロキシ。
+// エスケープハッチとして、roomOrNullでルームインスタンスを取得できるが、あまりやってほしくはない。
 
 class ClientNotFoundError extends Error {}
 
-export class RoomProxy<T extends Room<any>> {
+export class RoomProxy<T extends Room<Schema>> {
   private room: T | null;
   constructor(room: T | null = null) {
     this.room = room;
@@ -29,11 +29,12 @@ export class RoomProxy<T extends Room<any>> {
     c.send(type, message);
   }
 
-  public setMetadata(meta: Partial<any>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public setMetadata(meta: Partial<any>): void {
     if (!this.room) {
       return;
     }
-    this.room.setMetadata(meta);
+    void this.room.setMetadata(meta);
   }
 
   public roomOrNull(): T | null {

@@ -140,11 +140,16 @@ export class GameRoom extends Room<GameState> {
   }
 
   onJoin(client: Client, options: any) {
+    this.playerMap.add(client.id, createPlayerFromClientOptions(options));
+    this.state.playerCount = this.clients.length;
+
     if (this.clients.length == 1) {
       // first player in this room will become the game master
       client.send("GameMasterMessage", "");
       this.masterClient = client;
-      this.editableMetadata.values.owner = options.playerName;
+      this.editableMetadata.values.owner = this.playerMap.clientIDToPlayer(
+        client.id
+      ).name;
       void this.setMetadata(this.editableMetadata.produce());
     } else {
       this.broadcast(
@@ -152,8 +157,6 @@ export class GameRoom extends Room<GameState> {
         dfgmsg.encodePlayerJoinedMessage(options.playerName)
       );
     }
-    this.playerMap.add(client.id, createPlayerFromClientOptions(options));
-    this.state.playerCount = this.clients.length;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

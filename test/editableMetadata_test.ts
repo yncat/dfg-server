@@ -1,4 +1,3 @@
-import sinon from "sinon";
 import { expect } from "chai";
 import * as dfgmsg from "dfg-messages";
 import { EditableMetadata } from "../src/logic/editableMetadata";
