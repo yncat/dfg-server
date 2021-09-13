@@ -23,7 +23,7 @@ export class GameRoom extends Room<GameState> {
   gameState: GameState;
   chatHandler: ChatHandler;
   playerMap: PlayerMap;
-  masterClient: Client;
+  ownerClient: Client;
   dfgHandler: DFGHandler;
   editableMetadata: EditableMetadata<dfgmsg.GameRoomMetadata>;
   roomOptionsForTest: RoomOptionsForTest;
@@ -62,7 +62,7 @@ export class GameRoom extends Room<GameState> {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.onMessage("GameStartRequest", (client, payload) => {
-      if (client !== this.masterClient) {
+      if (client !== this.ownerClient) {
         return;
       }
       if (this.dfgHandler.isGameActive()) {
@@ -147,13 +147,13 @@ export class GameRoom extends Room<GameState> {
     this.state.playerCount = this.clients.length;
 
     if (this.clients.length == 1) {
-      // first player in this room will become the game master
-      client.send("GameMasterMessage", "");
-      this.masterClient = client;
+      // first player in this room will become the room owner
+      client.send("RoomOwnerMessage", "");
+      this.ownerClient = client;
       const name = this.playerMap.clientIDToPlayer(client.id).name;
       this.editableMetadata.values.owner = name;
       void this.setMetadata(this.editableMetadata.produce());
-      this.state.masterPlayerName = name;
+      this.state.ownerPlayerName = name;
     } else {
       this.broadcast(
         "PlayerJoinedMessage",
@@ -176,8 +176,8 @@ export class GameRoom extends Room<GameState> {
       }
     }
     this.playerMap.delete(client.id);
-    if (client === this.masterClient) {
-      this.handleGameMasterSwitch();
+    if (client === this.ownerClient) {
+      this.handleRoomOwnerSwitch();
     }
   }
 
@@ -193,17 +193,17 @@ export class GameRoom extends Room<GameState> {
     this.dfgHandler.updateHandForActivePlayer();
   }
 
-  private handleGameMasterSwitch() {
+  private handleRoomOwnerSwitch() {
     if (this.clients.length === 0) {
       return;
     }
 
     const nextClient = this.clients[0];
-    this.masterClient = nextClient;
-    nextClient.send("GameMasterMessage", "");
+    this.ownerClient = nextClient;
+    nextClient.send("RoomOwnerMessage", "");
     const name = this.playerMap.clientIDToPlayer(nextClient.id).name;
     this.editableMetadata.values.owner = name;
     void this.setMetadata(this.editableMetadata.produce());
-    this.state.masterPlayerName = name;
+    this.state.ownerPlayerName = name;
   }
 }

@@ -173,21 +173,21 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const clbk = createMessageReceiver();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      client1.onMessage("GameMasterMessage", clbk);
+      client1.onMessage("RoomOwnerMessage", clbk);
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       expect(client1.sessionId).to.eql(room.clients[0].sessionId);
     });
 
-    it("send GameMasterMessage to the first connected player", async () => {
+    it("send RoomOwnerMessage to the first connected player", async () => {
       const room = await colyseus.createRoom("game_room", {});
       setRoomOptionsForTest(room, true);
       const clbk = createMessageReceiver();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      client1.onMessage("GameMasterMessage", clbk);
-      await client1.waitForMessage("GameMasterMessage");
+      client1.onMessage("RoomOwnerMessage", clbk);
+      await client1.waitForMessage("RoomOwnerMessage");
       expect(clbk.called).to.be.true;
       const rm = room as GameRoom;
-      expect(rm.state.masterPlayerName).to.eql("cat");
+      expect(rm.state.ownerPlayerName).to.eql("cat");
     });
 
     it("broadcast PlayerJoinedMessage when second player joins", async () => {
@@ -196,7 +196,7 @@ describe("e2e test", () => {
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       const cfn1 = createMessageReceiver();
       client1.onMessage("PlayerJoinedMessage", cfn1);
-      client1.onMessage("GameMasterMessage", dummyMessageHandler);
+      client1.onMessage("RoomOwnerMessage", dummyMessageHandler);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       const cfn2 = createMessageReceiver();
       client2.onMessage("PlayerJoinedMessage", cfn2);
@@ -208,16 +208,16 @@ describe("e2e test", () => {
       expect(cfn2.firstCall.lastArg).to.eql(want);
     });
 
-    it("master's loss moves master client to another player who joined next", async () => {
+    it("room owner's loss moves room owner client to another player who joined next", async () => {
       const room = await colyseus.createRoom("game_room", {});
       setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
-      client1.onMessage("GameMasterMessage", dummyMessageHandler);
+      client1.onMessage("RoomOwnerMessage", dummyMessageHandler);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       client2.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       const mas = createMessageReceiver();
-      client2.onMessage("GameMasterMessage", mas);
+      client2.onMessage("RoomOwnerMessage", mas);
       await forMilliseconds(100);
       expect(room.metadata.owner).to.eql("cat");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -226,14 +226,14 @@ describe("e2e test", () => {
       expect(mas.called).to.be.true;
       expect(room.metadata.owner).to.eql("dog");
       const rm = room as GameRoom;
-      expect(rm.state.masterPlayerName).to.eql("dog");
+      expect(rm.state.ownerPlayerName).to.eql("dog");
     });
 
     it("handle chat message", async () => {
       const room = await colyseus.createRoom("game_room", {});
       setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      client1.onMessage("GameMasterMessage", dummyMessageHandler);
+      client1.onMessage("RoomOwnerMessage", dummyMessageHandler);
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       const cfn1 = createMessageReceiver();
       client1.onMessage("ChatMessage", cfn1);
@@ -252,14 +252,14 @@ describe("e2e test", () => {
       expect(cfn2.firstCall.lastArg).to.eql(want);
     });
 
-    it("game master can start the game", async () => {
+    it("game owner can start the game", async () => {
       const room = await colyseus.createRoom("game_room", {});
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -308,9 +308,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -333,13 +333,13 @@ describe("e2e test", () => {
       expect(ii2.calledOnce).to.be.true;
     });
 
-    it("non-game-master cannot start the game", async () => {
+    it("non-room-owner cannot start the game", async () => {
       const room = await colyseus.createRoom("game_room", {});
       setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       const fk = createMessageReceiver();
       client1.onMessage("PlayerJoinedMessage", fk);
-      client1.onMessage("GameMasterMessage", fk);
+      client1.onMessage("RoomOwnerMessage", fk);
       const ii1 = createMessageReceiver();
       const cp1 = createMessageReceiver();
       const cl1 = createMessageReceiver();
@@ -369,9 +369,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -417,9 +417,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -443,9 +443,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -474,9 +474,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -541,9 +541,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -569,9 +569,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -602,9 +602,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -634,9 +634,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -672,9 +672,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -699,9 +699,9 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -730,9 +730,9 @@ describe("e2e test", () => {
       const room = await colyseus.createRoom("game_room", {});
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
@@ -771,9 +771,9 @@ describe("e2e test", () => {
       const room = (await colyseus.createRoom("game_room", {})) as GameRoom;
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["GameMasterMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
       mrm.registerFake(
         [client1, client2],
         [
