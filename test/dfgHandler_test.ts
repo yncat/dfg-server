@@ -6,6 +6,7 @@ import { RoomProxy } from "../src/logic/roomProxy";
 import { Player } from "../src/logic/player";
 import { PlayerMap } from "../src/logic/playerMap";
 import { GameRoom } from "../src/rooms/interface";
+import { GameState } from "../src/rooms/schema/game";
 import * as dfgmsg from "dfg-messages";
 import { EditableMetadata } from "../src/logic/editableMetadata";
 
@@ -542,10 +543,12 @@ describe("DFGHandler", () => {
       const em = new EditableMetadata<dfgmsg.GameRoomMetadata>(
         dfgmsg.encodeGameRoomMetadata("cat", dfgmsg.RoomState.PLAYING)
       );
+      const state = new GameState();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
       const bc = sinon.fake((message: string, obj: any) => {});
       const rm = <GameRoom>(<unknown>{
         editableMetadata: em,
+        state: state,
         broadcast: bc,
       });
       h["roomProxy"]["room"] = rm;

@@ -20,6 +20,7 @@ interface RoomOptionsForTest {
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export class GameRoom extends Room<GameState> {
+  gameState: GameState;
   chatHandler: ChatHandler;
   playerMap: PlayerMap;
   masterClient: Client;
@@ -36,7 +37,8 @@ export class GameRoom extends Room<GameState> {
     this.editableMetadata = new EditableMetadata<dfgmsg.GameRoomMetadata>(
       dfgmsg.encodeGameRoomMetadata("", dfgmsg.RoomState.WAITING)
     );
-    this.setState(new GameState());
+    this.state = new GameState();
+    this.setState(this.state);
     void this.setMetadata(this.editableMetadata.produce());
 
     // message handlers
@@ -72,6 +74,7 @@ export class GameRoom extends Room<GameState> {
       this.dfgHandler.startGame(ids);
       this.editableMetadata.values.roomState = dfgmsg.RoomState.PLAYING;
       void this.setMetadata(this.editableMetadata.produce());
+      this.state.isInGame = true;
       this.dfgHandler.updateCardsForEveryone();
       this.handleNextPlayer();
     });
@@ -147,10 +150,10 @@ export class GameRoom extends Room<GameState> {
       // first player in this room will become the game master
       client.send("GameMasterMessage", "");
       this.masterClient = client;
-      this.editableMetadata.values.owner = this.playerMap.clientIDToPlayer(
-        client.id
-      ).name;
+      const name = this.playerMap.clientIDToPlayer(client.id).name;
+      this.editableMetadata.values.owner = name;
       void this.setMetadata(this.editableMetadata.produce());
+      this.state.masterPlayerName = name;
     } else {
       this.broadcast(
         "PlayerJoinedMessage",
@@ -198,9 +201,9 @@ export class GameRoom extends Room<GameState> {
     const nextClient = this.clients[0];
     this.masterClient = nextClient;
     nextClient.send("GameMasterMessage", "");
-    this.editableMetadata.values.owner = this.playerMap.clientIDToPlayer(
-      this.masterClient.id
-    ).name;
+    const name = this.playerMap.clientIDToPlayer(nextClient.id).name;
+    this.editableMetadata.values.owner = name;
     void this.setMetadata(this.editableMetadata.produce());
+    this.state.masterPlayerName = name;
   }
 }

@@ -186,6 +186,8 @@ describe("e2e test", () => {
       client1.onMessage("GameMasterMessage", clbk);
       await client1.waitForMessage("GameMasterMessage");
       expect(clbk.called).to.be.true;
+      const rm = room as GameRoom;
+      expect(rm.state.masterPlayerName).to.eql("cat");
     });
 
     it("broadcast PlayerJoinedMessage when second player joins", async () => {
@@ -223,6 +225,8 @@ describe("e2e test", () => {
       await forMilliseconds(100);
       expect(mas.called).to.be.true;
       expect(room.metadata.owner).to.eql("dog");
+      const rm = room as GameRoom;
+      expect(rm.state.masterPlayerName).to.eql("dog");
     });
 
     it("handle chat message", async () => {

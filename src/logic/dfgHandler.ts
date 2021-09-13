@@ -21,6 +21,7 @@ export class DFGHandler {
       if (rm) {
         rm.editableMetadata.values.roomState = dfgmsg.RoomState.WAITING;
         this.roomProxy.setMetadata(rm.editableMetadata.produce());
+        rm.state.isInGame = false;
       }
     });
     this.roomProxy = roomProxy;
