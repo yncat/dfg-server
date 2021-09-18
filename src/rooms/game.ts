@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
+import { ArraySchema } from "@colyseus/schema";
 import { Room, Client } from "colyseus";
 import * as dfgmsg from "dfg-messages";
 import { ChatHandler } from "../logic/chatHandler";
@@ -145,6 +146,7 @@ export class GameRoom extends Room<GameState> {
   onJoin(client: Client, options: any) {
     this.playerMap.add(client.id, createPlayerFromClientOptions(options));
     this.state.playerCount = this.clients.length;
+    this.updatePlayerNameList();
 
     if (this.clients.length == 1) {
       // first player in this room will become the room owner
@@ -176,6 +178,7 @@ export class GameRoom extends Room<GameState> {
       }
     }
     this.playerMap.delete(client.id);
+    this.updatePlayerNameList();
     if (client === this.ownerClient) {
       this.handleRoomOwnerSwitch();
     }
@@ -205,5 +208,16 @@ export class GameRoom extends Room<GameState> {
     this.editableMetadata.values.owner = name;
     void this.setMetadata(this.editableMetadata.produce());
     this.state.ownerPlayerName = name;
+  }
+
+  private updatePlayerNameList() {
+    const names = this.clients
+      .map((v) => {
+        return v.id;
+      })
+      .map((v) => {
+        return this.playerMap.clientIDToPlayer(v).name;
+      });
+    this.state.playerNameList = new ArraySchema<string>(...names);
   }
 }

@@ -176,6 +176,9 @@ describe("e2e test", () => {
       client1.onMessage("RoomOwnerMessage", clbk);
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       expect(client1.sessionId).to.eql(room.clients[0].sessionId);
+      const rm = room as GameRoom;
+      expect(rm.state.playerNameList.length).to.eql(1);
+      expect(rm.state.playerNameList[0]).to.eql("cat");
     });
 
     it("send RoomOwnerMessage to the first connected player", async () => {
@@ -206,6 +209,10 @@ describe("e2e test", () => {
       expect(cfn2.called).to.be.true;
       expect(cfn1.firstCall.lastArg).to.eql(want);
       expect(cfn2.firstCall.lastArg).to.eql(want);
+      const rm = room as GameRoom;
+      expect(rm.state.playerNameList.length).to.eql(2);
+      expect(rm.state.playerNameList[0]).to.eql("cat");
+      expect(rm.state.playerNameList[1]).to.eql("dog");
     });
 
     it("room owner's loss moves room owner client to another player who joined next", async () => {
@@ -224,9 +231,11 @@ describe("e2e test", () => {
       void client1.leave();
       await forMilliseconds(100);
       expect(mas.called).to.be.true;
-      expect(room.metadata.owner).to.eql("dog");
       const rm = room as GameRoom;
+      expect(room.metadata.owner).to.eql("dog");
       expect(rm.state.ownerPlayerName).to.eql("dog");
+      expect(rm.state.playerNameList.length).to.eql(1);
+      expect(rm.state.playerNameList[0]).to.eql("dog");
     });
 
     it("handle chat message", async () => {
