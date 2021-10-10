@@ -211,6 +211,7 @@ export class GameRoom extends Room<GameState> {
   }
 
   private updatePlayerNameList() {
+    // also updates playerCount
     const names = this.clients
       .map((v) => {
         return v.id;
@@ -219,5 +220,6 @@ export class GameRoom extends Room<GameState> {
         return this.playerMap.clientIDToPlayer(v).name;
       });
     this.state.playerNameList = new ArraySchema<string>(...names);
+    this.state.playerCount = this.clients.length;
   }
 }
