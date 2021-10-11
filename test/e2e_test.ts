@@ -187,6 +187,7 @@ describe("e2e test", () => {
       const clbk = createMessageReceiver();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("RoomOwnerMessage", clbk);
+      client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
       await client1.waitForMessage("RoomOwnerMessage");
       expect(clbk.called).to.be.true;
       const rm = room as GameRoom;
@@ -205,9 +206,9 @@ describe("e2e test", () => {
       client2.onMessage("PlayerJoinedMessage", cfn2);
       await forMilliseconds(300);
       const want = { playerName: "dog" };
-      expect(cfn1.called).to.be.true;
-      expect(cfn2.called).to.be.true;
-      expect(cfn1.firstCall.lastArg).to.eql(want);
+      expect(cfn1.calledTwice).to.be.true;
+      expect(cfn2.calledOnce).to.be.true;
+      expect(cfn1.secondCall.lastArg).to.eql(want);
       expect(cfn2.firstCall.lastArg).to.eql(want);
       const rm = room as GameRoom;
       expect(rm.state.playerNameList.length).to.eql(2);

@@ -156,12 +156,11 @@ export class GameRoom extends Room<GameState> {
       this.editableMetadata.values.owner = name;
       void this.setMetadata(this.editableMetadata.produce());
       this.state.ownerPlayerName = name;
-    } else {
-      this.broadcast(
-        "PlayerJoinedMessage",
-        dfgmsg.encodePlayerJoinedMessage(options.playerName)
-      );
     }
+    this.broadcast(
+      "PlayerJoinedMessage",
+      dfgmsg.encodePlayerJoinedMessage(options.playerName)
+    );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
