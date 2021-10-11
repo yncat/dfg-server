@@ -176,14 +176,14 @@ export class GameRoom extends Room<GameState> {
         this.handleNextPlayer();
       }
     }
-    this.playerMap.delete(client.id);
-    this.updatePlayerNameList();
+    const name = this.playerMap.clientIDToPlayer(client.id).name;
+    this.broadcast("PlayerLeftMessage", dfgmsg.encodePlayerLeftMessage(name));
     if (client === this.ownerClient) {
       this.handleRoomOwnerSwitch();
     }
+    this.playerMap.delete(client.id);
+    this.updatePlayerNameList();
   }
-
-  onDispose() {}
 
   public setRoomOptionsForTest(skipKickOnLeave: boolean) {
     this.roomOptionsForTest = { skipKickOnLeave };

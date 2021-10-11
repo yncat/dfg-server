@@ -175,6 +175,7 @@ describe("e2e test", () => {
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("RoomOwnerMessage", clbk);
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
+      client1.onMessage("PlayerLeftMessage", dummyMessageHandler);
       expect(client1.sessionId).to.eql(room.clients[0].sessionId);
       const rm = room as GameRoom;
       expect(rm.state.playerNameList.length).to.eql(1);
@@ -188,6 +189,7 @@ describe("e2e test", () => {
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("RoomOwnerMessage", clbk);
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
+      client1.onMessage("PlayerLeftMessage", dummyMessageHandler);
       await client1.waitForMessage("RoomOwnerMessage");
       expect(clbk.called).to.be.true;
       const rm = room as GameRoom;
@@ -201,9 +203,11 @@ describe("e2e test", () => {
       const cfn1 = createMessageReceiver();
       client1.onMessage("PlayerJoinedMessage", cfn1);
       client1.onMessage("RoomOwnerMessage", dummyMessageHandler);
+      client1.onMessage("PlayerLeftMessage", dummyMessageHandler);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       const cfn2 = createMessageReceiver();
       client2.onMessage("PlayerJoinedMessage", cfn2);
+      client2.onMessage("PlayerLeftMessage", dummyMessageHandler);
       await forMilliseconds(300);
       const want = { playerName: "dog" };
       expect(cfn1.calledTwice).to.be.true;
@@ -224,6 +228,8 @@ describe("e2e test", () => {
       client1.onMessage("RoomOwnerMessage", dummyMessageHandler);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       client2.onMessage("PlayerJoinedMessage", dummyMessageHandler);
+      const left = sinon.fake();
+      client2.onMessage("PlayerLeftMessage", left);
       const mas = createMessageReceiver();
       client2.onMessage("RoomOwnerMessage", mas);
       await forMilliseconds(100);
@@ -231,6 +237,7 @@ describe("e2e test", () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       void client1.leave();
       await forMilliseconds(100);
+      expect(left.called).to.be.true;
       expect(mas.called).to.be.true;
       const rm = room as GameRoom;
       expect(room.metadata.owner).to.eql("dog");
@@ -245,10 +252,12 @@ describe("e2e test", () => {
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       client1.onMessage("RoomOwnerMessage", dummyMessageHandler);
       client1.onMessage("PlayerJoinedMessage", dummyMessageHandler);
+      client1.onMessage("PlayerLeftMessage", dummyMessageHandler);
       const cfn1 = createMessageReceiver();
       client1.onMessage("ChatMessage", cfn1);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       client2.onMessage("PlayerJoinedMessage", dummyMessageHandler);
+      client2.onMessage("PlayerLeftMessage", dummyMessageHandler);
       const cfn2 = createMessageReceiver();
       client2.onMessage("ChatMessage", cfn2);
       client1.send("ChatRequest", dfgmsg.encodeChatRequest("hello"));
@@ -267,9 +276,15 @@ describe("e2e test", () => {
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
-      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1],
+        ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
+      );
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
-      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client2],
+        ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
+      );
       mrm.registerFake(
         [client1, client2],
         [
@@ -324,6 +339,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -349,6 +365,7 @@ describe("e2e test", () => {
       const client1 = await colyseus.connectTo(room, { playerName: "cat" });
       const fk = createMessageReceiver();
       client1.onMessage("PlayerJoinedMessage", fk);
+      client1.onMessage("PlayerLeftMessage", dummyMessageHandler);
       client1.onMessage("RoomOwnerMessage", fk);
       const ii1 = createMessageReceiver();
       const cp1 = createMessageReceiver();
@@ -358,6 +375,7 @@ describe("e2e test", () => {
       client1.onMessage("CardListMessage", cl1);
       const client2 = await colyseus.connectTo(room, { playerName: "dog" });
       client2.onMessage("PlayerJoinedMessage", fk);
+      client2.onMessage("PlayerLeftMessage", dummyMessageHandler);
       const ii2 = createMessageReceiver();
       const cp2 = createMessageReceiver();
       const cl2 = createMessageReceiver();
@@ -385,6 +403,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -433,6 +452,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -459,6 +479,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -490,6 +511,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -557,6 +579,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -585,6 +608,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -618,6 +642,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -650,6 +675,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -688,6 +714,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -715,6 +742,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -746,6 +774,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
@@ -787,6 +816,7 @@ describe("e2e test", () => {
       mrm.registerFake(
         [client1, client2],
         [
+          "PlayerLeftMessage",
           "InitialInfoMessage",
           "CardsProvidedMessage",
           "CardListMessage",
