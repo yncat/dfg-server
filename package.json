@@ -35,28 +35,27 @@
     "rimraf": "^2.7.1",
     "ts-node": "^8.1.0",
     "ts-node-dev": "^1.0.0-pre.63",
+    "@types/sinon": "^10.0.2",
+    "@types/chai": "^4.2.21",
+    "@typescript-eslint/eslint-plugin": "^4.28.4",
+    "@typescript-eslint/parser": "^4.28.4",
+    "chai": "^4.3.4",
+    "eslint": "^7.31.0",
+    "prettier": "^2.3.2",
+    "sinon": "^11.1.1",
     "typescript": "^3.4.5"
   },
   "dependencies": {
     "@colyseus/arena": "^0.14.22",
     "@colyseus/monitor": "^0.14.20",
     "@mojotech/json-type-validation": "^3.1.0",
-    "@types/chai": "^4.2.21",
     "@types/clone": "^2.1.1",
-    "@types/sinon": "^10.0.2",
-    "@typescript-eslint/eslint-plugin": "^4.28.4",
-    "@typescript-eslint/parser": "^4.28.4",
-    "chai": "^4.3.4",
     "clone": "^2.1.2",
     "colyseus": "^0.14.20",
     "cors": "^2.8.5",
     "dfg-messages": "github:yncat/dfg-messages#master",
     "dfg-simulator": "0.1.28",
-    "dfg-simulator": "0.1.28",
-    "eslint": "^7.31.0",
     "express": "^4.16.4",
-    "otplib": "^12.0.1",
-    "prettier": "^2.3.2",
-    "sinon": "^11.1.1"
+    "otplib": "^12.0.1"
   }
 }
