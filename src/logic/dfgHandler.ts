@@ -142,6 +142,7 @@ export class DFGHandler {
     }
 
     this.activePlayerControl.discard(dps[index]);
+    this.clearDiscardPairList();
     return true;
   }
 
@@ -151,6 +152,7 @@ export class DFGHandler {
     }
 
     this.activePlayerControl.pass();
+    this.clearDiscardPairList();
   }
 
   public finishAction(): void {
@@ -190,5 +192,14 @@ export class DFGHandler {
     ruleConfig: dfg.RuleConfig
   ) {
     return dfg.createGame(clientIDList, eventReceiver, ruleConfig);
+  }
+
+  private clearDiscardPairList() {
+    // カードを出したプレイヤーのカード候補表示をクリアさせるため、空のDiscardPairListMessageを送って通知する
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "DiscardPairListMessage",
+      dfgmsg.encodeDiscardPairListMessage([])
+    );
   }
 }

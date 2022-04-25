@@ -566,6 +566,9 @@ describe("e2e test", () => {
       // 次のプレイヤーにターンが移っているか
       const nextPlayer = activePlayer === client1 ? client2 : client1;
       expect(mrm.getFake(nextPlayer, "YourTurnMessage").calledOnce).to.be.true;
+      // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
+      expect(dp.calledOnce).to.be.true;
+      expect(dp.firstCall.lastArg.discardPairList.length).to.eql(0);
     });
 
     it("does nothing when the game is not active", async () => {
@@ -689,8 +692,10 @@ describe("e2e test", () => {
       await forMilliseconds(300);
       mrm.resetHistory();
       const activePlayer = getActivePlayer(room, client1, client2);
+      mrm.resetHistory();
       activePlayer.send("PassRequest", "");
       await forMilliseconds(100);
+      const dp = mrm.getFake(activePlayer, "DiscardPairListMessage");
       const ps1 = mrm.getFake(client1, "PassMessage");
       const ps2 = mrm.getFake(client2, "PassMessage");
       expect(ps1.calledOnce).to.be.true;
@@ -701,6 +706,9 @@ describe("e2e test", () => {
       // 次のプレイヤーにターンが移っているか
       const nextPlayer = activePlayer === client1 ? client2 : client1;
       expect(mrm.getFake(nextPlayer, "YourTurnMessage").calledOnce).to.be.true;
+      // パスをしたプレイヤーのカード候補情報がリセットされているか
+      expect(dp.calledOnce).to.be.true;
+      expect(dp.firstCall.firstArg.discardPairList.length).to.eql(0);
     });
 
     it("does nothing when the game is not active", async () => {
