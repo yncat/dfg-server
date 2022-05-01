@@ -532,7 +532,11 @@ describe("DFGHandler", () => {
   describe("detecting game end", () => {
     it("make the game instance null when eventReceiver.onGameEnd is called", () => {
       const h = createDFGHandler();
-      const g = <dfg.Game>(<unknown>{});
+      const g = <dfg.Game>(<unknown>{
+        generateResult: sinon.fake(() => {
+          return dfg.createResult([]);
+        }),
+      });
       h.game = g;
       h.eventReceiver.onGameEnd(dfg.createResult([]));
       expect(h.game).to.be.null;
@@ -552,7 +556,11 @@ describe("DFGHandler", () => {
         broadcast: bc,
       });
       h["roomProxy"]["room"] = rm;
-      const g = <dfg.Game>(<unknown>{});
+      const g = <dfg.Game>(<unknown>{
+        generateResult: sinon.fake(() => {
+          return dfg.createResult([]);
+        }),
+      });
       h.game = g;
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock

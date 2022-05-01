@@ -866,6 +866,12 @@ describe("e2e test", () => {
       expect(end2.firstCall.lastArg).to.eql(endmsg);
       // 次のプレイヤーにターンが回っていないことを見る
       expect(mrm.getFake(client2, "YourTurnMessage").called).to.be.false;
+      // lastGameResultのstateが更新されていることを見る
+      expect(Array.from(room.state.lastGameResult.daifugoPlayerList)).to.eql(["cat"]);
+      expect(Array.from(room.state.lastGameResult.fugoPlayerList)).to.eql([]);
+      expect(Array.from(room.state.lastGameResult.heiminPlayerList)).to.eql([]);
+      expect(Array.from(room.state.lastGameResult.hinminPlayerList)).to.eql([]);
+      expect(Array.from(room.state.lastGameResult.daihinminPlayerList)).to.eql(["dog"]);
     });
   });
 });

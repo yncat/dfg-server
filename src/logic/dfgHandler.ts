@@ -1,3 +1,4 @@
+import { ArraySchema } from "@colyseus/schema";
 import * as dfg from "dfg-simulator";
 import { GameRoom } from "../rooms/interface";
 import { RoomProxy } from "./roomProxy";
@@ -16,11 +17,35 @@ export class DFGHandler {
   cardEnumerator: CardEnumerator;
   constructor(roomProxy: RoomProxy<GameRoom>, playerMap: PlayerMap) {
     this.eventReceiver = new EventReceiver(roomProxy, playerMap, () => {
+      const result = this.game.generateResult();
       const rm = this.roomProxy.roomOrNull();
       if (rm) {
         rm.editableMetadata.values.roomState = dfgmsg.RoomState.WAITING;
         this.roomProxy.setMetadata(rm.editableMetadata.produce());
         rm.state.isInGame = false;
+        rm.state.lastGameResult.daifugoPlayerList = new ArraySchema<string>(
+          ...this.toPlayerNames(
+            result.getIdentifiersByRank(dfg.RankType.DAIFUGO)
+          )
+        );
+        rm.state.lastGameResult.fugoPlayerList = new ArraySchema<string>(
+          ...this.toPlayerNames(result.getIdentifiersByRank(dfg.RankType.FUGO))
+        );
+        rm.state.lastGameResult.heiminPlayerList = new ArraySchema<string>(
+          ...this.toPlayerNames(
+            result.getIdentifiersByRank(dfg.RankType.HEIMIN)
+          )
+        );
+        rm.state.lastGameResult.hinminPlayerList = new ArraySchema<string>(
+          ...this.toPlayerNames(
+            result.getIdentifiersByRank(dfg.RankType.HINMIN)
+          )
+        );
+        rm.state.lastGameResult.daihinminPlayerList = new ArraySchema<string>(
+          ...this.toPlayerNames(
+            result.getIdentifiersByRank(dfg.RankType.DAIHINMIN)
+          )
+        );
       }
       this.game = null;
     });
@@ -201,5 +226,11 @@ export class DFGHandler {
       "DiscardPairListMessage",
       dfgmsg.encodeDiscardPairListMessage([])
     );
+  }
+
+  private toPlayerNames(ids: Array<string>): Array<string> {
+    return ids.map((id) => {
+      return this.playerMap.clientIDToPlayer(id).name;
+    });
   }
 }
