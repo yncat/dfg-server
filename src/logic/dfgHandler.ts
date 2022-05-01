@@ -16,13 +16,13 @@ export class DFGHandler {
   cardEnumerator: CardEnumerator;
   constructor(roomProxy: RoomProxy<GameRoom>, playerMap: PlayerMap) {
     this.eventReceiver = new EventReceiver(roomProxy, playerMap, () => {
-      this.game = null;
       const rm = this.roomProxy.roomOrNull();
       if (rm) {
         rm.editableMetadata.values.roomState = dfgmsg.RoomState.WAITING;
         this.roomProxy.setMetadata(rm.editableMetadata.produce());
         rm.state.isInGame = false;
       }
+      this.game = null;
     });
     this.roomProxy = roomProxy;
     this.playerMap = playerMap;
