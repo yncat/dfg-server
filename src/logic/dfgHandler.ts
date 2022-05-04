@@ -17,6 +17,7 @@ export class DFGHandler {
   cardEnumerator: CardEnumerator;
   constructor(roomProxy: RoomProxy<GameRoom>, playerMap: PlayerMap) {
     this.eventReceiver = new EventReceiver(roomProxy, playerMap, () => {
+      this.clearDiscardPairListForEveryone();
       const result = this.game.generateResult();
       const rm = this.roomProxy.roomOrNull();
       if (rm) {
@@ -228,6 +229,15 @@ export class DFGHandler {
     // カードを出したプレイヤーのカード候補表示をクリアさせるため、空のDiscardPairListMessageを送って通知する
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
+      "DiscardPairListMessage",
+      dfgmsg.encodeDiscardPairListMessage([])
+    );
+  }
+
+    private clearDiscardPairListForEveryone() {
+    // カードを出したプレイヤーのカード候補表示をクリアさせるため、空のDiscardPairListMessageを送って通知する
+    // 全員にbroadcastするバージョン
+    this.roomProxy.broadcast(
       "DiscardPairListMessage",
       dfgmsg.encodeDiscardPairListMessage([])
     );
