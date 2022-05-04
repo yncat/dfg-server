@@ -23,7 +23,7 @@ export default Arena({
      * Bind your custom express routes here:
      */
     app.get("/", (req, res) => {
-      res.send("It's time to kick ass and chew bubblegum!");
+      res.send("Meow meow meowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww!!!!!!!!!!!!");
     });
 
     /**
@@ -31,7 +31,7 @@ export default Arena({
      * It is recommended to protect this route with a password.
      * Read more: https://docs.colyseus.io/tools/monitor/
      */
-    app.use("/monitor", monitor());
+    // app.use("/monitor", monitor());
   },
 
   beforeListen: () => {
