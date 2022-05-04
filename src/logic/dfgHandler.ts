@@ -197,9 +197,14 @@ export class DFGHandler {
       this.invalidControllerError();
     }
 
-    const mustHandleNextPlayer =
+    let mustHandleNextPlayer =
       identifier === this.activePlayerControl.playerIdentifier; // 現在捜査中のプレイヤーがキックされる場合、次のプレイヤーにターンを回さなければならない
     this.game.kickPlayerByIdentifier(identifier);
+    // 残りの人数が二人の時、キックした結果としてゲームが終わっている場合がある。ここでチェックしておかないと、ゲームが終わっているのに次のプレイヤーにターンを回そうとしてエラーが起きる。
+    // ちょっとわかりにくいが、eventReceiverのコールバックで、ゲームが終わったら this.game = null が走るようになっているので、 isGameActive で判定すればよい。
+    if(!this.isGameActive()){
+      mustHandleNextPlayer = false;
+    }
     return mustHandleNextPlayer;
   }
 
