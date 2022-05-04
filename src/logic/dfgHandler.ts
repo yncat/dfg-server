@@ -16,8 +16,11 @@ export class DFGHandler {
   playerMap: PlayerMap;
   cardEnumerator: CardEnumerator;
   constructor(roomProxy: RoomProxy<GameRoom>, playerMap: PlayerMap) {
+    this.roomProxy = roomProxy;
+    this.playerMap = playerMap;
+    this.cardEnumerator = new CardEnumerator();
     this.eventReceiver = new EventReceiver(roomProxy, playerMap, () => {
-      this.clearDiscardPairListForEveryone();
+      this.clearCardInfoForEveryone();
       const result = this.game.generateResult();
       const rm = this.roomProxy.roomOrNull();
       if (rm) {
@@ -50,9 +53,6 @@ export class DFGHandler {
       }
       this.game = null;
     });
-    this.roomProxy = roomProxy;
-    this.playerMap = playerMap;
-    this.cardEnumerator = new CardEnumerator();
     this.game = null;
   }
 
@@ -203,7 +203,7 @@ export class DFGHandler {
     this.game.kickPlayerByIdentifier(identifier);
     // 残りの人数が二人の時、キックした結果としてゲームが終わっている場合がある。ここでチェックしておかないと、ゲームが終わっているのに次のプレイヤーにターンを回そうとしてエラーが起きる。
     // ちょっとわかりにくいが、eventReceiverのコールバックで、ゲームが終わったら this.game = null が走るようになっているので、 isGameActive で判定すればよい。
-    if(!this.isGameActive()){
+    if (!this.isGameActive()) {
       mustHandleNextPlayer = false;
     }
     return mustHandleNextPlayer;
@@ -234,12 +234,15 @@ export class DFGHandler {
     );
   }
 
-    private clearDiscardPairListForEveryone() {
-    // カードを出したプレイヤーのカード候補表示をクリアさせるため、空のDiscardPairListMessageを送って通知する
-    // 全員にbroadcastするバージョン
+  private clearCardInfoForEveryone() {
+    // ゲームが終了したら、全ての手札・カード候補表示をクリアする。
     this.roomProxy.broadcast(
       "DiscardPairListMessage",
       dfgmsg.encodeDiscardPairListMessage([])
+    );
+    this.roomProxy.broadcast(
+      "CardListMessage",
+      dfgmsg.encodeCardListMessage([])
     );
   }
 
