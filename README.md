@@ -1,13 +1,13 @@
 # online daifugo server
 
-## Environment variables
+This is online daifugo game server.
 
-- DFG_OTP_SECRET: TOTP secret key for admin authorization. Can be generated using npm run otp-secret-generate. Currently unused.
+## Setup development environment
 
-## npm scripts
+Clone this repository, run `npm ci` to install dependencies, then run `npm start` to start the server.
 
-- start: starts the server.
-- test: runs unit test and E2E.
-- lint: Run linter.
-- fmt: fix format.
-- fmt-lint: check format, but do not fix.
+In order to play locally, clone [the client side implementation](https://github.com/yncat/dfg) and run it.
+
+## Testing
+
+Running `npm run test` runs tests, including E2E.

@@ -141,7 +141,7 @@ describe("onPass", () => {
   it("sends PassMessage to everyone", () => {
     const pi = "ccaatt";
     const pn = "cat";
-    const msg = dfgmsg.encodePassMessage(pn);
+    const msg = dfgmsg.encodePassMessage(pn, 3);
     const player = <Player>{
       name: pn,
     };
@@ -149,7 +149,7 @@ describe("onPass", () => {
     const roomProxyMock = sinon.mock(er.roomProxy);
     roomProxyMock.expects("broadcast").calledWithExactly("PassMessage", msg);
     const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
-    er.onPass(pi);
+    er.onPass(pi, 3);
     expect(c2p.calledWithExactly(pi)).to.be.true;
     roomProxyMock.verify();
   });
