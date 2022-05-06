@@ -569,6 +569,8 @@ describe("e2e test", () => {
       // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
       expect(dp.calledOnce).to.be.true;
       expect(dp.firstCall.lastArg.discardPairList.length).to.eql(0);
+      // カードを出したプレイヤーの手札が更新されているか(実は全員分を更新しているけれどご愛敬)
+      expect(cl.calledOnce).to.be.true;
     });
 
     it("does nothing when the game is not active", async () => {

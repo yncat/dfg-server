@@ -168,6 +168,7 @@ export class DFGHandler {
 
     this.activePlayerControl.discard(dps[index]);
     this.clearDiscardPairList();
+    this.updateCardsForEveryone();
     return true;
   }
 

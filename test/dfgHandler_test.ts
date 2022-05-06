@@ -352,6 +352,12 @@ describe("DFGHandler", () => {
     it("can set discard info to activePlayerControl and returns true", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
+      const g = <dfg.Game>(<unknown>{
+        enumeratePlayerIdentifiers: sinon.fake((): string[] => {
+          return [];
+        }),
+      });
+      h.game = g;
       const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
       const dp1 = <dfg.DiscardPair>(<unknown>{
         cards: [s4, s4],
