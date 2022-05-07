@@ -84,7 +84,10 @@ export class EventReceiver implements dfg.EventReceiver {
   public onPass(identifier: string, remainingHandCount: number): void {
     this.roomProxy.broadcast(
       "PassMessage",
-      dfgmsg.encodePassMessage(this.playerMap.clientIDToPlayer(identifier).name, remainingHandCount)
+      dfgmsg.encodePassMessage(
+        this.playerMap.clientIDToPlayer(identifier).name,
+        remainingHandCount
+      )
     );
   }
 

@@ -23,7 +23,9 @@ export default Arena({
      * Bind your custom express routes here:
      */
     app.get("/", (req, res) => {
-      res.send("Meow meow meowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww!!!!!!!!!!!!");
+      res.send(
+        "Meow meow meowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww!!!!!!!!!!!!"
+      );
     });
 
     /**

@@ -486,6 +486,9 @@ describe("DFGHandler", () => {
       const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
+        enumeratePlayerIdentifiers: sinon.fake(() => {
+          return new Array<string>("ccaatt", "ddoogg");
+        }),
       });
       h.game = g;
       const apc = <dfg.ActivePlayerControl>(<unknown>{
@@ -504,6 +507,9 @@ describe("DFGHandler", () => {
       const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
+        enumeratePlayerIdentifiers: sinon.fake(() => {
+          return new Array<string>("ccaatt", "ddoogg");
+        }),
       });
       h.game = g;
       const apc = <dfg.ActivePlayerControl>(<unknown>{
@@ -512,6 +518,26 @@ describe("DFGHandler", () => {
       h.activePlayerControl = apc;
       const ret = h.kickPlayerByIdentifier(inactivePi);
       expect(kick.calledWith(inactivePi)).to.be.true;
+      expect(ret).to.be.false;
+    });
+
+    it("does not call game.kickPlayerByIdentifier and returns false when the identifier is not found", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const g = <dfg.Game>(<unknown>{
+        kickPlayerByIdentifier: kick,
+        enumeratePlayerIdentifiers: sinon.fake(() => {
+          return new Array<string>("ccaatt", "ddoogg");
+        }),
+      });
+      h.game = g;
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+      });
+      h.activePlayerControl = apc;
+      const ret = h.kickPlayerByIdentifier("notfound");
+      expect(kick.called).to.be.false;
       expect(ret).to.be.false;
     });
 

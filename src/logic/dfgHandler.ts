@@ -198,6 +198,11 @@ export class DFGHandler {
       this.invalidControllerError();
     }
 
+    // キックするプレイヤーがゲームに参加中かどうかを確認
+    // 観戦者であればゲームからキックする必要はない
+    if (!this.game.enumeratePlayerIdentifiers().includes(identifier)) {
+      return false;
+    }
     let mustHandleNextPlayer =
       identifier === this.activePlayerControl.playerIdentifier; // 現在捜査中のプレイヤーがキックされる場合、次のプレイヤーにターンを回さなければならない
     this.game.kickPlayerByIdentifier(identifier);
