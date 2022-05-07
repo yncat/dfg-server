@@ -123,6 +123,8 @@ export class GameRoom extends Room<GameState> {
       }
       this.dfgHandler.finishAction();
       if (this.dfgHandler.isGameActive()) {
+        // 出したプレイヤーの手札を更新
+        this.dfgHandler.updateCardsForEveryone();
         // カードを出した後、まだゲームが続いていれば、次のプレイヤーに回す処理をする
         this.handleNextPlayer();
       }
