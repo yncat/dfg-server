@@ -51,7 +51,7 @@
     "@mojotech/json-type-validation": "^3.1.0",
     "@types/clone": "^2.1.1",
     "clone": "^2.1.2",
-    "colyseus": "^0.14.17",
+    "colyseus": "^0.14.20",
     "cors": "^2.8.5",
     "dfg-messages": "github:yncat/dfg-messages#master",
     "dfg-simulator": "1.0.6",
