@@ -6,6 +6,7 @@ export class CardEnumerator {
     return dfgmsg.encodeCardListMessage(
       hand.cards.map((v) => {
         return dfgmsg.encodeSelectableCardMessage(
+          v.ID,
           v.mark,
           v.cardNumber,
           false,
@@ -21,6 +22,7 @@ export class CardEnumerator {
     return dfgmsg.encodeCardListMessage(
       activePlayerControl.enumerateHand().map((v, i) => {
         return dfgmsg.encodeSelectableCardMessage(
+          v.ID,
           v.mark,
           v.cardNumber,
           activePlayerControl.isCardSelected(i),
