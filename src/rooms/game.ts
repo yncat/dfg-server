@@ -167,6 +167,8 @@ export class GameRoom extends Room<GameState> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLeave(client: Client, consented: boolean) {
+    const name = this.playerMap.clientIDToPlayer(client.id).name;
+    this.broadcast("PlayerLeftMessage", dfgmsg.encodePlayerLeftMessage(name));
     if (
       !this.roomOptionsForTest.skipKickOnLeave &&
       this.dfgHandler.isGameActive()
@@ -178,8 +180,6 @@ export class GameRoom extends Room<GameState> {
         this.handleNextPlayer();
       }
     }
-    const name = this.playerMap.clientIDToPlayer(client.id).name;
-    this.broadcast("PlayerLeftMessage", dfgmsg.encodePlayerLeftMessage(name));
     if (client === this.ownerClient) {
       this.handleRoomOwnerSwitch();
     }
