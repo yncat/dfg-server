@@ -11,11 +11,11 @@ export class ConsoleReporter implements TextReporter {
 }
 
 export class SlackReporter implements TextReporter {
-  public report(text: string): Promise<void> {
-    const URL = process.env.SLACK_WEBHOOK_URL;
-    if (URL === undefined || URL === "") {
+  public report(text: string): void {
+    if (!slackIsAvailable) {
       return;
     }
+    const URL = process.env.SLACK_WEBHOOK_URL;
     const body = { text: text };
     fetch(URL, {
       method: "post",
