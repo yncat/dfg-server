@@ -69,7 +69,7 @@ export function createDefaultTextReporter(): TextReporter {
 export function catchErrors(block: () => void): void {
   try {
     block();
-  } catch (e: unknown) {
+  } catch (e) {
     reportErrorWithDefaultReporter(e as Error);
   }
 }
