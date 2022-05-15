@@ -28,11 +28,9 @@ export class SlackReporter implements TextReporter {
             `reporting to slack failed with http status ${response.status}`
           );
         }
-        return response.json();
+        return response.blob();
       })
-      .then((json) => {
-        console.log(`Report to slack succeeded: ${JSON.stringify(json)}`);
-      })
+      .then(() => {})
       .catch((reason: unknown) => {
         console.log(reason);
       });
@@ -40,13 +38,38 @@ export class SlackReporter implements TextReporter {
 }
 
 function convertError(error: Error): string {
-  return error.message;
+  return `${error.message}\nstacktrace:\n${error.stack}`;
 }
 
 export function reportErrorWithDefaultReporter(error: Error): void {
   createDefaultTextReporter().report(convertError(error));
 }
 
+export function reportTextWithDefaultReporter(text: string): void {
+  createDefaultTextReporter().report(text);
+}
+
+export function slackIsAvailable(): boolean {
+  return (
+    process.env.SLACK_WEBHOOK_URL !== undefined &&
+    process.env.SLACK_WEBHOOK_URL !== ""
+  );
+}
+
 export function createDefaultTextReporter(): TextReporter {
-  return new ConsoleReporter();
+  if (!slackIsAvailable()) {
+    return new ConsoleReporter();
+  }
+
+  return process.env.NODE_ENV === "production"
+    ? new SlackReporter()
+    : new ConsoleReporter();
+}
+
+export function catchErrors(block: () => void): void {
+  try {
+    block();
+  } catch (e: unknown) {
+    reportErrorWithDefaultReporter(e as Error);
+  }
 }

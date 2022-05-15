@@ -30,6 +30,7 @@
     "@types/cors": "^2.8.6",
     "@types/express": "^4.17.1",
     "@types/mocha": "^8.2.3",
+    "@types/node-fetch": "^2.6.1",
     "@types/sinon": "^10.0.2",
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",
@@ -56,6 +57,6 @@
     "dfg-messages": "github:yncat/dfg-messages#master",
     "dfg-simulator": "1.0.7",
     "express": "^4.16.4",
-    "node-fetch": "^3.2.4"
+    "node-fetch": "^2.6.7"
   }
 }

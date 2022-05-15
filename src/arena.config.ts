@@ -1,21 +1,25 @@
 import Arena from "@colyseus/arena";
-import { monitor } from "@colyseus/monitor";
 
 /**
  * Import your Room files
  */
 import { GlobalRoom } from "./rooms/global";
 import { GameRoom } from "./rooms/game";
+import { reportTextWithDefaultReporter } from "./logic/errorReporter";
 
 export default Arena({
   getId: () => "dfg-server",
 
   initializeGameServer: (gameServer) => {
+    reportTextWithDefaultReporter("Server is starting...");
     /**
      * Define your room handlers:
      */
     gameServer.define("global_room", GlobalRoom);
     gameServer.define("game_room", GameRoom);
+    gameServer.onShutdown(() => {
+      reportTextWithDefaultReporter("Server is shutting down...");
+    });
   },
 
   initializeExpress: (app) => {

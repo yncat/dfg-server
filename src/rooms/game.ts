@@ -10,7 +10,7 @@ import { PlayerMap } from "../logic/playerMap";
 import { createPlayerFromClientOptions } from "../logic/player";
 import { GameState } from "./schema/game";
 import { isDecodeSuccess } from "../logic/decodeValidator";
-import { reportErrorWithDefaultReporter } from "../logic/errorReporter";
+import { catchErrors } from "../logic/errorReporter";
 import { DFGHandler } from "../logic/dfgHandler";
 import { RoomProxy } from "../logic/roomProxy";
 import { EditableMetadata } from "../logic/editableMetadata";
@@ -44,147 +44,164 @@ export class GameRoom extends Room<GameState> {
 
     // message handlers
     this.onMessage("ChatRequest", (client, payload) => {
-      const req = dfgmsg.decodePayload<dfgmsg.ChatRequest>(
-        payload,
-        dfgmsg.ChatRequestDecoder
-      );
-      if (!isDecodeSuccess<dfgmsg.ChatRequest>(req)) {
-        reportErrorWithDefaultReporter(req);
-        return;
-      }
-      this.broadcast(
-        "ChatMessage",
-        this.chatHandler.generateChatMessage(
-          req,
-          this.playerMap.clientIDToPlayer(client.id).name
-        )
-      );
+      catchErrors(() => {
+        const req = dfgmsg.decodePayload<dfgmsg.ChatRequest>(
+          payload,
+          dfgmsg.ChatRequestDecoder
+        );
+        if (!isDecodeSuccess<dfgmsg.ChatRequest>(req)) {
+          throw req;
+        }
+        this.broadcast(
+          "ChatMessage",
+          this.chatHandler.generateChatMessage(
+            req,
+            this.playerMap.clientIDToPlayer(client.id).name
+          )
+        );
+      });
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.onMessage("GameStartRequest", (client, payload) => {
-      if (client !== this.ownerClient) {
-        return;
-      }
-      if (this.dfgHandler.isGameActive()) {
-        return;
-      }
-      const ids = this.clients.map((v) => {
-        return v.id;
+      catchErrors(() => {
+        if (client !== this.ownerClient) {
+          return;
+        }
+        if (this.dfgHandler.isGameActive()) {
+          return;
+        }
+        const ids = this.clients.map((v) => {
+          return v.id;
+        });
+        this.dfgHandler.startGame(ids);
+        this.editableMetadata.values.roomState = dfgmsg.RoomState.PLAYING;
+        void this.setMetadata(this.editableMetadata.produce());
+        this.state.isInGame = true;
+        this.dfgHandler.updateCardsForEveryone();
+        this.handleNextPlayer();
       });
-      this.dfgHandler.startGame(ids);
-      this.editableMetadata.values.roomState = dfgmsg.RoomState.PLAYING;
-      void this.setMetadata(this.editableMetadata.produce());
-      this.state.isInGame = true;
-      this.dfgHandler.updateCardsForEveryone();
-      this.handleNextPlayer();
     });
 
     this.onMessage("CardSelectRequest", (client, payload) => {
-      if (!this.dfgHandler.isGameActive()) {
-        return;
-      }
-      if (this.dfgHandler.activePlayerControl.playerIdentifier !== client.id) {
-        return;
-      }
-      const req = dfgmsg.decodePayload<dfgmsg.CardSelectRequest>(
-        payload,
-        dfgmsg.CardSelectRequestDecoder
-      );
-      if (!isDecodeSuccess<dfgmsg.CardSelectRequest>(req)) {
-        reportErrorWithDefaultReporter(req);
-        return;
-      }
+      catchErrors(() => {
+        if (!this.dfgHandler.isGameActive()) {
+          return;
+        }
+        if (
+          this.dfgHandler.activePlayerControl.playerIdentifier !== client.id
+        ) {
+          return;
+        }
+        const req = dfgmsg.decodePayload<dfgmsg.CardSelectRequest>(
+          payload,
+          dfgmsg.CardSelectRequestDecoder
+        );
+        if (!isDecodeSuccess<dfgmsg.CardSelectRequest>(req)) {
+          throw req;
+        }
 
-      this.dfgHandler.selectCardByIndex(req.index);
-      this.dfgHandler.updateHandForActivePlayer();
-      this.dfgHandler.enumerateDiscardPairs();
+        this.dfgHandler.selectCardByIndex(req.index);
+        this.dfgHandler.updateHandForActivePlayer();
+        this.dfgHandler.enumerateDiscardPairs();
+      });
     });
 
     this.onMessage("DiscardRequest", (client, payload) => {
-      if (!this.dfgHandler.isGameActive()) {
-        return;
-      }
-      if (this.dfgHandler.activePlayerControl.playerIdentifier !== client.id) {
-        return;
-      }
-      const req = dfgmsg.decodePayload<dfgmsg.DiscardRequest>(
-        payload,
-        dfgmsg.DiscardRequestDecoder
-      );
-      if (!isDecodeSuccess<dfgmsg.DiscardRequest>(req)) {
-        reportErrorWithDefaultReporter(req);
-        return;
-      }
+      catchErrors(() => {
+        if (!this.dfgHandler.isGameActive()) {
+          return;
+        }
+        if (
+          this.dfgHandler.activePlayerControl.playerIdentifier !== client.id
+        ) {
+          return;
+        }
+        const req = dfgmsg.decodePayload<dfgmsg.DiscardRequest>(
+          payload,
+          dfgmsg.DiscardRequestDecoder
+        );
+        if (!isDecodeSuccess<dfgmsg.DiscardRequest>(req)) {
+          throw req;
+        }
 
-      // 有効なDiscardPairがないときに呼ぶと失敗する。それを検出したら success = false でかえってくるので逃げる。
-      if (!this.dfgHandler.discardByIndex(req.index)) {
-        return;
-      }
-      this.dfgHandler.finishAction();
-      if (this.dfgHandler.isGameActive()) {
-        // 出したプレイヤーの手札を更新
-        this.dfgHandler.updateCardsForEveryone();
-        // カードを出した後、まだゲームが続いていれば、次のプレイヤーに回す処理をする
-        this.handleNextPlayer();
-      }
+        // 有効なDiscardPairがないときに呼ぶと失敗する。それを検出したら success = false でかえってくるので逃げる。
+        if (!this.dfgHandler.discardByIndex(req.index)) {
+          return;
+        }
+        this.dfgHandler.finishAction();
+        if (this.dfgHandler.isGameActive()) {
+          // 出したプレイヤーの手札を更新
+          this.dfgHandler.updateCardsForEveryone();
+          // カードを出した後、まだゲームが続いていれば、次のプレイヤーに回す処理をする
+          this.handleNextPlayer();
+        }
+      });
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.onMessage("PassRequest", (client, payload) => {
-      if (!this.dfgHandler.isGameActive()) {
-        return;
-      }
-      if (this.dfgHandler.activePlayerControl.playerIdentifier !== client.id) {
-        return;
-      }
+      catchErrors(() => {
+        if (!this.dfgHandler.isGameActive()) {
+          return;
+        }
+        if (
+          this.dfgHandler.activePlayerControl.playerIdentifier !== client.id
+        ) {
+          return;
+        }
 
-      this.dfgHandler.pass();
-      this.dfgHandler.finishAction();
-      this.handleNextPlayer();
+        this.dfgHandler.pass();
+        this.dfgHandler.finishAction();
+        this.handleNextPlayer();
+      });
     });
   }
 
   onJoin(client: Client, options: any) {
-    this.playerMap.add(client.id, createPlayerFromClientOptions(options));
-    this.state.playerCount = this.clients.length;
-    this.updatePlayerNameList();
+    catchErrors(() => {
+      this.playerMap.add(client.id, createPlayerFromClientOptions(options));
+      this.state.playerCount = this.clients.length;
+      this.updatePlayerNameList();
 
-    if (this.clients.length == 1) {
-      // first player in this room will become the room owner
-      client.send("RoomOwnerMessage", "");
-      this.ownerClient = client;
-      const name = this.playerMap.clientIDToPlayer(client.id).name;
-      this.editableMetadata.values.owner = name;
-      void this.setMetadata(this.editableMetadata.produce());
-      this.state.ownerPlayerName = name;
-    }
-    this.broadcast(
-      "PlayerJoinedMessage",
-      dfgmsg.encodePlayerJoinedMessage(options.playerName)
-    );
+      if (this.clients.length == 1) {
+        // first player in this room will become the room owner
+        client.send("RoomOwnerMessage", "");
+        this.ownerClient = client;
+        const name = this.playerMap.clientIDToPlayer(client.id).name;
+        this.editableMetadata.values.owner = name;
+        void this.setMetadata(this.editableMetadata.produce());
+        this.state.ownerPlayerName = name;
+      }
+      this.broadcast(
+        "PlayerJoinedMessage",
+        dfgmsg.encodePlayerJoinedMessage(options.playerName)
+      );
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLeave(client: Client, consented: boolean) {
-    const name = this.playerMap.clientIDToPlayer(client.id).name;
-    this.broadcast("PlayerLeftMessage", dfgmsg.encodePlayerLeftMessage(name));
-    if (
-      !this.roomOptionsForTest.skipKickOnLeave &&
-      this.dfgHandler.isGameActive()
-    ) {
-      const mustHandleNextPlayer = this.dfgHandler.kickPlayerByIdentifier(
-        client.id
-      );
-      if (mustHandleNextPlayer) {
-        this.handleNextPlayer();
+    catchErrors(() => {
+      const name = this.playerMap.clientIDToPlayer(client.id).name;
+      this.broadcast("PlayerLeftMessage", dfgmsg.encodePlayerLeftMessage(name));
+      if (
+        !this.roomOptionsForTest.skipKickOnLeave &&
+        this.dfgHandler.isGameActive()
+      ) {
+        const mustHandleNextPlayer = this.dfgHandler.kickPlayerByIdentifier(
+          client.id
+        );
+        if (mustHandleNextPlayer) {
+          this.handleNextPlayer();
+        }
       }
-    }
-    if (client === this.ownerClient) {
-      this.handleRoomOwnerSwitch();
-    }
-    this.playerMap.delete(client.id);
-    this.updatePlayerNameList();
+      if (client === this.ownerClient) {
+        this.handleRoomOwnerSwitch();
+      }
+      this.playerMap.delete(client.id);
+      this.updatePlayerNameList();
+    });
   }
 
   public setRoomOptionsForTest(skipKickOnLeave: boolean) {
