@@ -55,6 +55,7 @@
     "cors": "^2.8.5",
     "dfg-messages": "github:yncat/dfg-messages#master",
     "dfg-simulator": "1.0.7",
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "node-fetch": "^3.2.4"
   }
 }
