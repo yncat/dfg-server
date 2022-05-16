@@ -18,7 +18,7 @@ export default Arena({
     gameServer.define("global_room", GlobalRoom);
     gameServer.define("game_room", GameRoom);
     gameServer.onShutdown(() => {
-      reportTextWithDefaultReporter("Server is shutting down...");
+      return reportTextWithDefaultReporter("Server is shutting down...");
     });
   },
 

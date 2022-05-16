@@ -1,39 +1,36 @@
 import fetch from "node-fetch";
 
 export interface TextReporter {
-  report: (text: string) => void;
+  report: (text: string) => Promise<void>;
 }
 
 export class ConsoleReporter implements TextReporter {
-  public report(text: string): void {
-    console.log(text);
+  public report(text: string): Promise<void> {
+    return new Promise<void>((resolve) => {
+      console.log(text);
+      resolve();
+    });
   }
 }
 
 export class SlackReporter implements TextReporter {
-  public report(text: string): void {
+  public async report(text: string): Promise<void> {
     if (!slackIsAvailable) {
       return;
     }
     const URL = process.env.SLACK_WEBHOOK_URL;
     const body = { text: text };
-    fetch(URL, {
+    const response = await fetch(URL, {
       method: "post",
       body: JSON.stringify(body),
       headers: { "Content-Type": "application/json" },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            `reporting to slack failed with http status ${response.status}`
-          );
-        }
-        return response.blob();
-      })
-      .then(() => {})
-      .catch((reason: unknown) => {
-        console.log(reason);
-      });
+    });
+    if (!response.ok) {
+      throw new Error(
+        `reporting to slack failed with http status ${response.status}`
+      );
+    }
+    await response.blob();
   }
 }
 
@@ -41,12 +38,12 @@ function convertError(error: Error): string {
   return `${error.message}\nstacktrace:\n${error.stack}`;
 }
 
-export function reportErrorWithDefaultReporter(error: Error): void {
-  createDefaultTextReporter().report(convertError(error));
+export function reportErrorWithDefaultReporter(error: Error): Promise<void> {
+  return createDefaultTextReporter().report(convertError(error));
 }
 
-export function reportTextWithDefaultReporter(text: string): void {
-  createDefaultTextReporter().report(text);
+export function reportTextWithDefaultReporter(text: string): Promise<void> {
+  return createDefaultTextReporter().report(text);
 }
 
 export function slackIsAvailable(): boolean {
@@ -70,6 +67,6 @@ export function catchErrors(block: () => void): void {
   try {
     block();
   } catch (e) {
-    reportErrorWithDefaultReporter(e as Error);
+    void reportErrorWithDefaultReporter(e as Error);
   }
 }
