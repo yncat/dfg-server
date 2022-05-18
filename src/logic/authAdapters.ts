@@ -4,15 +4,7 @@
 // セッションを使う場合は、 SessionAdapter を使う用にする。等分使わなそうだけど。というか、作ってないけど。
 
 import { protocolVersion } from "../protocolVersion";
-import { WebSocketErrors } from "dfg-messages";
-
-export class AuthError extends Error {
-  public code: WebSocketErrors;
-  constructor(message: string, code: WebSocketErrors) {
-    super(message);
-    this.code = code;
-  }
-}
+import { AuthError, WebSocketErrorCode } from "dfg-messages";
 
 export interface AuthAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,14 +18,14 @@ export class nameAndVersionAdapter implements AuthAdapter {
     if (clientOptions.protocolVersion !== protocolVersion) {
       throw new AuthError(
         "protocol version mismatch",
-        WebSocketErrors.PROTOCOL_VERSION_MISMATCH
+        WebSocketErrorCode.PROTOCOL_VERSION_MISMATCH
       );
     }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!clientOptions.playerName) {
       throw new AuthError(
         "player name is not given or the specified player name is not allowed",
-        WebSocketErrors.INVALID_PLAYER_NAME
+        WebSocketErrorCode.INVALID_PLAYER_NAME
       );
     }
   }
