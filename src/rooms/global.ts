@@ -38,7 +38,7 @@ export class GlobalRoom extends Room<GlobalState> {
         dfgmsg.ChatRequestDecoder
       );
       if (!isDecodeSuccess<dfgmsg.ChatRequest>(req)) {
-        reportErrorWithDefaultReporter(req);
+        void reportErrorWithDefaultReporter(req);
         return;
       }
       this.broadcast(
@@ -53,8 +53,9 @@ export class GlobalRoom extends Room<GlobalState> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onAuth(client: Client, options: any, request: http.IncomingMessage): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return createDefaultAuthAdapter().authorize(options);
+    // authに失敗したら例外が投げられる
+    createDefaultAuthAdapter().authorize(options);
+    return true;
   }
 
   onJoin(client: Client, options: any) {
