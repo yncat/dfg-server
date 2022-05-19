@@ -20,7 +20,57 @@ describe("nameAndVersionAdapter", () => {
     expect(() => {
       adapter.authorize(clientOptions);
     }).to.throw(
-      "player name is not given or the specified player name is not allowed"
+      "player name is not given"
+    );
+  });
+
+  it("throws an error when player name is too long", () => {
+    const adapter = new AuthAdapters.nameAndVersionAdapter();
+    const clientOptions = { playerName: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", protocolVersion: protocolVersion };
+    expect(() => {
+      adapter.authorize(clientOptions);
+    }).to.throw(
+      "player name is too long"
+    );
+  });
+
+  it("throws an error when player name contains 、", () => {
+    const adapter = new AuthAdapters.nameAndVersionAdapter();
+    const clientOptions = { playerName: "これは、テスト", protocolVersion: protocolVersion };
+    expect(() => {
+      adapter.authorize(clientOptions);
+    }).to.throw(
+      "player name includes prohibited characters"
+    );
+  });
+
+  it("throws an error when player name consists of white spaces only", () => {
+    const adapter = new AuthAdapters.nameAndVersionAdapter();
+    const clientOptions = { playerName: "    ", protocolVersion: protocolVersion };
+    expect(() => {
+      adapter.authorize(clientOptions);
+    }).to.throw(
+      "player name contains prohibited pattern"
+    );
+  });
+
+  it("throws an error when player name consists of zenkaku white spaces only", () => {
+    const adapter = new AuthAdapters.nameAndVersionAdapter();
+    const clientOptions = { playerName: "　　　　", protocolVersion: protocolVersion };
+    expect(() => {
+      adapter.authorize(clientOptions);
+    }).to.throw(
+      "player name contains prohibited pattern"
+    );
+  });
+
+  it("throws an error when player name consists of zenkaku and hankaku white spaces", () => {
+    const adapter = new AuthAdapters.nameAndVersionAdapter();
+    const clientOptions = { playerName: "　　  ", protocolVersion: protocolVersion };
+    expect(() => {
+      adapter.authorize(clientOptions);
+    }).to.throw(
+      "player name contains prohibited pattern"
     );
   });
 
@@ -30,7 +80,7 @@ describe("nameAndVersionAdapter", () => {
     expect(() => {
       adapter.authorize(clientOptions);
     }).to.throw(
-      "player name is not given or the specified player name is not allowed"
+      "player name is not given"
     );
   });
 

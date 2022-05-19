@@ -24,7 +24,30 @@ export class nameAndVersionAdapter implements AuthAdapter {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!clientOptions.playerName) {
       throw new AuthError(
-        "player name is not given or the specified player name is not allowed",
+        "player name is not given",
+        WebSocketErrorCode.INVALID_PLAYER_NAME
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const pn: string = clientOptions.playerName as string;
+    // Length counts some unicode characters as 2. Apparently Chrome counts in the same way, so intentionally use length.
+    if (pn.length > 20) {
+      throw new AuthError(
+        "player name is too long",
+        WebSocketErrorCode.INVALID_PLAYER_NAME
+      );
+    }
+    if (pn.includes("、")) {
+      throw new AuthError(
+        "player name includes prohibited characters",
+        WebSocketErrorCode.INVALID_PLAYER_NAME
+      );
+    }
+    // eslint-disable-next-line no-irregular-whitespace
+    if (/^[ 　]+$/.exec(pn)) {
+      throw new AuthError(
+        "player name contains prohibited pattern",
         WebSocketErrorCode.INVALID_PLAYER_NAME
       );
     }
