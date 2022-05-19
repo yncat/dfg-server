@@ -64,6 +64,16 @@ describe("nameAndVersionAdapter", () => {
     );
   });
 
+  it("throws an error when player name consists of tab only", () => {
+    const adapter = new AuthAdapters.nameAndVersionAdapter();
+    const clientOptions = { playerName: "\t\t\t\t", protocolVersion: protocolVersion };
+    expect(() => {
+      adapter.authorize(clientOptions);
+    }).to.throw(
+      "player name contains prohibited pattern"
+    );
+  });
+
   it("throws an error when player name consists of zenkaku and hankaku white spaces", () => {
     const adapter = new AuthAdapters.nameAndVersionAdapter();
     const clientOptions = { playerName: "　　  ", protocolVersion: protocolVersion };

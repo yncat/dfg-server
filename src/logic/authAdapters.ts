@@ -45,7 +45,7 @@ export class nameAndVersionAdapter implements AuthAdapter {
       );
     }
     // eslint-disable-next-line no-irregular-whitespace
-    if (/^[ 　]+$/.exec(pn)) {
+    if (/^[\t 　]+$/.exec(pn)) {
       throw new AuthError(
         "player name contains prohibited pattern",
         WebSocketErrorCode.INVALID_PLAYER_NAME
