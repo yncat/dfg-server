@@ -9,6 +9,8 @@ import { ChatHandler } from "../logic/chatHandler";
 import { PlayerMap } from "../logic/playerMap";
 import { createPlayerFromClientOptions } from "../logic/player";
 import { GameState } from "./schema/game";
+import { DiscardPair } from "./schema/discardPair";
+import { Card } from "./schema/card";
 import { isDecodeSuccess } from "../logic/decodeValidator";
 import { catchErrors } from "../logic/errorReporter";
 import { DFGHandler } from "../logic/dfgHandler";
@@ -133,6 +135,7 @@ export class GameRoom extends Room<GameState> {
         if (this.dfgHandler.isGameActive()) {
           // 出したプレイヤーの手札を更新
           this.dfgHandler.updateCardsForEveryone();
+          this.updateDiscardStackState();
           // カードを出した後、まだゲームが続いていれば、次のプレイヤーに回す処理をする
           this.handleNextPlayer();
         }
@@ -239,5 +242,22 @@ export class GameRoom extends Room<GameState> {
       });
     this.state.playerNameList = new ArraySchema<string>(...names);
     this.state.playerCount = this.clients.length;
+  }
+
+  private updateDiscardStackState() {
+    const stack = new ArraySchema<DiscardPair>();
+    const pairs = this.dfgHandler.getLatestDiscardStack().map((v) => {
+      const cards = v.cards.map((w) => {
+        const c = new Card();
+        c.mark = w.mark;
+        c.cardNumber = w.cardNumber;
+        return c;
+      });
+      const pair = new DiscardPair();
+      pair.cards.push(...cards);
+      return pair;
+    });
+    stack.push(...pairs);
+    this.state.discardStack = stack;
   }
 }

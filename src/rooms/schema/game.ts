@@ -10,7 +10,7 @@ export class GameState extends Schema {
   @type("boolean") isInGame = false;
   @type(Result) lastGameResult = new Result();
   @type(Result) currentGameResult = new Result();
-  @type([DiscardPair]) discardPair = new ArraySchema<DiscardPair>();
+  @type([DiscardPair]) discardStack = new ArraySchema<DiscardPair>();
   @type([RemovedCardEntry]) removedCardList =
     new ArraySchema<RemovedCardEntry>();
 }

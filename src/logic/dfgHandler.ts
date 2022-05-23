@@ -214,6 +214,14 @@ export class DFGHandler {
     return mustHandleNextPlayer;
   }
 
+  public getLatestDiscardStack(): dfg.DiscardPair[] {
+    if (!this.game) {
+      this.gameInactiveError();
+    }
+
+    return this.game.outputDiscardStack();
+  }
+
   private gameInactiveError() {
     throw new InvalidGameStateError("game is inactive");
   }
