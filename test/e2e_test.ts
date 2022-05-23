@@ -157,7 +157,7 @@ describe("e2e test", () => {
         client2.waitForMessage("RoomCreatedMessage"),
         room.waitForNextPatch(),
       ]);
-      const want = clientOptionsWithDefault("cat");
+      const want = { playerName: "cat" };
       expect(cfn1.firstCall.lastArg).to.eql(want);
       expect(cfn2.firstCall.lastArg).to.eql(want);
     });
