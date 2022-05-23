@@ -571,7 +571,7 @@ describe("DFGHandler", () => {
     it("make the game instance null when eventReceiver.onGameEnd is called", () => {
       const h = createDFGHandler();
       const g = <dfg.Game>(<unknown>{
-        generateResult: sinon.fake(() => {
+        outputResult: sinon.fake(() => {
           return dfg.createResult([]);
         }),
       });
@@ -595,7 +595,7 @@ describe("DFGHandler", () => {
       });
       h["roomProxy"]["room"] = rm;
       const g = <dfg.Game>(<unknown>{
-        generateResult: sinon.fake(() => {
+        outputResult: sinon.fake(() => {
           return dfg.createResult([]);
         }),
       });

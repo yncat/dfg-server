@@ -21,7 +21,7 @@ export class DFGHandler {
     this.cardEnumerator = new CardEnumerator();
     this.eventReceiver = new EventReceiver(roomProxy, playerMap, () => {
       this.clearCardInfoForEveryone();
-      const result = this.game.generateResult();
+      const result = this.game.outputResult();
       const rm = this.roomProxy.roomOrNull();
       if (rm) {
         rm.editableMetadata.values.roomState = dfgmsg.RoomState.WAITING;
