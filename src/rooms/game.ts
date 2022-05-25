@@ -11,6 +11,7 @@ import { createPlayerFromClientOptions } from "../logic/player";
 import { GameState } from "./schema/game";
 import { DiscardPair } from "./schema/discardPair";
 import { Card } from "./schema/card";
+import { RemovedCardEntry } from "./schema/removedCardEntry";
 import { isDecodeSuccess } from "../logic/decodeValidator";
 import { catchErrors } from "../logic/errorReporter";
 import { DFGHandler } from "../logic/dfgHandler";
@@ -204,6 +205,10 @@ export class GameRoom extends Room<GameState> {
       }
       this.playerMap.delete(client.id);
       this.updatePlayerNameList();
+      if (this.dfgHandler.isGameActive()) {
+        // When the game ends by the last kick, isGameActive above returns false.
+        this.updateRemovedCardsState();
+      }
     });
   }
 
@@ -259,5 +264,18 @@ export class GameRoom extends Room<GameState> {
     });
     stack.push(...pairs);
     this.state.discardStack = stack;
+  }
+
+  private updateRemovedCardsState() {
+    const removedCardList = new ArraySchema<RemovedCardEntry>();
+    const entries = this.dfgHandler.getLatestRemovedCards().map((v) => {
+      const e = new RemovedCardEntry();
+      e.mark = v.mark;
+      e.cardNumber = v.cardNumber;
+      e.count = v.count;
+      return e;
+    });
+    removedCardList.push(...entries);
+    this.state.removedCardList = removedCardList;
   }
 }

@@ -994,6 +994,48 @@ describe("e2e test", () => {
       expect(rc.firstCall.lastArg).to.eql(msg2);
     });
 
+    it("kicking a player updates removed cards list, if the game continues", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("cat")
+      );
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("dog")
+      );
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      const client3 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("rabbit")
+      );
+      mrm.registerFake([client3], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2, client3],
+        [
+          "PlayerLeftMessage",
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+          "PlayerKickedMessage",
+          "PlayerRankChangedMessage",
+          "GameEndMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      const msg1 = dfgmsg.encodePlayerKickedMessage("dog");
+      void client2.leave(true);
+      await forMilliseconds(100);
+      expect(room.state.removedCardList.length).above(0);
+    });
+
     it("can process agari", async () => {
       const room = (await colyseus.createRoom("game_room", {})) as GameRoom;
       const mrm = new MessageReceiverMap();
