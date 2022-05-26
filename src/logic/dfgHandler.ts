@@ -221,7 +221,7 @@ export class DFGHandler {
       this.gameInactiveError();
     }
 
-    return this.game.outputDiscardStack();
+    return this.game.outputDiscardStack().reverse();
   }
 
   public getLatestRemovedCards(): dfg.RemovedCardEntry[] {
