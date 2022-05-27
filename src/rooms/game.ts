@@ -9,6 +9,9 @@ import { ChatHandler } from "../logic/chatHandler";
 import { PlayerMap } from "../logic/playerMap";
 import { createPlayerFromClientOptions } from "../logic/player";
 import { GameState } from "./schema/game";
+import { DiscardPair } from "./schema/discardPair";
+import { Card } from "./schema/card";
+import { RemovedCardEntry } from "./schema/removedCardEntry";
 import { isDecodeSuccess } from "../logic/decodeValidator";
 import { catchErrors } from "../logic/errorReporter";
 import { DFGHandler } from "../logic/dfgHandler";
@@ -133,6 +136,7 @@ export class GameRoom extends Room<GameState> {
         if (this.dfgHandler.isGameActive()) {
           // 出したプレイヤーの手札を更新
           this.dfgHandler.updateCardsForEveryone();
+          this.updateDiscardStackState();
           // カードを出した後、まだゲームが続いていれば、次のプレイヤーに回す処理をする
           this.handleNextPlayer();
         }
@@ -201,6 +205,10 @@ export class GameRoom extends Room<GameState> {
       }
       this.playerMap.delete(client.id);
       this.updatePlayerNameList();
+      if (this.dfgHandler.isGameActive()) {
+        // When the game ends by the last kick, isGameActive above returns false.
+        this.updateRemovedCardsState();
+      }
     });
   }
 
@@ -239,5 +247,35 @@ export class GameRoom extends Room<GameState> {
       });
     this.state.playerNameList = new ArraySchema<string>(...names);
     this.state.playerCount = this.clients.length;
+  }
+
+  private updateDiscardStackState() {
+    const stack = new ArraySchema<DiscardPair>();
+    const pairs = this.dfgHandler.getLatestDiscardStack().map((v) => {
+      const cards = v.cards.map((w) => {
+        const c = new Card();
+        c.mark = w.mark;
+        c.cardNumber = w.cardNumber;
+        return c;
+      });
+      const pair = new DiscardPair();
+      pair.cards.push(...cards);
+      return pair;
+    });
+    stack.push(...pairs);
+    this.state.discardStack = stack;
+  }
+
+  private updateRemovedCardsState() {
+    const removedCardList = new ArraySchema<RemovedCardEntry>();
+    const entries = this.dfgHandler.getLatestRemovedCards().map((v) => {
+      const e = new RemovedCardEntry();
+      e.mark = v.mark;
+      e.cardNumber = v.cardNumber;
+      e.count = v.count;
+      return e;
+    });
+    removedCardList.push(...entries);
+    this.state.removedCardList = removedCardList;
   }
 }

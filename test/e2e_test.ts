@@ -660,6 +660,51 @@ describe("e2e test", () => {
       expect(cl.calledOnce).to.be.true;
     });
 
+    it("updates discardStack state after playing a pair of cards", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      setRoomOptionsForTest(room, true);
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("cat")
+      );
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("dog")
+      );
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "PlayerLeftMessage",
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+          "DiscardMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      const activePlayer = getActivePlayer(room, client1, client2);
+      const msg = dfgmsg.encodeCardSelectRequest(0);
+      activePlayer.send("CardSelectRequest", msg);
+      await forMilliseconds(100);
+      const cl = mrm.getFake(activePlayer, "CardListMessage");
+      expect(cl.calledOnce).to.be.true;
+      const dp = mrm.getFake(activePlayer, "DiscardPairListMessage"); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      expect(dp.calledOnce).to.be.true;
+      mrm.resetHistory();
+      expect(room.state.discardStack.length).to.eql(0);
+      activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+      await forMilliseconds(100);
+      expect(room.state.discardStack.length).to.eql(1);
+    });
+
     it("does nothing when the game is not active", async () => {
       const room = await colyseus.createRoom("game_room", {});
       setRoomOptionsForTest(room, true);
@@ -943,6 +988,47 @@ describe("e2e test", () => {
       const rc = mrm.getFake(client1, "PlayerRankChangedMessage");
       expect(rc.calledOnce).to.be.true;
       expect(rc.firstCall.lastArg).to.eql(msg2);
+    });
+
+    it("kicking a player updates removed cards list, if the game continues", async () => {
+      const room = await colyseus.createRoom("game_room", {});
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("cat")
+      );
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("dog")
+      );
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      const client3 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("rabbit")
+      );
+      mrm.registerFake([client3], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake(
+        [client1, client2, client3],
+        [
+          "PlayerLeftMessage",
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+          "DiscardPairListMessage",
+          "PlayerKickedMessage",
+          "PlayerRankChangedMessage",
+          "GameEndMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      mrm.resetHistory();
+      void client2.leave(true);
+      await forMilliseconds(100);
+      expect(room.state.removedCardList.length).above(0);
     });
 
     it("can process agari", async () => {

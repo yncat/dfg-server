@@ -50,6 +50,8 @@ export class DFGHandler {
             result.getIdentifiersByRank(dfg.RankType.DAIHINMIN)
           )
         );
+        rm.state.removedCardList.clear();
+        rm.state.discardStack.clear();
       }
       this.game = null;
     });
@@ -212,6 +214,22 @@ export class DFGHandler {
       mustHandleNextPlayer = false;
     }
     return mustHandleNextPlayer;
+  }
+
+  public getLatestDiscardStack(): dfg.DiscardPair[] {
+    if (!this.game) {
+      this.gameInactiveError();
+    }
+
+    return this.game.outputDiscardStack().reverse();
+  }
+
+  public getLatestRemovedCards(): dfg.RemovedCardEntry[] {
+    if (!this.game) {
+      this.gameInactiveError();
+    }
+
+    return this.game.outputRemovedCards();
   }
 
   private gameInactiveError() {
