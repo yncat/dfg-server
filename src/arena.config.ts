@@ -11,7 +11,7 @@ export default Arena({
   getId: () => "dfg-server",
 
   initializeGameServer: (gameServer) => {
-    reportTextWithDefaultReporter("Server is starting...");
+    void reportTextWithDefaultReporter("Server is starting...");
     /**
      * Define your room handlers:
      */

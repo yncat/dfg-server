@@ -696,10 +696,6 @@ describe("e2e test", () => {
       await forMilliseconds(100);
       const cl = mrm.getFake(activePlayer, "CardListMessage");
       expect(cl.calledOnce).to.be.true;
-      const card = dfgmsg.decodePayload<dfgmsg.SelectableCardMessage>(
-        cl.firstCall.lastArg.cardList[0],
-        dfgmsg.SelectableCardMessageDecoder
-      ) as dfgmsg.SelectableCardMessage;
       const dp = mrm.getFake(activePlayer, "DiscardPairListMessage"); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
       expect(dp.calledOnce).to.be.true;
       mrm.resetHistory();
@@ -1030,7 +1026,6 @@ describe("e2e test", () => {
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
-      const msg1 = dfgmsg.encodePlayerKickedMessage("dog");
       void client2.leave(true);
       await forMilliseconds(100);
       expect(room.state.removedCardList.length).above(0);
