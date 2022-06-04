@@ -153,4 +153,17 @@ export class EventReceiver implements dfg.EventReceiver {
       )
     );
   }
+
+  public onReverse(): void {
+    this.roomProxy.broadcast("ReverseMessage", "");
+  }
+
+  public onSkip(identifier: string): void {
+    this.roomProxy.broadcast(
+      "TurnSkippedMessage",
+      dfgmsg.encodeTurnSkippedMessage(
+        this.playerMap.clientIDToPlayer(identifier).name
+      )
+    );
+  }
 }

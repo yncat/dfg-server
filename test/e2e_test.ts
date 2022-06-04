@@ -108,6 +108,7 @@ function createGameBeforeAgari(
     eventReceiver: er,
     ruleConfig: dfg.createDefaultRuleConfig(),
     removedCardsMap: new Map<dfg.CardMark, Map<dfg.CardNumber, number>>(),
+    reversed: false,
   });
 }
 
