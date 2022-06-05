@@ -41,7 +41,7 @@ export class GameRoom extends Room<GameState> {
     const rp = new RoomProxy<GameRoom>(this);
     this.dfgHandler = new DFGHandler(rp, this.playerMap, options.ruleConfig);
     this.editableMetadata = new EditableMetadata<dfgmsg.GameRoomMetadata>(
-      dfgmsg.encodeGameRoomMetadata("", dfgmsg.RoomState.WAITING)
+      dfgmsg.encodeGameRoomMetadata("", dfgmsg.RoomState.WAITING, options.ruleConfig)
     );
     this.state = new GameState();
     this.setState(this.state);

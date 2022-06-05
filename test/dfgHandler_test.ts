@@ -592,7 +592,7 @@ describe("DFGHandler", () => {
     it("updates the room metadata", () => {
       const h = createDFGHandler();
       const em = new EditableMetadata<dfgmsg.GameRoomMetadata>(
-        dfgmsg.encodeGameRoomMetadata("cat", dfgmsg.RoomState.PLAYING)
+        dfgmsg.encodeGameRoomMetadata("cat", dfgmsg.RoomState.PLAYING, createRuleConfig())
       );
       const state = new GameState();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
@@ -613,7 +613,7 @@ describe("DFGHandler", () => {
       roomProxyMock
         .expects("setMetadata")
         .calledWith(
-          dfgmsg.encodeGameRoomMetadata("cat", dfgmsg.RoomState.WAITING)
+          dfgmsg.encodeGameRoomMetadata("cat", dfgmsg.RoomState.WAITING, createRuleConfig())
         );
       h.eventReceiver.onGameEnd(dfg.createResult([]));
       roomProxyMock.verify();
