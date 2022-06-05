@@ -31,13 +31,15 @@ export class GameRoom extends Room<GameState> {
   dfgHandler: DFGHandler;
   editableMetadata: EditableMetadata<dfgmsg.GameRoomMetadata>;
   roomOptionsForTest: RoomOptionsForTest;
+
   onCreate(options: any) {
     /* eslint-enable @typescript-eslint/no-unused-vars */
+    this.ensureValidRoomOptions(options);
     this.roomOptionsForTest = { skipKickOnLeave: false };
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
     const rp = new RoomProxy<GameRoom>(this);
-    this.dfgHandler = new DFGHandler(rp, this.playerMap);
+    this.dfgHandler = new DFGHandler(rp, this.playerMap, options.ruleConfig);
     this.editableMetadata = new EditableMetadata<dfgmsg.GameRoomMetadata>(
       dfgmsg.encodeGameRoomMetadata("", dfgmsg.RoomState.WAITING)
     );
@@ -277,5 +279,11 @@ export class GameRoom extends Room<GameState> {
     });
     removedCardList.push(...entries);
     this.state.removedCardList = removedCardList;
+  }
+
+  private ensureValidRoomOptions(options: unknown) {
+    if (!dfgmsg.isValidGameRoomOptions(options)) {
+      throw new dfgmsg.AuthError("Invalid option structure", dfgmsg.WebSocketErrorCode.UNEXPECTED);
+    }
   }
 }

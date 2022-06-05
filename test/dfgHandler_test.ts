@@ -10,10 +10,19 @@ import { GameState } from "../src/rooms/schema/game";
 import * as dfgmsg from "dfg-messages";
 import { EditableMetadata } from "../src/logic/editableMetadata";
 
+function createRuleConfig() {
+  return {
+    yagiri: true,
+    jBack: true,
+    kakumei: true,
+    reverse: false,
+    skip: dfgmsg.SkipConfig.OFF,
+  };
+}
 function createDFGHandler(): DFGHandler {
   const rp = new RoomProxy<GameRoom>();
   const pm = new PlayerMap();
-  const h = new DFGHandler(rp, pm);
+  const h = new DFGHandler(rp, pm, createRuleConfig());
   return h;
 }
 
