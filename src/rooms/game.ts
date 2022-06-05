@@ -34,7 +34,7 @@ export class GameRoom extends Room<GameState> {
 
   onCreate(options: any) {
     /* eslint-enable @typescript-eslint/no-unused-vars */
-    this.ensureValidRoomOptions(options);
+    this.ensureValidRoomCreationOptions(options);
     this.roomOptionsForTest = { skipKickOnLeave: false };
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
@@ -164,6 +164,11 @@ export class GameRoom extends Room<GameState> {
     });
   }
 
+  onAuth(client: Client, options: any): boolean {
+    this.ensureValidRoomParticipationOptions(options);
+    return true;
+  }
+
   onJoin(client: Client, options: any) {
     catchErrors(() => {
       this.playerMap.add(client.id, createPlayerFromClientOptions(options));
@@ -281,10 +286,19 @@ export class GameRoom extends Room<GameState> {
     this.state.removedCardList = removedCardList;
   }
 
-  private ensureValidRoomOptions(options: unknown) {
-    if (!dfgmsg.isValidGameRoomOptions(options)) {
+  private ensureValidRoomCreationOptions(options: unknown) {
+    if (!dfgmsg.isValidGameRoomCreationOptions(options)) {
       throw new dfgmsg.AuthError(
-        "Invalid option structure",
+        "Invalid option structure on create",
+        dfgmsg.WebSocketErrorCode.UNEXPECTED
+      );
+    }
+  }
+
+  private ensureValidRoomParticipationOptions(options: unknown) {
+    if (!dfgmsg.isValidGameRoomParticipationOptions(options)) {
+      throw new dfgmsg.AuthError(
+        "Invalid option structure on join",
         dfgmsg.WebSocketErrorCode.UNEXPECTED
       );
     }
