@@ -76,7 +76,11 @@ export class DFGHandler {
   }
 
   public startGame(clientIDList: string[]): void {
-    this.game = this.createGame(clientIDList, this.eventReceiver, this.ruleConfig);
+    this.game = this.createGame(
+      clientIDList,
+      this.eventReceiver,
+      this.ruleConfig
+    );
   }
 
   public isGameActive(): boolean {

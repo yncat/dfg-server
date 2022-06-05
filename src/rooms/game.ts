@@ -283,7 +283,10 @@ export class GameRoom extends Room<GameState> {
 
   private ensureValidRoomOptions(options: unknown) {
     if (!dfgmsg.isValidGameRoomOptions(options)) {
-      throw new dfgmsg.AuthError("Invalid option structure", dfgmsg.WebSocketErrorCode.UNEXPECTED);
+      throw new dfgmsg.AuthError(
+        "Invalid option structure",
+        dfgmsg.WebSocketErrorCode.UNEXPECTED
+      );
     }
   }
 }
