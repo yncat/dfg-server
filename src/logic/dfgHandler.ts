@@ -9,16 +9,34 @@ import { EventReceiver } from "./eventReceiver";
 
 class InvalidGameStateError extends Error {}
 export class DFGHandler {
+  ruleConfig: dfg.RuleConfig;
   game: dfg.Game | null;
   activePlayerControl: dfg.ActivePlayerControl | null;
   eventReceiver: dfg.EventReceiver;
   roomProxy: RoomProxy<GameRoom>;
   playerMap: PlayerMap;
   cardEnumerator: CardEnumerator;
-  constructor(roomProxy: RoomProxy<GameRoom>, playerMap: PlayerMap) {
+  constructor(
+    roomProxy: RoomProxy<GameRoom>,
+    playerMap: PlayerMap,
+    ruleConfig: dfgmsg.RuleConfig
+  ) {
+    // set rule config
+    const r = dfg.createDefaultRuleConfig();
+    r.yagiri = ruleConfig.yagiri;
+    r.jBack = ruleConfig.jBack;
+    r.kakumei = ruleConfig.kakumei;
+    r.reverse = ruleConfig.reverse;
+    r.skip = ruleConfig.skip;
+    this.ruleConfig = r;
+
+    // set other constructor values
     this.roomProxy = roomProxy;
     this.playerMap = playerMap;
     this.cardEnumerator = new CardEnumerator();
+    this.game = null;
+
+    // setup event receiver with game end callback
     this.eventReceiver = new EventReceiver(roomProxy, playerMap, () => {
       this.clearCardInfoForEveryone();
       const result = this.game.outputResult();
@@ -55,15 +73,14 @@ export class DFGHandler {
       }
       this.game = null;
     });
-    this.game = null;
   }
 
   public startGame(clientIDList: string[]): void {
-    const rc = dfg.createDefaultRuleConfig();
-    rc.jBack = true;
-    rc.kakumei = true;
-    rc.yagiri = true;
-    this.game = this.createGame(clientIDList, this.eventReceiver, rc);
+    this.game = this.createGame(
+      clientIDList,
+      this.eventReceiver,
+      this.ruleConfig
+    );
   }
 
   public isGameActive(): boolean {

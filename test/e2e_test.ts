@@ -12,6 +12,22 @@ import * as dfg from "dfg-simulator";
 import { GameRoom } from "../src/rooms/game";
 import { protocolVersion } from "../src/protocolVersion";
 
+function createRuleConfig() {
+  return {
+    yagiri: true,
+    jBack: true,
+    kakumei: true,
+    reverse: false,
+    skip: dfgmsg.SkipConfig.OFF,
+  };
+}
+
+function createGameRoomOptions() {
+  return {
+    ruleConfig: createRuleConfig(),
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function dummyMessageHandler(message: any) {}
 
@@ -108,6 +124,7 @@ function createGameBeforeAgari(
     eventReceiver: er,
     ruleConfig: dfg.createDefaultRuleConfig(),
     removedCardsMap: new Map<dfg.CardMark, Map<dfg.CardNumber, number>>(),
+    reversed: false,
   });
 }
 
@@ -190,7 +207,10 @@ describe("e2e test", () => {
 
   describe("gameRoom", () => {
     it("connecting into the game room", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const clbk = createMessageReceiver();
       const client1 = await colyseus.connectTo(
@@ -207,7 +227,10 @@ describe("e2e test", () => {
     });
 
     it("send RoomOwnerMessage to the first connected player", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const clbk = createMessageReceiver();
       const client1 = await colyseus.connectTo(
@@ -224,7 +247,10 @@ describe("e2e test", () => {
     });
 
     it("broadcast PlayerJoinedMessage when second player joins", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(
         room,
@@ -254,7 +280,10 @@ describe("e2e test", () => {
     });
 
     it("room owner's loss moves room owner client to another player who joined next", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(
         room,
@@ -286,7 +315,10 @@ describe("e2e test", () => {
     });
 
     it("handle chat message", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(
         room,
@@ -317,7 +349,10 @@ describe("e2e test", () => {
     });
 
     it("game owner can start the game", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -379,8 +414,54 @@ describe("e2e test", () => {
         .true;
     });
 
+    it("game owner can start the game with custom ruleConfig options", async () => {
+      const opts = createGameRoomOptions();
+      opts.ruleConfig.reverse = true;
+      const room = await colyseus.createRoom("game_room", opts);
+      setRoomOptionsForTest(room, true);
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("cat")
+      );
+      mrm.registerFake(
+        [client1],
+        ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
+      );
+      const client2 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("dog")
+      );
+      mrm.registerFake(
+        [client2],
+        ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
+      );
+      mrm.registerFake(
+        [client1, client2],
+        [
+          "InitialInfoMessage",
+          "CardsProvidedMessage",
+          "CardListMessage",
+          "TurnMessage",
+          "YourTurnMessage",
+        ]
+      );
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      const castedRoom = room as GameRoom;
+      const game = castedRoom["dfgHandler"]["game"];
+      const d = dfg.createDefaultRuleConfig();
+      d.reverse = true;
+      const wrc = game.outputRuleConfig();
+      expect(wrc.reverse).to.be.true;
+      expect(castedRoom.state.ruleConfig.reverse).to.be.true;
+    });
+
     it("does nothing when the request sent twice", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -417,7 +498,10 @@ describe("e2e test", () => {
     });
 
     it("non-room-owner cannot start the game", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const client1 = await colyseus.connectTo(
         room,
@@ -456,7 +540,10 @@ describe("e2e test", () => {
     });
 
     it("can select and deselect a card", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -511,7 +598,10 @@ describe("e2e test", () => {
     });
 
     it("does nothing when game is inactive", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -544,7 +634,10 @@ describe("e2e test", () => {
     });
 
     it("does nothing when the player is not currently active", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -582,7 +675,10 @@ describe("e2e test", () => {
     });
 
     it("can play a pair of cards", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -661,7 +757,10 @@ describe("e2e test", () => {
     });
 
     it("updates discardStack state after playing a pair of cards", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -706,7 +805,10 @@ describe("e2e test", () => {
     });
 
     it("does nothing when the game is not active", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -741,7 +843,10 @@ describe("e2e test", () => {
     });
 
     it("does nothing when the player is not active at the moment", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -781,7 +886,10 @@ describe("e2e test", () => {
     });
 
     it("does nothing when no cards are selected or there's no available discard pairs", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -820,7 +928,10 @@ describe("e2e test", () => {
     });
 
     it("can pass", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -870,7 +981,10 @@ describe("e2e test", () => {
     });
 
     it("does nothing when the game is not active", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -904,7 +1018,10 @@ describe("e2e test", () => {
     });
 
     it("does nothing when the player is not active at the moment", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -943,7 +1060,10 @@ describe("e2e test", () => {
     });
 
     it("the player who left is kicked", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
         room,
@@ -991,7 +1111,10 @@ describe("e2e test", () => {
     });
 
     it("kicking a player updates removed cards list, if the game continues", async () => {
-      const room = await colyseus.createRoom("game_room", {});
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
         room,
@@ -1032,7 +1155,10 @@ describe("e2e test", () => {
     });
 
     it("can process agari", async () => {
-      const room = (await colyseus.createRoom("game_room", {})) as GameRoom;
+      const room = (await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      )) as GameRoom;
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
         room,

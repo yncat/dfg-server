@@ -2,6 +2,7 @@ import { Schema, ArraySchema, type } from "@colyseus/schema";
 import { Result } from "./result";
 import { DiscardPair } from "./discardPair";
 import { RemovedCardEntry } from "./removedCardEntry";
+import { RuleConfig } from "./ruleConfig";
 
 export class GameState extends Schema {
   @type("number") playerCount = 0;
@@ -13,4 +14,5 @@ export class GameState extends Schema {
   @type([DiscardPair]) discardStack = new ArraySchema<DiscardPair>();
   @type([RemovedCardEntry]) removedCardList =
     new ArraySchema<RemovedCardEntry>();
+  @type(RuleConfig) ruleConfig = new RuleConfig();
 }

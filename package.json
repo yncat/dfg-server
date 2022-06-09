@@ -55,7 +55,7 @@
     "colyseus": "^0.14.20",
     "cors": "^2.8.5",
     "dfg-messages": "github:yncat/dfg-messages#master",
-    "dfg-simulator": "1.1.1",
+    "dfg-simulator": "^1.2.3",
     "express": "^4.16.4",
     "node-fetch": "^2.6.7"
   }
