@@ -41,9 +41,13 @@ export class GameRoom extends Room<GameState> {
     const rp = new RoomProxy<GameRoom>(this);
     this.dfgHandler = new DFGHandler(rp, this.playerMap, options.ruleConfig);
     this.editableMetadata = new EditableMetadata<dfgmsg.GameRoomMetadata>(
-      dfgmsg.encodeGameRoomMetadata("", dfgmsg.RoomState.WAITING, options.ruleConfig)
+      dfgmsg.encodeGameRoomMetadata(
+        "",
+        dfgmsg.RoomState.WAITING,
+        options.ruleConfig
+      )
     );
-    this.state = new GameState();
+    this.state = this.prepareState(options);
     this.setState(this.state);
     void this.setMetadata(this.editableMetadata.produce());
 
@@ -302,5 +306,15 @@ export class GameRoom extends Room<GameState> {
         dfgmsg.WebSocketErrorCode.UNEXPECTED
       );
     }
+  }
+
+  private prepareState(options: dfgmsg.GameRoomCreationOptions): GameState {
+    const state = new GameState();
+    state.ruleConfig.yagiri = options.ruleConfig.yagiri;
+    state.ruleConfig.jBack = options.ruleConfig.jBack;
+    state.ruleConfig.kakumei = options.ruleConfig.kakumei;
+    state.ruleConfig.reverse = options.ruleConfig.reverse;
+    state.ruleConfig.skip = options.ruleConfig.skip;
+    return state;
   }
 }

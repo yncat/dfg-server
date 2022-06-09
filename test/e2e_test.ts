@@ -454,6 +454,7 @@ describe("e2e test", () => {
       d.reverse = true;
       const wrc = game.outputRuleConfig();
       expect(wrc.reverse).to.be.true;
+      expect(castedRoom.state.ruleConfig.reverse).to.be.true;
     });
 
     it("does nothing when the request sent twice", async () => {
