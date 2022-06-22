@@ -44,7 +44,8 @@ export class GameRoom extends Room<GameState> {
       dfgmsg.encodeGameRoomMetadata(
         "",
         dfgmsg.RoomState.WAITING,
-        options.ruleConfig
+        options.ruleConfig,
+        []
       )
     );
     this.state = this.prepareState(options);
@@ -258,6 +259,8 @@ export class GameRoom extends Room<GameState> {
       });
     this.state.playerNameList = new ArraySchema<string>(...names);
     this.state.playerCount = this.clients.length;
+    this.editableMetadata.values.playerNameList = names;
+    void this.setMetadata(this.editableMetadata.produce());
   }
 
   private updateDiscardStackState() {

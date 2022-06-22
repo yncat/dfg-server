@@ -224,6 +224,7 @@ describe("e2e test", () => {
       const rm = room as GameRoom;
       expect(rm.state.playerNameList.length).to.eql(1);
       expect(rm.state.playerNameList[0]).to.eql("cat");
+      expect(rm.metadata.playerNameList).to.eql(["cat"]);
     });
 
     it("send RoomOwnerMessage to the first connected player", async () => {
