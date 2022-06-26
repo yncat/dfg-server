@@ -13,7 +13,7 @@ describe("PlayerMap", () => {
     const pm = new PlayerMap();
     expect(() => {
       pm.clientIDToPlayer("1");
-    }).to.throw("player is not in PlayerMap");
+    }).to.throw("player 1 is not in PlayerMap");
   });
 
   it("can delete player", () => {
@@ -23,6 +23,6 @@ describe("PlayerMap", () => {
     pm.delete("1");
     expect(() => {
       pm.clientIDToPlayer("1");
-    }).to.throw("player is not in PlayerMap");
+    }).to.throw("player 1 is not in PlayerMap");
   });
 });

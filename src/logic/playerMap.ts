@@ -18,7 +18,7 @@ export class PlayerMap {
   public clientIDToPlayer(clientID: string): Player {
     const ret = this.clientPlayerMap.get(clientID);
     if (ret === undefined) {
-      throw new PlayerNotFoundError("player is not in PlayerMap");
+      throw new PlayerNotFoundError(`player ${clientID} is not in PlayerMap`);
     }
     return ret;
   }
