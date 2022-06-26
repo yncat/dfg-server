@@ -1228,4 +1228,144 @@ describe("e2e test", () => {
       ]);
     });
   });
+
+  // reconnections
+  it("does not allow reconnect when game is not started", async () => {
+    const room = (await colyseus.createRoom(
+      "game_room",
+      createGameRoomOptions()
+    )) as GameRoom;
+    const mrm = new MessageReceiverMap();
+    const client1 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("cat")
+    );
+    mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+    const client2 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("dog")
+    );
+    mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+    mrm.registerFake(
+      [client1, client2],
+      ["PlayerLostMessage", "PlayerLeftMessage"]
+    );
+    await client2.leave(false);
+    await forMilliseconds(100);
+    const left = mrm.getFake(client1, "PlayerLeftMessage");
+    const lost = mrm.getFake(client1, "PlayerLostMessage");
+    expect(left.called).to.be.true;
+    expect(lost.called).to.be.false;
+  });
+
+  it("does not allow reconnection for player who isn't participating in the active game", async () => {
+    const room = await colyseus.createRoom(
+      "game_room",
+      createGameRoomOptions()
+    );
+    setRoomOptionsForTest(room, true);
+    const mrm = new MessageReceiverMap();
+    const client1 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("cat")
+    );
+    mrm.registerFake(
+      [client1],
+      ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
+    );
+    const client2 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("dog")
+    );
+    mrm.registerFake(
+      [client2],
+      ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
+    );
+    mrm.registerFake(
+      [client1, client2],
+      [
+        "InitialInfoMessage",
+        "CardsProvidedMessage",
+        "CardListMessage",
+        "TurnMessage",
+        "YourTurnMessage",
+        "PlayerLostMessage",
+        "PlayerLeftMessage",
+      ]
+    );
+    client1.send("GameStartRequest");
+    await forMilliseconds(300);
+    const client3 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("rabbit")
+    );
+    mrm.registerFake([client3], ["PlayerJoinedMessage"]);
+    await client3.leave(false);
+    await forMilliseconds(100);
+    const left1 = mrm.getFake(client1, "PlayerLeftMessage");
+    const lost1 = mrm.getFake(client1, "PlayerLostMessage");
+    const left2 = mrm.getFake(client2, "PlayerLeftMessage");
+    const lost2 = mrm.getFake(client2, "PlayerLostMessage");
+    expect(left1.called).to.be.true;
+    expect(lost1.called).to.be.false;
+    expect(left2.called).to.be.true;
+    expect(lost2.called).to.be.false;
+  });
+
+  it("Allow reconnection when player who is participating in the active game leaves with consented=0", async () => {
+    const room = await colyseus.createRoom(
+      "game_room",
+      createGameRoomOptions()
+    );
+    setRoomOptionsForTest(room, true);
+    const mrm = new MessageReceiverMap();
+    const client1 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("cat")
+    );
+    mrm.registerFake(
+      [client1],
+      ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
+    );
+    const client2 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("dog")
+    );
+    mrm.registerFake(
+      [client2],
+      ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
+    );
+    mrm.registerFake(
+      [client1, client2],
+      [
+        "InitialInfoMessage",
+        "CardsProvidedMessage",
+        "CardListMessage",
+        "TurnMessage",
+        "YourTurnMessage",
+        "PlayerLostMessage",
+        "PlayerLeftMessage",
+        "PlayerReconnectedMessage",
+      ]
+    );
+    client1.send("GameStartRequest");
+    await forMilliseconds(300);
+    const sessionID = client2.sessionId;
+    await client2.leave(false);
+    await forMilliseconds(100);
+    const left1 = mrm.getFake(client1, "PlayerLeftMessage");
+    const lost1 = mrm.getFake(client1, "PlayerLostMessage");
+    expect(left1.called).to.be.false;
+    expect(lost1.called).to.be.true;
+    /*
+    // uncomment after reconnect patch is accepted as official.
+    const client22 = await colyseus.sdk.reconnect(room.roomId, sessionID);
+    mrm.registerFake([client22], ["PlayerReconnectedMessage"]);
+    await forMilliseconds(100);
+    const reconnect1 = mrm.getFake(client1, "PlayerReconnectedMessage");
+    const reconnect2 = mrm.getFake(client22, "PlayerReconnectedMessage");
+    expect(reconnect1.called).to.be.true;
+    expect(reconnect2.called).to.be.true;
+    */
+  });
 });
