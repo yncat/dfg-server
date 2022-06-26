@@ -1,7 +1,21 @@
 export class Player {
   name: string;
+  private connected: boolean;
   constructor(name: string) {
     this.name = name;
+    this.connected = true;
+  }
+
+  public isConnected(): boolean {
+    return this.connected;
+  }
+
+  public markAsDisconnected(): void {
+    this.connected = false;
+  }
+
+  public markAsConnected(): void {
+    this.connected = true;
   }
 }
 

@@ -249,6 +249,17 @@ export class DFGHandler {
     return this.game.outputRemovedCards();
   }
 
+  public isPlayerInGame(identifier: string): boolean {
+    if (!this.game) {
+      return false;
+    }
+    return (
+      this.game.enumeratePlayerIdentifiers().filter((v) => {
+        return v === identifier;
+      }).length > 0
+    );
+  }
+
   private gameInactiveError() {
     throw new InvalidGameStateError("game is inactive");
   }
