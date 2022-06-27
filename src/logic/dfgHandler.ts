@@ -260,6 +260,21 @@ export class DFGHandler {
     );
   }
 
+  public handlePlayerReconnect(identifier: string): void {
+    if (!this.game) {
+      return;
+    }
+
+    this.updateCardsForEveryone();
+    if (!this.activePlayerControl) {
+      return;
+    }
+
+    if (this.activePlayerControl.playerIdentifier === identifier) {
+      this.notifyToActivePlayer();
+    }
+  }
+
   private gameInactiveError() {
     throw new InvalidGameStateError("game is inactive");
   }

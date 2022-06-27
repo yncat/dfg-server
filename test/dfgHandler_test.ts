@@ -629,4 +629,50 @@ describe("DFGHandler", () => {
       roomProxyMock.verify();
     });
   });
+
+  describe("handlePlayerReconnect", () => {
+    it("ignores when game is not active", () => {
+      const h = createDFGHandler();
+      expect(() => {
+        h.handlePlayerReconnect("a");
+      }).not.to.throw();
+    });
+
+    it("updates player hand", () => {
+      const pn1 = "cat";
+      const pn2 = "dog";
+      const h = createDFGHandler();
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pn1,
+      });
+      h["activePlayerControl"] = apc;
+      const g = <dfg.Game>(<unknown>{});
+      const updateCardsForEveryone = sinon.fake(() => {});
+      const notifyToActivePlayer = sinon.fake(() => {});
+      h["updateCardsForEveryone"] = updateCardsForEveryone;
+      h["notifyToActivePlayer"] = notifyToActivePlayer;
+      h.game = g;
+      h.handlePlayerReconnect(pn2);
+      expect(updateCardsForEveryone.calledOnce).to.be.true;
+      expect(notifyToActivePlayer.called).to.be.false;
+    });
+
+    it("updates player hand and notify to the reconnected player", () => {
+      const pn1 = "cat";
+      const h = createDFGHandler();
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pn1,
+      });
+      h["activePlayerControl"] = apc;
+      const g = <dfg.Game>(<unknown>{});
+      const updateCardsForEveryone = sinon.fake(() => {});
+      const notifyToActivePlayer = sinon.fake(() => {});
+      h["updateCardsForEveryone"] = updateCardsForEveryone;
+      h["notifyToActivePlayer"] = notifyToActivePlayer;
+      h.game = g;
+      h.handlePlayerReconnect(pn1);
+      expect(updateCardsForEveryone.calledOnce).to.be.true;
+      expect(notifyToActivePlayer.calledOnce).to.be.true;
+    });
+  });
 });
