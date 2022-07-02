@@ -274,13 +274,10 @@ export class GameRoom extends Room<GameState> {
 
   private updatePlayerNameList() {
     // also updates playerCount
-    const names = this.clients
-      .map((v) => {
-        return v.id;
-      })
-      .map((v) => {
-        return this.playerMap.clientIDToPlayer(v).name;
-      });
+    const names:string[] = [];
+    this.playerMap.forEach((identifier,player)=>{
+      names.push(player.name);
+    });
     this.state.playerNameList = new ArraySchema<string>(...names);
     this.state.playerCount = this.clients.length;
     this.editableMetadata.values.playerNameList = names;

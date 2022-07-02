@@ -22,4 +22,10 @@ export class PlayerMap {
     }
     return ret;
   }
+
+  public forEach(clbk: (identifier: string, player: Player) => void): void {
+    this.clientPlayerMap.forEach((v, k) => {
+      clbk(k, v);
+    });
+  }
 }
