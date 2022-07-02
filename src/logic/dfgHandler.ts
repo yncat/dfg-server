@@ -92,10 +92,16 @@ export class DFGHandler {
       this.gameInactiveError();
     }
     this.game.enumeratePlayerIdentifiers().forEach((v) => {
-      const msg = this.cardEnumerator.enumerateFromHand(
-        this.game.findPlayerByIdentifier(v).hand
-      );
-      this.roomProxy.send(v, "CardListMessage", msg);
+      const e =
+        this.activePlayerControl &&
+        this.activePlayerControl.playerIdentifier === v
+          ? this.cardEnumerator.enumerateFromActivePlayerControl(
+              this.activePlayerControl
+            )
+          : this.cardEnumerator.enumerateFromHand(
+              this.game.findPlayerByIdentifier(v).hand
+            );
+      this.roomProxy.send(v, "CardListMessage", e);
     });
   }
 
@@ -123,6 +129,7 @@ export class DFGHandler {
   }
 
   public updateHandForActivePlayer(): void {
+    // This method is intended to be used when the active player checked / unchecked cards. For updating all player cards state to latest, use updateCardsForEveryone.
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
@@ -144,6 +151,7 @@ export class DFGHandler {
       this.activePlayerControl.checkCardSelectability(index) ===
       dfg.SelectabilityCheckResult.NOT_SELECTABLE
     ) {
+      console.log("card is not selectable.");
       return;
     }
 
