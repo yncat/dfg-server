@@ -216,7 +216,7 @@ export class GameRoom extends Room<GameState> {
           "PlayerReconnectedMessage",
           dfgmsg.encodePlayerReconnectedMessage(p.name)
         );
-        this.dfgHandler.handlePlayerReconnect(client.id)
+        this.dfgHandler.handlePlayerReconnect(client.id);
       } catch {
         this.handlePlayerLeave(client);
       }

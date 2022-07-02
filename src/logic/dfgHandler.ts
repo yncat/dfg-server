@@ -151,7 +151,6 @@ export class DFGHandler {
       this.activePlayerControl.checkCardSelectability(index) ===
       dfg.SelectabilityCheckResult.NOT_SELECTABLE
     ) {
-      console.log("card is not selectable.");
       return;
     }
 
