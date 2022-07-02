@@ -25,8 +25,13 @@ export class RoomProxy<T extends Room<Schema>> {
     if (!this.room) {
       return;
     }
-    const c = this.findClientByID(clientID);
-    c.send(type, message);
+    try {
+      const c = this.findClientByID(clientID);
+      c.send(type, message);
+    } catch {
+      // Players can lose their connection but they are kept on the server for a while. In such cases, the client id can be nonexistent.
+      return;
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

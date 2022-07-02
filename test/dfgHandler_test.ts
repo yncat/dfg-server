@@ -140,6 +140,9 @@ describe("DFGHandler", () => {
       roomProxyMock.expects("broadcast").withExactArgs("TurnMessage", msg);
       const p = <Player>{
         name: pn,
+        isConnected: () => {
+          return true;
+        },
       };
       sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
       h.game = g;

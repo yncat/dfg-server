@@ -110,11 +110,17 @@ export class DFGHandler {
       this.gameInactiveError();
     }
     this.activePlayerControl = this.game.startActivePlayerControl();
-    const pn = this.playerMap.clientIDToPlayer(
+    const p = this.playerMap.clientIDToPlayer(
       this.activePlayerControl.playerIdentifier
-    ).name;
-    const msg = dfgmsg.encodeTurnMessage(pn);
+    );
+    const msg = dfgmsg.encodeTurnMessage(p.name);
     this.roomProxy.broadcast("TurnMessage", msg);
+    if (!p.isConnected()) {
+      this.roomProxy.broadcast(
+        "PlayerWaitMessage",
+        dfgmsg.encodePlayerWaitMessage(p.name, dfgmsg.WaitReason.RECONNECTION)
+      );
+    }
   }
 
   public notifyToActivePlayer(): void {
