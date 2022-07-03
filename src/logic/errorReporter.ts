@@ -70,3 +70,9 @@ export function catchErrors(block: () => void): void {
     void reportErrorWithDefaultReporter(e as Error);
   }
 }
+
+export function catchErrorsAsync(block: () => Promise<void>): void {
+  block().catch((e) => {
+    void reportErrorWithDefaultReporter(e as Error);
+  });
+}

@@ -13,7 +13,7 @@ import { DiscardPair } from "./schema/discardPair";
 import { Card } from "./schema/card";
 import { RemovedCardEntry } from "./schema/removedCardEntry";
 import { isDecodeSuccess } from "../logic/decodeValidator";
-import { catchErrors } from "../logic/errorReporter";
+import { catchErrors, catchErrorsAsync } from "../logic/errorReporter";
 import { DFGHandler } from "../logic/dfgHandler";
 import { RoomProxy } from "../logic/roomProxy";
 import { EditableMetadata } from "../logic/editableMetadata";
@@ -198,34 +198,58 @@ export class GameRoom extends Room<GameState> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLeave(client: Client, consented: boolean) {
-    catchErrors(() => {
-      const name = this.playerMap.clientIDToPlayer(client.id).name;
-      this.broadcast("PlayerLeftMessage", dfgmsg.encodePlayerLeftMessage(name));
-      if (
-        !this.roomOptionsForTest.skipKickOnLeave &&
-        this.dfgHandler.isGameActive()
-      ) {
-        const mustHandleNextPlayer = this.dfgHandler.kickPlayerByIdentifier(
-          client.id
+    catchErrorsAsync(async () => {
+      if (consented || !this.dfgHandler.isPlayerInGame(client.id)) {
+        this.handlePlayerLeave(client);
+        return;
+      }
+      const p = this.playerMap.clientIDToPlayer(client.id);
+      p.markAsDisconnected();
+      this.broadcast(
+        "PlayerLostMessage",
+        dfgmsg.encodePlayerLostMessage(p.name)
+      );
+      try {
+        await this.allowReconnection(client, 60 * dfgmsg.maxReconnectionMinute);
+        p.markAsConnected();
+        this.broadcast(
+          "PlayerReconnectedMessage",
+          dfgmsg.encodePlayerReconnectedMessage(p.name)
         );
-        if (mustHandleNextPlayer) {
-          this.handleNextPlayer();
-        }
-      }
-      if (client === this.ownerClient) {
-        this.handleRoomOwnerSwitch();
-      }
-      this.playerMap.delete(client.id);
-      this.updatePlayerNameList();
-      if (this.dfgHandler.isGameActive()) {
-        // When the game ends by the last kick, isGameActive above returns false.
-        this.updateRemovedCardsState();
+        this.dfgHandler.handlePlayerReconnect(client.id);
+      } catch {
+        this.handlePlayerLeave(client);
       }
     });
   }
 
   public setRoomOptionsForTest(skipKickOnLeave: boolean) {
     this.roomOptionsForTest = { skipKickOnLeave };
+  }
+
+  private handlePlayerLeave(client: Client) {
+    const name = this.playerMap.clientIDToPlayer(client.id).name;
+    this.broadcast("PlayerLeftMessage", dfgmsg.encodePlayerLeftMessage(name));
+    if (
+      !this.roomOptionsForTest.skipKickOnLeave &&
+      this.dfgHandler.isGameActive()
+    ) {
+      const mustHandleNextPlayer = this.dfgHandler.kickPlayerByIdentifier(
+        client.id
+      );
+      if (mustHandleNextPlayer) {
+        this.handleNextPlayer();
+      }
+    }
+    if (client === this.ownerClient) {
+      this.handleRoomOwnerSwitch();
+    }
+    this.playerMap.delete(client.id);
+    this.updatePlayerNameList();
+    if (this.dfgHandler.isGameActive()) {
+      // When the game ends by the last kick, isGameActive above returns false.
+      this.updateRemovedCardsState();
+    }
   }
 
   private handleNextPlayer() {
@@ -250,13 +274,10 @@ export class GameRoom extends Room<GameState> {
 
   private updatePlayerNameList() {
     // also updates playerCount
-    const names = this.clients
-      .map((v) => {
-        return v.id;
-      })
-      .map((v) => {
-        return this.playerMap.clientIDToPlayer(v).name;
-      });
+    const names:string[] = [];
+    this.playerMap.forEach((identifier,player)=>{
+      names.push(player.name);
+    });
     this.state.playerNameList = new ArraySchema<string>(...names);
     this.state.playerCount = this.clients.length;
     this.editableMetadata.values.playerNameList = names;

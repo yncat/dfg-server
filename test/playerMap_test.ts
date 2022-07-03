@@ -13,7 +13,7 @@ describe("PlayerMap", () => {
     const pm = new PlayerMap();
     expect(() => {
       pm.clientIDToPlayer("1");
-    }).to.throw("player is not in PlayerMap");
+    }).to.throw("player 1 is not in PlayerMap");
   });
 
   it("can delete player", () => {
@@ -23,6 +23,18 @@ describe("PlayerMap", () => {
     pm.delete("1");
     expect(() => {
       pm.clientIDToPlayer("1");
-    }).to.throw("player is not in PlayerMap");
+    }).to.throw("player 1 is not in PlayerMap");
+  });
+
+  it("can add and enumerate players", () => {
+    const pm = new PlayerMap();
+    pm.add("1", new Player("cat"));
+    pm.add("2", new Player("dog"));
+    const ps:Player[] = [];
+    pm.forEach((identifier, player) => {
+      ps.push(player);
+    });
+    expect(ps[0].name).to.eql("cat");
+    expect(ps[1].name).to.eql("dog");
   });
 });

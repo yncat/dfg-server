@@ -92,10 +92,16 @@ export class DFGHandler {
       this.gameInactiveError();
     }
     this.game.enumeratePlayerIdentifiers().forEach((v) => {
-      const msg = this.cardEnumerator.enumerateFromHand(
-        this.game.findPlayerByIdentifier(v).hand
-      );
-      this.roomProxy.send(v, "CardListMessage", msg);
+      const e =
+        this.activePlayerControl &&
+        this.activePlayerControl.playerIdentifier === v
+          ? this.cardEnumerator.enumerateFromActivePlayerControl(
+              this.activePlayerControl
+            )
+          : this.cardEnumerator.enumerateFromHand(
+              this.game.findPlayerByIdentifier(v).hand
+            );
+      this.roomProxy.send(v, "CardListMessage", e);
     });
   }
 
@@ -104,11 +110,17 @@ export class DFGHandler {
       this.gameInactiveError();
     }
     this.activePlayerControl = this.game.startActivePlayerControl();
-    const pn = this.playerMap.clientIDToPlayer(
+    const p = this.playerMap.clientIDToPlayer(
       this.activePlayerControl.playerIdentifier
-    ).name;
-    const msg = dfgmsg.encodeTurnMessage(pn);
+    );
+    const msg = dfgmsg.encodeTurnMessage(p.name);
     this.roomProxy.broadcast("TurnMessage", msg);
+    if (!p.isConnected()) {
+      this.roomProxy.broadcast(
+        "PlayerWaitMessage",
+        dfgmsg.encodePlayerWaitMessage(p.name, dfgmsg.WaitReason.RECONNECTION)
+      );
+    }
   }
 
   public notifyToActivePlayer(): void {
@@ -123,6 +135,7 @@ export class DFGHandler {
   }
 
   public updateHandForActivePlayer(): void {
+    // This method is intended to be used when the active player checked / unchecked cards. For updating all player cards state to latest, use updateCardsForEveryone.
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
@@ -247,6 +260,32 @@ export class DFGHandler {
     }
 
     return this.game.outputRemovedCards();
+  }
+
+  public isPlayerInGame(identifier: string): boolean {
+    if (!this.game) {
+      return false;
+    }
+    return (
+      this.game.enumeratePlayerIdentifiers().filter((v) => {
+        return v === identifier;
+      }).length > 0
+    );
+  }
+
+  public handlePlayerReconnect(identifier: string): void {
+    if (!this.game) {
+      return;
+    }
+
+    this.updateCardsForEveryone();
+    if (!this.activePlayerControl) {
+      return;
+    }
+
+    if (this.activePlayerControl.playerIdentifier === identifier) {
+      this.notifyToActivePlayer();
+    }
   }
 
   private gameInactiveError() {
