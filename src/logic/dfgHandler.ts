@@ -219,6 +219,7 @@ export class DFGHandler {
     }
 
     this.game.finishActivePlayerControl(this.activePlayerControl);
+    this.activePlayerControl = null;
   }
 
   public kickPlayerByIdentifier(identifier: string): boolean {
