@@ -49,6 +49,10 @@ export class GlobalRoom extends Room<GlobalState> {
         )
       );
     });
+
+    this.onMessage("PingRequest", (client) => {
+      client.send("PingMessage", "");
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

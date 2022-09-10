@@ -154,6 +154,21 @@ describe("e2e test", () => {
       expect(client1.sessionId).to.eql(room.clients[0].sessionId);
     });
 
+    it("handle PingRequest", async () => {
+      const room = await colyseus.createRoom("global_room", {});
+      const client1 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("cat")
+      );
+      const cfn1 = createMessageReceiver();
+      client1.onMessage("PingMessage", cfn1);
+      client1.send("PingRequest", "");
+      await Promise.all([
+        client1.waitForMessage("PingMessage"),
+        room.waitForNextPatch(),
+      ]);
+    });
+
     it("handle RoomCreatedRequest", async () => {
       const room = await colyseus.createRoom("global_room", {});
       const client1 = await colyseus.connectTo(
