@@ -1,0 +1,12 @@
+runtime: nodejs15 # or another supported version
+
+instance_class: B1
+
+handlers:
+- url: /.*
+  secure: always
+  redirect_http_response_code: 301
+  script: auto
+
+manual_scaling:
+  instances: 1
