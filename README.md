@@ -4,6 +4,8 @@ This is online daifugo game server.
 
 ## Setup development environment
 
+NodeJS 16.x is assumed.
+
 Clone this repository, run `npm ci` to install dependencies, then run `npm start` to start the server.
 
 In order to play locally, clone [the client side implementation](https://github.com/yncat/dfg) and run it.
