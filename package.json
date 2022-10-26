@@ -14,7 +14,9 @@
     "fmt-lint": "prettier -c test/**/*.ts src/**/*.ts",
     "fmt": "prettier -w src/**/*.ts test/**/*.ts",
     "lint": "eslint . --ext ts",
-    "otp-secret-generate": "node tools/otp_secret_generate.js"
+    "otp-secret-generate": "node tools/otp_secret_generate.js",
+    "docker:build": "docker build -t dfg-server .",
+    "docker:start": "docker run -p 2567:2567 -it --rm --name dfg-server dfg-server npm start"
   },
   "author": "Yukio Nozawa",
   "license": "UNLICENSED",
