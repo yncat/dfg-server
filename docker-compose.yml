@@ -1,8 +1,11 @@
-version: '3'
+version: "3.9"
 services:
-  redis:
-    image: "redis:latest"
+  dfg-server:
+    build:
+      context: .
+    command: "npm start"
+    environment:
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+    image: dfg-server:latest
     ports:
-      - "6379:6379"
-    volumes:
-      - "./data/redis:/data"
+      - "2567:2567"
