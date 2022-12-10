@@ -5,9 +5,11 @@ import { RoomProxy } from "./roomProxy";
 import { PlayerMap } from "./playerMap";
 import { CardEnumerator } from "./cardEnumerator";
 import * as dfgmsg from "dfg-messages";
-import { EventReceiver } from "./eventReceiver";
+import { EventReceiver, EventReceiverCallbacks } from "./eventReceiver";
 
 class InvalidGameStateError extends Error {}
+export type EventLogCallbackFunc:(eventType:string, eventBody:string)=>void;
+
 export class DFGHandler {
   ruleConfig: dfg.RuleConfig;
   game: dfg.Game | null;
@@ -16,10 +18,12 @@ export class DFGHandler {
   roomProxy: RoomProxy<GameRoom>;
   playerMap: PlayerMap;
   cardEnumerator: CardEnumerator;
+  eventLogCallback: EventLogCallbackFunc;
   constructor(
     roomProxy: RoomProxy<GameRoom>,
     playerMap: PlayerMap,
-    ruleConfig: dfgmsg.RuleConfig
+    ruleConfig: dfgmsg.RuleConfig,
+    eventLogCallback:EventLogCallbackFunc,
   ) {
     // set rule config
     const r = dfg.createDefaultRuleConfig();
@@ -35,9 +39,10 @@ export class DFGHandler {
     this.playerMap = playerMap;
     this.cardEnumerator = new CardEnumerator();
     this.game = null;
+    this.eventLogCallback = eventLogCallback;
 
-    // setup event receiver with game end callback
-    this.eventReceiver = new EventReceiver(roomProxy, playerMap, () => {
+    // callback function which is called on game end
+    const onGameEnd = () => {
       this.clearCardInfoForEveryone();
       const result = this.game.outputResult();
       const rm = this.roomProxy.roomOrNull();
@@ -72,7 +77,14 @@ export class DFGHandler {
         rm.state.discardStack.clear();
       }
       this.game = null;
-    });
+    };
+
+    // setup event receiver with callbacks
+    const clbks:EventReceiverCallbacks = {
+      onGameEnd: onGameEnd,
+      onEventLogPush: eventLogCallback,
+    };
+    this.eventReceiver = new EventReceiver(roomProxy, playerMap, clbks);
   }
 
   public startGame(clientIDList: string[]): void {
@@ -114,7 +126,7 @@ export class DFGHandler {
       this.activePlayerControl.playerIdentifier
     );
     const msg = dfgmsg.encodeTurnMessage(p.name);
-    this.roomProxy.broadcast("TurnMessage", msg);
+    this.eventLogCallback("TurnMessage", JSON.stringify(msg));
     if (!p.isConnected()) {
       this.roomProxy.broadcast(
         "PlayerWaitMessage",

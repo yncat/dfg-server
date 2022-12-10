@@ -12,6 +12,7 @@ import { GameState } from "./schema/game";
 import { DiscardPair } from "./schema/discardPair";
 import { Card } from "./schema/card";
 import { RemovedCardEntry } from "./schema/removedCardEntry";
+import { EventLog } from "./schema/eventLog";
 import { isDecodeSuccess } from "../logic/decodeValidator";
 import { catchErrors, catchErrorsAsync } from "../logic/errorReporter";
 import { DFGHandler } from "../logic/dfgHandler";
@@ -39,7 +40,13 @@ export class GameRoom extends Room<GameState> {
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
     const rp = new RoomProxy<GameRoom>(this);
-    this.dfgHandler = new DFGHandler(rp, this.playerMap, options.ruleConfig);
+    const onEventLogPush = (eventType:string, eventBody:string)=>{
+      const evt = new EventLog();
+      evt.type = eventType;
+      evt.body = eventBody;
+      this.state.eventLogList.push(evt);
+    };
+    this.dfgHandler = new DFGHandler(rp, this.playerMap, options.ruleConfig, onEventLogPush);
     this.editableMetadata = new EditableMetadata<dfgmsg.GameRoomMetadata>(
       dfgmsg.encodeGameRoomMetadata(
         "",
