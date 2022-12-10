@@ -8,7 +8,10 @@ import * as dfgmsg from "dfg-messages";
 import { EventReceiver, EventReceiverCallbacks } from "./eventReceiver";
 
 class InvalidGameStateError extends Error {}
-export type EventLogCallbackFunc:(eventType:string, eventBody:string)=>void;
+export type OnEventLogPushFunc = (
+  eventType: string,
+  eventBody: string
+) => void;
 
 export class DFGHandler {
   ruleConfig: dfg.RuleConfig;
@@ -18,12 +21,12 @@ export class DFGHandler {
   roomProxy: RoomProxy<GameRoom>;
   playerMap: PlayerMap;
   cardEnumerator: CardEnumerator;
-  eventLogCallback: EventLogCallbackFunc;
+  onEventLogPush: OnEventLogPushFunc;
   constructor(
     roomProxy: RoomProxy<GameRoom>,
     playerMap: PlayerMap,
     ruleConfig: dfgmsg.RuleConfig,
-    eventLogCallback:EventLogCallbackFunc,
+    onEventLogPush: OnEventLogPushFunc
   ) {
     // set rule config
     const r = dfg.createDefaultRuleConfig();
@@ -39,7 +42,7 @@ export class DFGHandler {
     this.playerMap = playerMap;
     this.cardEnumerator = new CardEnumerator();
     this.game = null;
-    this.eventLogCallback = eventLogCallback;
+    this.onEventLogPush = onEventLogPush;
 
     // callback function which is called on game end
     const onGameEnd = () => {
@@ -80,9 +83,9 @@ export class DFGHandler {
     };
 
     // setup event receiver with callbacks
-    const clbks:EventReceiverCallbacks = {
+    const clbks: EventReceiverCallbacks = {
       onGameEnd: onGameEnd,
-      onEventLogPush: eventLogCallback,
+      onEventLogPush: onEventLogPush,
     };
     this.eventReceiver = new EventReceiver(roomProxy, playerMap, clbks);
   }
@@ -126,7 +129,7 @@ export class DFGHandler {
       this.activePlayerControl.playerIdentifier
     );
     const msg = dfgmsg.encodeTurnMessage(p.name);
-    this.eventLogCallback("TurnMessage", JSON.stringify(msg));
+    this.onEventLogPush("TurnMessage", JSON.stringify(msg));
     if (!p.isConnected()) {
       this.roomProxy.broadcast(
         "PlayerWaitMessage",

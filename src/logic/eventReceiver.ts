@@ -77,8 +77,8 @@ export class EventReceiver implements dfg.EventReceiver {
     remainingHandCount: number
   ): void {
     this.callbacks.onEventLogPush(
+      "DiscardMessage",
       JSON.stringify(
-        "DiscardMessage",
         dfgmsg.encodeDiscardMessage(
           this.playerMap.clientIDToPlayer(identifier).name,
           dfgmsg.encodeDiscardPairMessage(
