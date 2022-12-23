@@ -8,11 +8,19 @@ import { Player } from "../src/logic/player";
 import { PlayerMap } from "../src/logic/playerMap";
 import * as dfgmsg from "dfg-messages";
 
+function createCallbacks() {
+  return {
+    onGameEnd: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onEventLogPush: (eventType: string, eventBody: string) => {},
+  };
+}
+
 function createEventReceiver(): EventReceiver {
   return new EventReceiver(
     new RoomProxy<GameRoom>(),
     new PlayerMap(),
-    () => {}
+    createCallbacks()
   );
 }
 
@@ -170,7 +178,7 @@ describe("onGameEnd", () => {
     const roomProxyMock = sinon.mock(er.roomProxy);
     roomProxyMock.expects("broadcast").calledWithExactly("GameEndMessage", msg);
     const f = sinon.fake();
-    er.gameEndedCallback = f;
+    er.callbacks.onGameEnd = f;
     er.onGameEnd(r);
     roomProxyMock.verify();
     expect(f.called).to.be.true;

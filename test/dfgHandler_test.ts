@@ -19,10 +19,21 @@ function createRuleConfig() {
     skip: dfgmsg.SkipConfig.OFF,
   };
 }
+
+function createEventLogPushFunc() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  return (eventType: string, eventBody: string) => {};
+}
+
 function createDFGHandler(): DFGHandler {
   const rp = new RoomProxy<GameRoom>();
   const pm = new PlayerMap();
-  const h = new DFGHandler(rp, pm, createRuleConfig());
+  const h = new DFGHandler(
+    rp,
+    pm,
+    createRuleConfig(),
+    createEventLogPushFunc()
+  );
   return h;
 }
 
@@ -137,7 +148,6 @@ describe("DFGHandler", () => {
       });
       const roomProxyMock = sinon.mock(h.roomProxy);
       const msg = dfgmsg.encodeTurnMessage(pn);
-      roomProxyMock.expects("broadcast").withExactArgs("TurnMessage", msg);
       const p = <Player>{
         name: pn,
         isConnected: () => {
@@ -146,7 +156,11 @@ describe("DFGHandler", () => {
       };
       sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
       h.game = g;
+      const f = sinon.fake(h.onEventLogPush);
+      sinon.replace(h, "onEventLogPush", f);
       h.prepareNextPlayer();
+      expect(f.callCount).to.eq(1);
+      expect(f.calledWith("TurnMessage", JSON.stringify(msg))).to.be.true;
       roomProxyMock.verify();
     });
 
