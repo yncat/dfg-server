@@ -930,13 +930,9 @@ describe("e2e test", () => {
         [client1, client2],
         [
           "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
           "CardListMessage",
-          "TurnMessage",
           "YourTurnMessage",
           "DiscardPairListMessage",
-          "PassMessage",
         ]
       );
       client1.send("GameStartRequest");
@@ -947,13 +943,13 @@ describe("e2e test", () => {
       activePlayer.send("PassRequest", "");
       await forMilliseconds(100);
       const dp = mrm.getFake(activePlayer, "DiscardPairListMessage");
-      const ps1 = mrm.getFake(client1, "PassMessage");
-      const ps2 = mrm.getFake(client2, "PassMessage");
-      expect(ps1.calledOnce).to.be.true;
-      expect(ps2.calledOnce).to.be.true;
+      const len = (room as GameRoom).state.eventLogList.length;
+      const pe = (room as GameRoom).state.eventLogList[len - 2];
+      expect(pe.type).to.eql("PassMessage");
       const activePlayerName = activePlayer === client1 ? "cat" : "dog";
-      expect(ps1.firstCall.lastArg.playerName).to.eql(activePlayerName);
-      expect(ps2.firstCall.lastArg.playerName).to.eql(activePlayerName);
+      expect(JSON.parse(pe.body)).to.eql(
+        dfgmsg.encodePassMessage(activePlayerName, 27)
+      );
       // 次のプレイヤーにターンが移っているか
       const nextPlayer = activePlayer === client1 ? client2 : client1;
       expect(mrm.getFake(nextPlayer, "YourTurnMessage").calledOnce).to.be.true;
@@ -1061,35 +1057,34 @@ describe("e2e test", () => {
         [client1, client2],
         [
           "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
           "CardListMessage",
-          "TurnMessage",
           "YourTurnMessage",
           "DiscardPairListMessage",
-          "PlayerKickedMessage",
           "PlayerRankChangedMessage",
-          "GameEndMessage",
         ]
       );
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
-      const msg1 = dfgmsg.encodePlayerKickedMessage("dog");
       void client2.leave(true);
       await forMilliseconds(100);
-      const k = mrm.getFake(client1, "PlayerKickedMessage");
-      expect(k.calledOnce).to.be.true;
-      expect(k.firstCall.lastArg).to.eql(msg1);
-      expect(mrm.getFake(client1, "GameEndMessage").calledOnce).to.be.true;
-      const msg2 = dfgmsg.encodePlayerRankChangedMessage(
-        "cat",
-        dfgmsg.RankType.UNDETERMINED,
-        dfgmsg.RankType.DAIFUGO
+      const len = (room as GameRoom).state.eventLogList.length;
+      const ke = (room as GameRoom).state.eventLogList[len - 3];
+      expect(ke.type).to.eql("PlayerKickedMessage");
+      expect(JSON.parse(ke.body)).to.eql(
+        dfgmsg.encodePlayerKickedMessage("dog")
       );
-      const rc = mrm.getFake(client1, "PlayerRankChangedMessage");
-      expect(rc.calledOnce).to.be.true;
-      expect(rc.firstCall.lastArg).to.eql(msg2);
+      const rce = (room as GameRoom).state.eventLogList[len - 2];
+      expect(rce.type).to.eql("PlayerRankChangedMessage");
+      expect(JSON.parse(rce.body)).to.eql(
+        dfgmsg.encodePlayerRankChangedMessage(
+          "cat",
+          dfgmsg.RankType.UNDETERMINED,
+          dfgmsg.RankType.DAIFUGO
+        )
+      );
+      const gee = (room as GameRoom).state.eventLogList[len - 1];
+      expect(gee.type).to.eql("GameEndMessage");
     });
 
     it("kicking a player updates removed cards list, if the game continues", async () => {
@@ -1156,17 +1151,9 @@ describe("e2e test", () => {
         [client1, client2],
         [
           "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
           "CardListMessage",
-          "TurnMessage",
           "YourTurnMessage",
           "DiscardPairListMessage",
-          "PlayerKickedMessage",
-          "PlayerRankChangedMessage",
-          "DiscardMessage",
-          "AgariMessage",
-          "GameEndMessage",
         ]
       );
       const g = createGameBeforeAgari(
@@ -1181,20 +1168,33 @@ describe("e2e test", () => {
       mrm.resetHistory();
       client1.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
       await forMilliseconds(100);
-      const ag1 = mrm.getFake(client1, "AgariMessage");
-      const ag2 = mrm.getFake(client2, "AgariMessage");
-      expect(ag1.calledOnce).to.be.true;
-      expect(ag2.calledOnce).to.be.true;
-      const agmsg = dfgmsg.encodeAgariMessage("cat");
-      expect(ag1.firstCall.lastArg).to.eql(agmsg);
-      expect(ag2.firstCall.lastArg).to.eql(agmsg);
-      const endmsg = dfgmsg.encodeGameEndMessage(["cat"], [], [], [], ["dog"]);
-      const end1 = mrm.getFake(client1, "GameEndMessage");
-      const end2 = mrm.getFake(client2, "GameEndMessage");
-      expect(end1.calledOnce).to.be.true;
-      expect(end2.calledOnce).to.be.true;
-      expect(end1.firstCall.lastArg).to.eql(endmsg);
-      expect(end2.firstCall.lastArg).to.eql(endmsg);
+      const len = room.state.eventLogList.length;
+      const ae = (room as GameRoom).state.eventLogList[len - 4];
+      expect(ae.type).to.eql("AgariMessage");
+      expect(JSON.parse(ae.body)).to.eql(dfgmsg.encodeAgariMessage("cat"));
+      const rce1 = room.state.eventLogList[len - 3];
+      expect(rce1.type).to.eql("PlayerRankChangedMessage");
+      expect(JSON.parse(rce1.body)).to.eql(
+        dfgmsg.encodePlayerRankChangedMessage(
+          "cat",
+          dfgmsg.RankType.UNDETERMINED,
+          dfgmsg.RankType.DAIFUGO
+        )
+      );
+      const rce2 = room.state.eventLogList[len - 2];
+      expect(rce2.type).to.eql("PlayerRankChangedMessage");
+      expect(JSON.parse(rce2.body)).to.eql(
+        dfgmsg.encodePlayerRankChangedMessage(
+          "dog",
+          dfgmsg.RankType.UNDETERMINED,
+          dfgmsg.RankType.DAIHINMIN
+        )
+      );
+      const gee = room.state.eventLogList[len - 1];
+      expect(gee.type).to.eql("GameEndMessage");
+      expect(JSON.parse(gee.body)).to.eql(
+        dfgmsg.encodeGameEndMessage(["cat"], [], [], [], ["dog"])
+      );
       // 次のプレイヤーにターンが回っていないことを見る
       expect(mrm.getFake(client2, "YourTurnMessage").called).to.be.false;
       // lastGameResultのstateが更新されていることを見る
