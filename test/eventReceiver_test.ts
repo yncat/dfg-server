@@ -2,7 +2,6 @@ import * as dfg from "dfg-simulator";
 import sinon from "sinon";
 import { expect } from "chai";
 import { EventReceiver } from "../src/logic/eventReceiver";
-import { RoomProxy } from "../src/logic/roomProxy";
 import { GameRoom } from "../src/rooms/interface";
 import { Player } from "../src/logic/player";
 import { PlayerMap } from "../src/logic/playerMap";
@@ -18,7 +17,6 @@ function createCallbacks() {
 
 function createEventReceiver(): EventReceiver {
   return new EventReceiver(
-    new RoomProxy<GameRoom>(),
     new PlayerMap(),
     createCallbacks()
   );
@@ -34,9 +32,7 @@ describe("onNagare", () => {
   it("inserts nagare event", () => {
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     er.onNagare();
-    roomProxyMock.verify();
     expect(f.calledWith("NagareMessage", "")).to.be.true;
   });
 });
@@ -51,10 +47,8 @@ describe("onAgari", () => {
     };
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
     er.onAgari(pi);
-    roomProxyMock.verify();
     expect(f.calledWith("AgariMessage", JSON.stringify(msg))).to.be.true;
   });
 });
@@ -69,11 +63,9 @@ describe("onForbiddenAgari", () => {
     };
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
     er.onForbiddenAgari(pi);
     expect(c2p.calledWithExactly(pi)).to.be.true;
-    roomProxyMock.verify();
     expect(f.calledWith("ForbiddenAgariMessage", JSON.stringify(msg))).to.be
       .true;
   });
@@ -83,9 +75,7 @@ describe("onYagiri", () => {
   it("inserts yagiri event", () => {
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     er.onYagiri("ccaatt");
-    roomProxyMock.verify();
     expect(f.calledWith("YagiriMessage", "")).to.be.true;
   });
 });
@@ -94,9 +84,7 @@ describe("onJBack", () => {
   it("inserts j back event", () => {
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     er.onJBack("ccaatt");
-    roomProxyMock.verify();
     expect(f.calledWith("JBackMessage", "")).to.be.true;
   });
 });
@@ -105,9 +93,7 @@ describe("onKakumei", () => {
   it("inserts kakumei event", () => {
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     er.onKakumei("ccaatt");
-    roomProxyMock.verify();
     expect(f.calledWith("KakumeiMessage", "")).to.be.true;
   });
 });
@@ -116,10 +102,8 @@ describe("onStrengthInversion", () => {
   it("inserts strength inversion event", () => {
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     const msg = dfgmsg.encodeStrengthInversionMessage(true);
     er.onStrengthInversion(true);
-    roomProxyMock.verify();
     expect(f.calledWith("StrengthInversionMessage", JSON.stringify(msg))).to.be
       .true;
   });
@@ -147,11 +131,9 @@ describe("onDiscard", () => {
     });
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
     er.onDiscard(pi, dp, 5);
     expect(c2p.calledWithExactly(pi)).to.be.true;
-    roomProxyMock.verify();
     expect(f.calledWith("DiscardMessage", JSON.stringify(msg))).to.be.true;
   });
 });
@@ -166,11 +148,9 @@ describe("onPass", () => {
     };
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
     er.onPass(pi, 3);
     expect(c2p.calledWithExactly(pi)).to.be.true;
-    roomProxyMock.verify();
     expect(f.calledWith("PassMessage", JSON.stringify(msg))).to.be.true;
   });
 });
@@ -194,11 +174,9 @@ describe("onGameEnd", () => {
     });
     const r = dfg.createResult([p1, p2]);
     const msg = dfgmsg.encodeGameEndMessage(["cat"], [], [], [], ["dog"]);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     const f = sinon.fake();
     er.callbacks.onGameEnd = f;
     er.onGameEnd(r);
-    roomProxyMock.verify();
     expect(f.called).to.be.true;
     expect(fLogPush.calledWith("GameEndMessage", JSON.stringify(msg))).to.be
       .true;
@@ -215,11 +193,9 @@ describe("onPlayerKicked", () => {
     };
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
     er.onPlayerKicked(pi);
     expect(c2p.calledWithExactly(pi)).to.be.true;
-    roomProxyMock.verify();
     expect(f.calledWith("PlayerKickedMessage", JSON.stringify(msg))).to.be.true;
   });
 });
@@ -238,11 +214,9 @@ describe("onPlayerRankChanged", () => {
     };
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
     er.onPlayerRankChanged(pi, dfg.RankType.UNDETERMINED, dfg.RankType.DAIFUGO);
     expect(c2p.calledWithExactly(pi)).to.be.true;
-    roomProxyMock.verify();
     expect(f.calledWith("PlayerRankChangedMessage", JSON.stringify(msg))).to.be
       .true;
   });
@@ -253,9 +227,7 @@ describe("onInitialInfoProvided", () => {
     const er = createEventReceiver();
     const f = setFake(er);
     const msg = dfgmsg.encodeInitialInfoMessage(4, 1);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     er.onInitialInfoProvided(4, 1);
-    roomProxyMock.verify();
     expect(f.calledWith("InitialInfoMessage", JSON.stringify(msg))).to.be.true;
   });
 });
@@ -270,11 +242,9 @@ describe("onCardsProvided", () => {
     };
     const er = createEventReceiver();
     const f = setFake(er);
-    const roomProxyMock = sinon.mock(er.roomProxy);
     const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
     er.onCardsProvided(pi, 10);
     expect(c2p.calledWithExactly(pi)).to.be.true;
-    roomProxyMock.verify();
     expect(f.calledWith("CardsProvidedMessage", JSON.stringify(msg))).to.be
       .true;
   });

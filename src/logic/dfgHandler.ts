@@ -87,7 +87,7 @@ export class DFGHandler {
       onGameEnd: onGameEnd,
       onEventLogPush: onEventLogPush,
     };
-    this.eventReceiver = new EventReceiver(roomProxy, playerMap, clbks);
+    this.eventReceiver = new EventReceiver(playerMap, clbks);
   }
 
   public startGame(clientIDList: string[]): void {
