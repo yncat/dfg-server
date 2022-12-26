@@ -181,7 +181,13 @@ describe("DFGHandler", () => {
       });
       h.activePlayerControl = apc;
       const roomProxyMock = sinon.mock(h.roomProxy);
-      roomProxyMock.expects("send").withExactArgs(pi, "YourTurnMessage", "");
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          pi,
+          "YourTurnMessage",
+          dfgmsg.encodeYourTurnMessage(true)
+        );
       h.notifyToActivePlayer();
       roomProxyMock.verify();
     });
@@ -404,7 +410,23 @@ describe("DFGHandler", () => {
         discard: dc,
       });
       h.activePlayerControl = apc;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          "ccaatt",
+          "DiscardPairListMessage",
+          dfgmsg.encodeDiscardPairListMessage([])
+        );
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          pi,
+          "YourTurnMessage",
+          dfgmsg.encodeYourTurnMessage(false)
+        );
       const ret = h.discardByIndex(0);
+      roomProxyMock.verify();
       expect(ret).to.be.true;
       expect(edc.called).to.be.true;
       expect(dc.called).to.be.true;
@@ -474,6 +496,21 @@ describe("DFGHandler", () => {
         pass: pass,
       });
       h.activePlayerControl = apc;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          "ccaatt",
+          "DiscardPairListMessage",
+          dfgmsg.encodeDiscardPairListMessage([])
+        );
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          pi,
+          "YourTurnMessage",
+          dfgmsg.encodeYourTurnMessage(false)
+        );
       h.pass();
       expect(pass.called).to.be.true;
     });

@@ -145,7 +145,7 @@ export class DFGHandler {
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
       "YourTurnMessage",
-      ""
+      dfgmsg.encodeYourTurnMessage(true),
     );
   }
 
@@ -216,6 +216,7 @@ export class DFGHandler {
 
     this.activePlayerControl.discard(dps[index]);
     this.clearDiscardPairList();
+    this.roomProxy.send(this.activePlayerControl.playerIdentifier, "YourTurnMessage", dfgmsg.encodeYourTurnMessage(false));
     return true;
   }
 
@@ -226,6 +227,7 @@ export class DFGHandler {
 
     this.activePlayerControl.pass();
     this.clearDiscardPairList();
+    this.roomProxy.send(this.activePlayerControl.playerIdentifier, "YourTurnMessage", dfgmsg.encodeYourTurnMessage(false));
   }
 
   public finishAction(): void {
