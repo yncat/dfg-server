@@ -8,10 +8,7 @@ import * as dfgmsg from "dfg-messages";
 import { EventReceiver, EventReceiverCallbacks } from "./eventReceiver";
 
 class InvalidGameStateError extends Error {}
-export type OnEventLogPushFunc = (
-  eventType: string,
-  eventBody: string
-) => void;
+export type OnEventLogPushFunc = (eventType: string, eventBody: string) => void;
 
 export class DFGHandler {
   ruleConfig: dfg.RuleConfig;
@@ -47,6 +44,13 @@ export class DFGHandler {
     // callback function which is called on game end
     const onGameEnd = () => {
       this.clearCardInfoForEveryone();
+      this.game.enumeratePlayerIdentifiers().forEach((id) => {
+        this.roomProxy.send(
+          id,
+          "PreventCloseMessage",
+          dfgmsg.encodePreventCloseMessage(false)
+        );
+      });
       const result = this.game.outputResult();
       const rm = this.roomProxy.roomOrNull();
       if (rm) {
@@ -96,6 +100,13 @@ export class DFGHandler {
       this.eventReceiver,
       this.ruleConfig
     );
+    clientIDList.forEach((id) => {
+      this.roomProxy.send(
+        id,
+        "PreventCloseMessage",
+        dfgmsg.encodePreventCloseMessage(true)
+      );
+    });
   }
 
   public isGameActive(): boolean {
@@ -145,7 +156,7 @@ export class DFGHandler {
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
       "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(true),
+      dfgmsg.encodeYourTurnMessage(true)
     );
   }
 
@@ -216,7 +227,11 @@ export class DFGHandler {
 
     this.activePlayerControl.discard(dps[index]);
     this.clearDiscardPairList();
-    this.roomProxy.send(this.activePlayerControl.playerIdentifier, "YourTurnMessage", dfgmsg.encodeYourTurnMessage(false));
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(false)
+    );
     return true;
   }
 
@@ -227,7 +242,11 @@ export class DFGHandler {
 
     this.activePlayerControl.pass();
     this.clearDiscardPairList();
-    this.roomProxy.send(this.activePlayerControl.playerIdentifier, "YourTurnMessage", dfgmsg.encodeYourTurnMessage(false));
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(false)
+    );
   }
 
   public finishAction(): void {

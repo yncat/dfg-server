@@ -637,6 +637,9 @@ describe("DFGHandler", () => {
         outputResult: sinon.fake(() => {
           return dfg.createResult([]);
         }),
+        enumeratePlayerIdentifiers: sinon.fake((): string[] => {
+          return [];
+        }),
       });
       h.game = g;
       h.eventReceiver.onGameEnd(dfg.createResult([]));
@@ -665,6 +668,9 @@ describe("DFGHandler", () => {
       const g = <dfg.Game>(<unknown>{
         outputResult: sinon.fake(() => {
           return dfg.createResult([]);
+        }),
+        enumeratePlayerIdentifiers: sinon.fake((): string[] => {
+          return [];
         }),
       });
       h.game = g;
