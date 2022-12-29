@@ -5,9 +5,11 @@ import { RoomProxy } from "./roomProxy";
 import { PlayerMap } from "./playerMap";
 import { CardEnumerator } from "./cardEnumerator";
 import * as dfgmsg from "dfg-messages";
-import { EventReceiver } from "./eventReceiver";
+import { EventReceiver, EventReceiverCallbacks } from "./eventReceiver";
 
 class InvalidGameStateError extends Error {}
+export type OnEventLogPushFunc = (eventType: string, eventBody: string) => void;
+
 export class DFGHandler {
   ruleConfig: dfg.RuleConfig;
   game: dfg.Game | null;
@@ -16,10 +18,12 @@ export class DFGHandler {
   roomProxy: RoomProxy<GameRoom>;
   playerMap: PlayerMap;
   cardEnumerator: CardEnumerator;
+  onEventLogPush: OnEventLogPushFunc;
   constructor(
     roomProxy: RoomProxy<GameRoom>,
     playerMap: PlayerMap,
-    ruleConfig: dfgmsg.RuleConfig
+    ruleConfig: dfgmsg.RuleConfig,
+    onEventLogPush: OnEventLogPushFunc
   ) {
     // set rule config
     const r = dfg.createDefaultRuleConfig();
@@ -35,10 +39,18 @@ export class DFGHandler {
     this.playerMap = playerMap;
     this.cardEnumerator = new CardEnumerator();
     this.game = null;
+    this.onEventLogPush = onEventLogPush;
 
-    // setup event receiver with game end callback
-    this.eventReceiver = new EventReceiver(roomProxy, playerMap, () => {
+    // callback function which is called on game end
+    const onGameEnd = () => {
       this.clearCardInfoForEveryone();
+      this.game.enumeratePlayerIdentifiers().forEach((id) => {
+        this.roomProxy.send(
+          id,
+          "PreventCloseMessage",
+          dfgmsg.encodePreventCloseMessage(false)
+        );
+      });
       const result = this.game.outputResult();
       const rm = this.roomProxy.roomOrNull();
       if (rm) {
@@ -72,7 +84,14 @@ export class DFGHandler {
         rm.state.discardStack.clear();
       }
       this.game = null;
-    });
+    };
+
+    // setup event receiver with callbacks
+    const clbks: EventReceiverCallbacks = {
+      onGameEnd: onGameEnd,
+      onEventLogPush: onEventLogPush,
+    };
+    this.eventReceiver = new EventReceiver(playerMap, clbks);
   }
 
   public startGame(clientIDList: string[]): void {
@@ -81,6 +100,13 @@ export class DFGHandler {
       this.eventReceiver,
       this.ruleConfig
     );
+    clientIDList.forEach((id) => {
+      this.roomProxy.send(
+        id,
+        "PreventCloseMessage",
+        dfgmsg.encodePreventCloseMessage(true)
+      );
+    });
   }
 
   public isGameActive(): boolean {
@@ -114,7 +140,7 @@ export class DFGHandler {
       this.activePlayerControl.playerIdentifier
     );
     const msg = dfgmsg.encodeTurnMessage(p.name);
-    this.roomProxy.broadcast("TurnMessage", msg);
+    this.onEventLogPush("TurnMessage", JSON.stringify(msg));
     if (!p.isConnected()) {
       this.roomProxy.broadcast(
         "PlayerWaitMessage",
@@ -130,7 +156,7 @@ export class DFGHandler {
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
       "YourTurnMessage",
-      ""
+      dfgmsg.encodeYourTurnMessage(true)
     );
   }
 
@@ -201,6 +227,11 @@ export class DFGHandler {
 
     this.activePlayerControl.discard(dps[index]);
     this.clearDiscardPairList();
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(false)
+    );
     return true;
   }
 
@@ -211,6 +242,11 @@ export class DFGHandler {
 
     this.activePlayerControl.pass();
     this.clearDiscardPairList();
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(false)
+    );
   }
 
   public finishAction(): void {

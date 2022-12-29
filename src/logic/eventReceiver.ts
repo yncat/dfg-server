@@ -1,64 +1,69 @@
 import * as dfg from "dfg-simulator";
 import * as dfgmsg from "dfg-messages";
-import { RoomProxy } from "./roomProxy";
 import { GameRoom } from "../rooms/interface";
 import { PlayerMap } from "./playerMap";
 
+export interface EventReceiverCallbacks {
+  onGameEnd: () => void;
+  onEventLogPush: (eventType: string, eventBody: string) => void;
+}
+
 export class EventReceiver implements dfg.EventReceiver {
-  roomProxy: RoomProxy<GameRoom>;
   playerMap: PlayerMap;
-  gameEndedCallback: () => void;
+  callbacks: EventReceiverCallbacks;
   constructor(
-    roomProxy: RoomProxy<GameRoom>,
     playerMap: PlayerMap,
-    gameEndedCallback: () => void
+    callbacks: EventReceiverCallbacks
   ) {
-    this.roomProxy = roomProxy;
     this.playerMap = playerMap;
-    this.gameEndedCallback = gameEndedCallback;
+    this.callbacks = callbacks;
   }
 
   public onNagare(): void {
-    this.roomProxy.broadcast("NagareMessage", "");
+    this.callbacks.onEventLogPush("NagareMessage", "");
   }
 
   public onAgari(identifier: string): void {
-    this.roomProxy.broadcast(
+    this.callbacks.onEventLogPush(
       "AgariMessage",
-      dfgmsg.encodeAgariMessage(
-        this.playerMap.clientIDToPlayer(identifier).name
+      JSON.stringify(
+        dfgmsg.encodeAgariMessage(
+          this.playerMap.clientIDToPlayer(identifier).name
+        )
       )
     );
   }
 
   public onForbiddenAgari(identifier: string): void {
-    this.roomProxy.broadcast(
+    this.callbacks.onEventLogPush(
       "ForbiddenAgariMessage",
-      dfgmsg.encodeForbiddenAgariMessage(
-        this.playerMap.clientIDToPlayer(identifier).name
+      JSON.stringify(
+        dfgmsg.encodeForbiddenAgariMessage(
+          this.playerMap.clientIDToPlayer(identifier).name
+        )
       )
     );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public onYagiri(identifier: string): void {
-    this.roomProxy.broadcast("YagiriMessage", "");
+    this.callbacks.onEventLogPush("YagiriMessage", "");
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public onJBack(identifier: string): void {
-    this.roomProxy.broadcast("JBackMessage", "");
+    this.callbacks.onEventLogPush("JBackMessage", "");
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public onKakumei(identifier: string): void {
-    this.roomProxy.broadcast("KakumeiMessage", "");
+    this.callbacks.onEventLogPush("KakumeiMessage", "");
   }
 
   public onStrengthInversion(strengthInverted: boolean): void {
-    this.roomProxy.broadcast(
+    this.callbacks.onEventLogPush(
       "StrengthInversionMessage",
-      dfgmsg.encodeStrengthInversionMessage(strengthInverted)
+      JSON.stringify(dfgmsg.encodeStrengthInversionMessage(strengthInverted))
     );
   }
 
@@ -67,26 +72,30 @@ export class EventReceiver implements dfg.EventReceiver {
     discardPair: dfg.DiscardPair,
     remainingHandCount: number
   ): void {
-    this.roomProxy.broadcast(
+    this.callbacks.onEventLogPush(
       "DiscardMessage",
-      dfgmsg.encodeDiscardMessage(
-        this.playerMap.clientIDToPlayer(identifier).name,
-        dfgmsg.encodeDiscardPairMessage(
-          discardPair.cards.map((v) => {
-            return dfgmsg.encodeCardMessage(v.mark, v.cardNumber);
-          })
-        ),
-        remainingHandCount
+      JSON.stringify(
+        dfgmsg.encodeDiscardMessage(
+          this.playerMap.clientIDToPlayer(identifier).name,
+          dfgmsg.encodeDiscardPairMessage(
+            discardPair.cards.map((v) => {
+              return dfgmsg.encodeCardMessage(v.mark, v.cardNumber);
+            })
+          ),
+          remainingHandCount
+        )
       )
     );
   }
 
   public onPass(identifier: string, remainingHandCount: number): void {
-    this.roomProxy.broadcast(
+    this.callbacks.onEventLogPush(
       "PassMessage",
-      dfgmsg.encodePassMessage(
-        this.playerMap.clientIDToPlayer(identifier).name,
-        remainingHandCount
+      JSON.stringify(
+        dfgmsg.encodePassMessage(
+          this.playerMap.clientIDToPlayer(identifier).name,
+          remainingHandCount
+        )
       )
     );
   }
@@ -109,15 +118,17 @@ export class EventReceiver implements dfg.EventReceiver {
         return this.playerMap.clientIDToPlayer(v).name;
       })
     );
-    this.roomProxy.broadcast("GameEndMessage", msg);
-    this.gameEndedCallback();
+    this.callbacks.onEventLogPush("GameEndMessage", JSON.stringify(msg));
+    this.callbacks.onGameEnd();
   }
 
   public onPlayerKicked(identifier: string): void {
-    this.roomProxy.broadcast(
+    this.callbacks.onEventLogPush(
       "PlayerKickedMessage",
-      dfgmsg.encodePlayerKickedMessage(
-        this.playerMap.clientIDToPlayer(identifier).name
+      JSON.stringify(
+        dfgmsg.encodePlayerKickedMessage(
+          this.playerMap.clientIDToPlayer(identifier).name
+        )
       )
     );
   }
@@ -127,42 +138,48 @@ export class EventReceiver implements dfg.EventReceiver {
     before: dfg.RankType,
     after: dfg.RankType
   ): void {
-    this.roomProxy.broadcast(
+    this.callbacks.onEventLogPush(
       "PlayerRankChangedMessage",
-      dfgmsg.encodePlayerRankChangedMessage(
-        this.playerMap.clientIDToPlayer(identifier).name,
-        before,
-        after
+      JSON.stringify(
+        dfgmsg.encodePlayerRankChangedMessage(
+          this.playerMap.clientIDToPlayer(identifier).name,
+          before,
+          after
+        )
       )
     );
   }
 
   public onInitialInfoProvided(playerCount: number, deckCount: number): void {
-    this.roomProxy.broadcast(
+    this.callbacks.onEventLogPush(
       "InitialInfoMessage",
-      dfgmsg.encodeInitialInfoMessage(playerCount, deckCount)
+      JSON.stringify(dfgmsg.encodeInitialInfoMessage(playerCount, deckCount))
     );
   }
 
   public onCardsProvided(identifier: string, providedCount: number): void {
-    this.roomProxy.broadcast(
+    this.callbacks.onEventLogPush(
       "CardsProvidedMessage",
-      dfgmsg.encodeCardsProvidedMessage(
-        this.playerMap.clientIDToPlayer(identifier).name,
-        providedCount
+      JSON.stringify(
+        dfgmsg.encodeCardsProvidedMessage(
+          this.playerMap.clientIDToPlayer(identifier).name,
+          providedCount
+        )
       )
     );
   }
 
   public onReverse(): void {
-    this.roomProxy.broadcast("ReverseMessage", "");
+    this.callbacks.onEventLogPush("ReverseMessage", "");
   }
 
   public onSkip(identifier: string): void {
-    this.roomProxy.broadcast(
+    this.callbacks.onEventLogPush(
       "TurnSkippedMessage",
-      dfgmsg.encodeTurnSkippedMessage(
-        this.playerMap.clientIDToPlayer(identifier).name
+      JSON.stringify(
+        dfgmsg.encodeTurnSkippedMessage(
+          this.playerMap.clientIDToPlayer(identifier).name
+        )
       )
     );
   }

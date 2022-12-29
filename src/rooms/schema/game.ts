@@ -3,6 +3,7 @@ import { Result } from "./result";
 import { DiscardPair } from "./discardPair";
 import { RemovedCardEntry } from "./removedCardEntry";
 import { RuleConfig } from "./ruleConfig";
+import { EventLog } from "./eventLog";
 
 export class GameState extends Schema {
   @type("number") playerCount = 0;
@@ -15,4 +16,5 @@ export class GameState extends Schema {
   @type([RemovedCardEntry]) removedCardList =
     new ArraySchema<RemovedCardEntry>();
   @type(RuleConfig) ruleConfig = new RuleConfig();
+  @type([EventLog]) eventLogList = new ArraySchema<EventLog>();
 }

@@ -22,6 +22,23 @@ function createRuleConfig() {
   };
 }
 
+function commonMessages(): string[] {
+  return [
+    "RoomOwnerMessage",
+    "PlayerJoinedMessage",
+    "PlayerLeftMessage",
+    "CardListMessage",
+    "YourTurnMessage",
+    "PreventCloseMessage",
+    "CardListMessage",
+    "PlayerLeftMessage",
+    "DiscardPairListMessage",
+    "DiscardMessage",
+    "PlayerLostMessage",
+    "PlayerWaitMessage",
+  ];
+}
+
 function createGameRoomOptions() {
   return {
     ruleConfig: createRuleConfig(),
@@ -387,38 +404,21 @@ describe("e2e test", () => {
         [client2],
         ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
       );
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
-      const ii1 = mrm.getFake(client1, "InitialInfoMessage");
-      const ii2 = mrm.getFake(client2, "InitialInfoMessage");
-      expect(ii1.calledOnce).to.be.true;
-      expect(ii2.calledOnce).to.be.true;
-      expect(ii1.firstCall.firstArg.playerCount).to.eql(2);
-      expect(ii1.firstCall.firstArg.deckCount).to.eql(1);
-      expect(ii2.firstCall.firstArg.playerCount).to.eql(2);
-      expect(ii2.firstCall.firstArg.deckCount).to.eql(1);
-      const cp1 = mrm.getFake(client1, "CardsProvidedMessage");
-      const cp2 = mrm.getFake(client2, "CardsProvidedMessage");
-      expect(cp1.calledTwice).to.be.true;
-      expect(cp2.calledTwice).to.be.true;
-      expect(cp1.firstCall.firstArg.cardCount).to.eql(27);
-      expect(cp1.secondCall.firstArg.cardCount).to.eql(27);
-      expect(cp2.firstCall.firstArg.cardCount).to.eql(27);
-      expect(cp2.secondCall.firstArg.cardCount).to.eql(27);
-      const t1 = mrm.getFake(client1, "TurnMessage");
-      const t2 = mrm.getFake(client2, "TurnMessage");
-      expect(t1.calledOnce).to.be.true;
-      expect(t2.calledOnce).to.be.true;
+      expect(room.state.eventLogList.length).to.eq(4);
+      const initial = (room as GameRoom).state.eventLogList[0];
+      expect(initial.type).to.eq("InitialInfoMessage");
+      expect(JSON.parse(initial.body)).to.eql(
+        dfgmsg.encodeInitialInfoMessage(2, 1)
+      );
+      const prov1 = (room as GameRoom).state.eventLogList[1];
+      expect(prov1.type).to.eql("CardsProvidedMessage");
+      const prov2 = (room as GameRoom).state.eventLogList[2];
+      expect(prov2.type).to.eql("CardsProvidedMessage");
+      const tm = (room as GameRoom).state.eventLogList[3];
+      expect(tm.type).to.eql("TurnMessage");
       const activePlayer = getActivePlayer(room, client1, client2);
       const inactivePlayer = activePlayer === client1 ? client2 : client1;
       expect(mrm.getFake(activePlayer, "YourTurnMessage").calledOnce).to.be
@@ -452,16 +452,7 @@ describe("e2e test", () => {
         [client2],
         ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
       );
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       const castedRoom = room as GameRoom;
@@ -471,6 +462,32 @@ describe("e2e test", () => {
       const wrc = game.outputRuleConfig();
       expect(wrc.reverse).to.be.true;
       expect(castedRoom.state.ruleConfig.reverse).to.be.true;
+    });
+
+    it("starting the game sends preventCloseMessage to all joined clients", async () => {
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
+      setRoomOptionsForTest(room, true);
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("cat")
+      );
+      mrm.registerFake([client1], commonMessages());
+      const client2 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("dog")
+      );
+      mrm.registerFake([client2], commonMessages());
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      const c1 = mrm.getFake(client1, "PreventCloseMessage");
+      const c2 = mrm.getFake(client2, "PreventCloseMessage");
+      const msg = dfgmsg.encodePreventCloseMessage(true);
+      expect(c1.calledWith(msg)).to.be.true;
+      expect(c2.calledWith(msg)).to.be.true;
     });
 
     it("does nothing when the request sent twice", async () => {
@@ -490,27 +507,15 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
-      const ii1 = mrm.getFake(client1, "InitialInfoMessage");
-      const ii2 = mrm.getFake(client2, "InitialInfoMessage");
-      expect(ii1.calledOnce).to.be.true;
-      expect(ii2.calledOnce).to.be.true;
+      const evts = (room as GameRoom).state.eventLogList.length;
+      expect(evts).to.eql(4);
       client1.send("GameStartRequest");
       await forMilliseconds(300);
-      expect(ii1.calledOnce).to.be.true;
-      expect(ii2.calledOnce).to.be.true;
+      const evts2 = (room as GameRoom).state.eventLogList.length;
+      expect(evts2).to.eql(4);
     });
 
     it("non-room-owner cannot start the game", async () => {
@@ -572,18 +577,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
@@ -630,18 +624,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       const msg = dfgmsg.encodeCardSelectRequest(0);
       client1.send("CardSelectRequest", msg);
       await forMilliseconds(100);
@@ -666,18 +649,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
@@ -707,19 +679,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-          "DiscardMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
@@ -729,42 +689,31 @@ describe("e2e test", () => {
       await forMilliseconds(100);
       const cl = mrm.getFake(activePlayer, "CardListMessage");
       expect(cl.calledOnce).to.be.true;
-      const card = dfgmsg.decodePayload<dfgmsg.SelectableCardMessage>(
-        cl.firstCall.lastArg.cardList[0],
-        dfgmsg.SelectableCardMessageDecoder
-      ) as dfgmsg.SelectableCardMessage;
       const dp = mrm.getFake(activePlayer, "DiscardPairListMessage"); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
       expect(dp.calledOnce).to.be.true;
       mrm.resetHistory();
       activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
       await forMilliseconds(100);
-      const dc1 = mrm.getFake(client1, "DiscardMessage");
-      const dc2 = mrm.getFake(client2, "DiscardMessage");
-      expect(dc1.calledOnce).to.be.true;
-      expect(dc2.calledOnce).to.be.true;
-      expect(dc1.firstCall.lastArg.discardPair.cardList.length).to.eql(1);
-      expect(dc2.firstCall.lastArg.discardPair.cardList.length).to.eql(1);
-      const dcm1 = dfgmsg.decodePayload<dfgmsg.CardMessage>(
-        dc1.firstCall.lastArg.discardPair.cardList[0],
-        dfgmsg.CardMessageDecoder
-      ) as dfgmsg.CardMessage;
-      const dcm2 = dfgmsg.decodePayload<dfgmsg.CardMessage>(
-        dc2.firstCall.lastArg.discardPair.cardList[0],
-        dfgmsg.CardMessageDecoder
-      ) as dfgmsg.CardMessage;
-      expect(dcm1.mark).to.eql(card.mark);
-      expect(dcm1.cardNumber).to.eql(card.cardNumber);
-      expect(dcm2.mark).to.eql(card.mark);
-      expect(dcm2.cardNumber).to.eql(card.cardNumber);
+      const len = (room as GameRoom).state.eventLogList.length;
+      const de = (room as GameRoom).state.eventLogList[len - 2];
+      expect(de.type).to.eql("DiscardMessage");
+      const dmsg = dfgmsg.decodePayload<dfgmsg.DiscardMessage>(
+        JSON.parse(de.body),
+        dfgmsg.DiscardMessageDecoder
+      ) as dfgmsg.DiscardMessage;
+      expect(dmsg.discardPair.cardList.length).to.eql(1);
       const activePlayerName = activePlayer === client1 ? "cat" : "dog";
-      expect(dc1.firstCall.lastArg.playerName).to.eql(activePlayerName);
-      expect(dc2.firstCall.lastArg.playerName).to.eql(activePlayerName);
+      expect(dmsg.playerName).to.eql(activePlayerName);
       // 二人に配って２７枚、１枚出したので、残り２６枚
-      expect(dc1.firstCall.lastArg.remainingHandCount).to.eql(26);
-      expect(dc2.firstCall.lastArg.remainingHandCount).to.eql(26);
+      expect(dmsg.remainingHandCount).to.eql(26);
       // 次のプレイヤーにターンが移っているか
       const nextPlayer = activePlayer === client1 ? client2 : client1;
-      expect(mrm.getFake(nextPlayer, "YourTurnMessage").calledOnce).to.be.true;
+      const nextPlayerName = nextPlayer === client1 ? "cat" : "dog";
+      const tm = (room as GameRoom).state.eventLogList[len - 1];
+      expect(tm.type).to.eql("TurnMessage");
+      expect(JSON.parse(tm.body)).to.eql(
+        dfgmsg.encodeTurnMessage(nextPlayerName)
+      );
       // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
       expect(dp.calledOnce).to.be.true;
       expect(dp.firstCall.lastArg.discardPairList.length).to.eql(0);
@@ -789,19 +738,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-          "DiscardMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
@@ -837,19 +774,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-          "DiscardMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
       await forMilliseconds(100);
       const dc1 = mrm.getFake(client1, "DiscardMessage");
@@ -875,19 +800,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-          "DiscardMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
@@ -918,19 +831,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-          "DiscardMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
@@ -960,19 +861,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-          "PassMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
@@ -981,13 +870,13 @@ describe("e2e test", () => {
       activePlayer.send("PassRequest", "");
       await forMilliseconds(100);
       const dp = mrm.getFake(activePlayer, "DiscardPairListMessage");
-      const ps1 = mrm.getFake(client1, "PassMessage");
-      const ps2 = mrm.getFake(client2, "PassMessage");
-      expect(ps1.calledOnce).to.be.true;
-      expect(ps2.calledOnce).to.be.true;
+      const len = (room as GameRoom).state.eventLogList.length;
+      const pe = (room as GameRoom).state.eventLogList[len - 2];
+      expect(pe.type).to.eql("PassMessage");
       const activePlayerName = activePlayer === client1 ? "cat" : "dog";
-      expect(ps1.firstCall.lastArg.playerName).to.eql(activePlayerName);
-      expect(ps2.firstCall.lastArg.playerName).to.eql(activePlayerName);
+      expect(JSON.parse(pe.body)).to.eql(
+        dfgmsg.encodePassMessage(activePlayerName, 27)
+      );
       // 次のプレイヤーにターンが移っているか
       const nextPlayer = activePlayer === client1 ? client2 : client1;
       expect(mrm.getFake(nextPlayer, "YourTurnMessage").calledOnce).to.be.true;
@@ -1013,24 +902,12 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "PassMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
+      const oldlen = (room as GameRoom).state.eventLogList.length;
       client1.send("PassRequest", "");
       await forMilliseconds(100);
-      const ps1 = mrm.getFake(client1, "PassMessage");
-      const ps2 = mrm.getFake(client2, "PassMessage");
-      expect(ps1.called).to.be.false;
-      expect(ps2.called).to.be.false;
+      const newlen = (room as GameRoom).state.eventLogList.length;
+      expect(oldlen).to.eq(newlen);
     });
 
     it("does nothing when the player is not active at the moment", async () => {
@@ -1050,29 +927,17 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "PassMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
+      const oldlen = (room as GameRoom).state.eventLogList.length;
       const inactivePlayer =
         getActivePlayer(room, client1, client2) === client1 ? client2 : client1;
       inactivePlayer.send("PassRequest", "");
       await forMilliseconds(100);
-      const ps1 = mrm.getFake(client1, "PassMessage");
-      const ps2 = mrm.getFake(client2, "PassMessage");
-      expect(ps1.called).to.be.false;
-      expect(ps2.called).to.be.false;
+      const newlen = (room as GameRoom).state.eventLogList.length;
+      expect(oldlen).to.eq(newlen);
     });
 
     it("the player who left is kicked", async () => {
@@ -1091,39 +956,29 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-          "PlayerKickedMessage",
-          "PlayerRankChangedMessage",
-          "GameEndMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
-      const msg1 = dfgmsg.encodePlayerKickedMessage("dog");
       void client2.leave(true);
       await forMilliseconds(100);
-      const k = mrm.getFake(client1, "PlayerKickedMessage");
-      expect(k.calledOnce).to.be.true;
-      expect(k.firstCall.lastArg).to.eql(msg1);
-      expect(mrm.getFake(client1, "GameEndMessage").calledOnce).to.be.true;
-      const msg2 = dfgmsg.encodePlayerRankChangedMessage(
-        "cat",
-        dfgmsg.RankType.UNDETERMINED,
-        dfgmsg.RankType.DAIFUGO
+      const len = (room as GameRoom).state.eventLogList.length;
+      const ke = (room as GameRoom).state.eventLogList[len - 3];
+      expect(ke.type).to.eql("PlayerKickedMessage");
+      expect(JSON.parse(ke.body)).to.eql(
+        dfgmsg.encodePlayerKickedMessage("dog")
       );
-      const rc = mrm.getFake(client1, "PlayerRankChangedMessage");
-      expect(rc.calledOnce).to.be.true;
-      expect(rc.firstCall.lastArg).to.eql(msg2);
+      const rce = (room as GameRoom).state.eventLogList[len - 2];
+      expect(rce.type).to.eql("PlayerRankChangedMessage");
+      expect(JSON.parse(rce.body)).to.eql(
+        dfgmsg.encodePlayerRankChangedMessage(
+          "cat",
+          dfgmsg.RankType.UNDETERMINED,
+          dfgmsg.RankType.DAIFUGO
+        )
+      );
+      const gee = (room as GameRoom).state.eventLogList[len - 1];
+      expect(gee.type).to.eql("GameEndMessage");
     });
 
     it("kicking a player updates removed cards list, if the game continues", async () => {
@@ -1147,21 +1002,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("rabbit")
       );
       mrm.registerFake([client3], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2, client3],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-          "PlayerKickedMessage",
-          "PlayerRankChangedMessage",
-          "GameEndMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2, client3], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
@@ -1186,23 +1027,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("dog")
       );
       mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2],
-        [
-          "PlayerLeftMessage",
-          "InitialInfoMessage",
-          "CardsProvidedMessage",
-          "CardListMessage",
-          "TurnMessage",
-          "YourTurnMessage",
-          "DiscardPairListMessage",
-          "PlayerKickedMessage",
-          "PlayerRankChangedMessage",
-          "DiscardMessage",
-          "AgariMessage",
-          "GameEndMessage",
-        ]
-      );
+      mrm.registerFake([client1, client2], commonMessages());
       const g = createGameBeforeAgari(
         client1,
         client2,
@@ -1215,20 +1040,33 @@ describe("e2e test", () => {
       mrm.resetHistory();
       client1.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
       await forMilliseconds(100);
-      const ag1 = mrm.getFake(client1, "AgariMessage");
-      const ag2 = mrm.getFake(client2, "AgariMessage");
-      expect(ag1.calledOnce).to.be.true;
-      expect(ag2.calledOnce).to.be.true;
-      const agmsg = dfgmsg.encodeAgariMessage("cat");
-      expect(ag1.firstCall.lastArg).to.eql(agmsg);
-      expect(ag2.firstCall.lastArg).to.eql(agmsg);
-      const endmsg = dfgmsg.encodeGameEndMessage(["cat"], [], [], [], ["dog"]);
-      const end1 = mrm.getFake(client1, "GameEndMessage");
-      const end2 = mrm.getFake(client2, "GameEndMessage");
-      expect(end1.calledOnce).to.be.true;
-      expect(end2.calledOnce).to.be.true;
-      expect(end1.firstCall.lastArg).to.eql(endmsg);
-      expect(end2.firstCall.lastArg).to.eql(endmsg);
+      const len = room.state.eventLogList.length;
+      const ae = room.state.eventLogList[len - 4];
+      expect(ae.type).to.eql("AgariMessage");
+      expect(JSON.parse(ae.body)).to.eql(dfgmsg.encodeAgariMessage("cat"));
+      const rce1 = room.state.eventLogList[len - 3];
+      expect(rce1.type).to.eql("PlayerRankChangedMessage");
+      expect(JSON.parse(rce1.body)).to.eql(
+        dfgmsg.encodePlayerRankChangedMessage(
+          "cat",
+          dfgmsg.RankType.UNDETERMINED,
+          dfgmsg.RankType.DAIFUGO
+        )
+      );
+      const rce2 = room.state.eventLogList[len - 2];
+      expect(rce2.type).to.eql("PlayerRankChangedMessage");
+      expect(JSON.parse(rce2.body)).to.eql(
+        dfgmsg.encodePlayerRankChangedMessage(
+          "dog",
+          dfgmsg.RankType.UNDETERMINED,
+          dfgmsg.RankType.DAIHINMIN
+        )
+      );
+      const gee = room.state.eventLogList[len - 1];
+      expect(gee.type).to.eql("GameEndMessage");
+      expect(JSON.parse(gee.body)).to.eql(
+        dfgmsg.encodeGameEndMessage(["cat"], [], [], [], ["dog"])
+      );
       // 次のプレイヤーにターンが回っていないことを見る
       expect(mrm.getFake(client2, "YourTurnMessage").called).to.be.false;
       // lastGameResultのstateが更新されていることを見る
@@ -1242,6 +1080,40 @@ describe("e2e test", () => {
         "dog",
       ]);
     });
+  });
+
+  it("ending the game sends PreventClose==false event to all joined clients", async () => {
+    const room = (await colyseus.createRoom(
+      "game_room",
+      createGameRoomOptions()
+    )) as GameRoom;
+    const mrm = new MessageReceiverMap();
+    const client1 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("cat")
+    );
+    mrm.registerFake([client1], commonMessages());
+    const client2 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("dog")
+    );
+    mrm.registerFake([client2], commonMessages());
+    const g = createGameBeforeAgari(
+      client1,
+      client2,
+      room.dfgHandler.eventReceiver
+    );
+    room.dfgHandler.game = g;
+    room.dfgHandler.prepareNextPlayer();
+    room.dfgHandler.selectCardByIndex(0);
+    await forMilliseconds(100);
+    client1.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+    await forMilliseconds(100);
+    const c1 = mrm.getFake(client1, "PreventCloseMessage");
+    const c2 = mrm.getFake(client2, "PreventCloseMessage");
+    const msg = dfgmsg.encodePreventCloseMessage(false);
+    expect(c1.calledWith(msg)).to.be.true;
+    expect(c2.calledWith(msg)).to.be.true;
   });
 
   // reconnections
@@ -1261,10 +1133,7 @@ describe("e2e test", () => {
       clientOptionsWithDefault("dog")
     );
     mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-    mrm.registerFake(
-      [client1, client2],
-      ["PlayerLostMessage", "PlayerLeftMessage"]
-    );
+    mrm.registerFake([client1, client2], commonMessages());
     await client2.leave(false);
     await forMilliseconds(100);
     const left = mrm.getFake(client1, "PlayerLeftMessage");
@@ -1296,18 +1165,7 @@ describe("e2e test", () => {
       [client2],
       ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
     );
-    mrm.registerFake(
-      [client1, client2],
-      [
-        "InitialInfoMessage",
-        "CardsProvidedMessage",
-        "CardListMessage",
-        "TurnMessage",
-        "YourTurnMessage",
-        "PlayerLostMessage",
-        "PlayerLeftMessage",
-      ]
-    );
+    mrm.registerFake([client1, client2], commonMessages());
     client1.send("GameStartRequest");
     await forMilliseconds(300);
     const client3 = await colyseus.connectTo(
@@ -1350,22 +1208,9 @@ describe("e2e test", () => {
       [client2],
       ["RoomOwnerMessage", "PlayerJoinedMessage", "PlayerLeftMessage"]
     );
-    mrm.registerFake(
-      [client1, client2],
-      [
-        "InitialInfoMessage",
-        "CardsProvidedMessage",
-        "CardListMessage",
-        "TurnMessage",
-        "YourTurnMessage",
-        "PlayerLostMessage",
-        "PlayerLeftMessage",
-        "PlayerReconnectedMessage",
-      ]
-    );
+    mrm.registerFake([client1, client2], commonMessages());
     client1.send("GameStartRequest");
     await forMilliseconds(300);
-    const sessionID = client2.sessionId;
     await client2.leave(false);
     await forMilliseconds(100);
     const left1 = mrm.getFake(client1, "PlayerLeftMessage");
@@ -1401,21 +1246,7 @@ describe("e2e test", () => {
       clientOptionsWithDefault("dog")
     );
     mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-    mrm.registerFake(
-      [client1, client2],
-      [
-        "PlayerLeftMessage",
-        "InitialInfoMessage",
-        "CardsProvidedMessage",
-        "CardListMessage",
-        "TurnMessage",
-        "YourTurnMessage",
-        "DiscardPairListMessage",
-        "DiscardMessage",
-        "PlayerWaitMessage",
-        "PlayerLostMessage",
-      ]
-    );
+    mrm.registerFake([client1, client2], commonMessages());
     client1.send("GameStartRequest");
     await forMilliseconds(300);
     mrm.resetHistory();
@@ -1425,20 +1256,15 @@ describe("e2e test", () => {
     await forMilliseconds(100);
     const cl = mrm.getFake(activePlayer, "CardListMessage");
     expect(cl.calledOnce).to.be.true;
-    const card = dfgmsg.decodePayload<dfgmsg.SelectableCardMessage>(
-      cl.firstCall.lastArg.cardList[0],
-      dfgmsg.SelectableCardMessageDecoder
-    ) as dfgmsg.SelectableCardMessage;
     const dp = mrm.getFake(activePlayer, "DiscardPairListMessage"); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     expect(dp.calledOnce).to.be.true;
     mrm.resetHistory();
     // ターンを進める前にもう片方のプレイヤーを切断
-    const inactivePlayer = activePlayer === client1 ? client2:client1;
+    const inactivePlayer = activePlayer === client1 ? client2 : client1;
     await inactivePlayer.leave(false);
     await forMilliseconds(100);
     activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
     await forMilliseconds(100);
-    const waitingPlayerName = inactivePlayer === client1?"cat":"dog";
     const wmsg = mrm.getFake(activePlayer, "PlayerWaitMessage");
     expect(wmsg.called).to.be.true;
   });

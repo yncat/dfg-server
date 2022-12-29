@@ -19,10 +19,21 @@ function createRuleConfig() {
     skip: dfgmsg.SkipConfig.OFF,
   };
 }
+
+function createEventLogPushFunc() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  return (eventType: string, eventBody: string) => {};
+}
+
 function createDFGHandler(): DFGHandler {
   const rp = new RoomProxy<GameRoom>();
   const pm = new PlayerMap();
-  const h = new DFGHandler(rp, pm, createRuleConfig());
+  const h = new DFGHandler(
+    rp,
+    pm,
+    createRuleConfig(),
+    createEventLogPushFunc()
+  );
   return h;
 }
 
@@ -137,7 +148,6 @@ describe("DFGHandler", () => {
       });
       const roomProxyMock = sinon.mock(h.roomProxy);
       const msg = dfgmsg.encodeTurnMessage(pn);
-      roomProxyMock.expects("broadcast").withExactArgs("TurnMessage", msg);
       const p = <Player>{
         name: pn,
         isConnected: () => {
@@ -146,7 +156,11 @@ describe("DFGHandler", () => {
       };
       sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
       h.game = g;
+      const f = sinon.fake(h.onEventLogPush);
+      sinon.replace(h, "onEventLogPush", f);
       h.prepareNextPlayer();
+      expect(f.callCount).to.eq(1);
+      expect(f.calledWith("TurnMessage", JSON.stringify(msg))).to.be.true;
       roomProxyMock.verify();
     });
 
@@ -167,7 +181,13 @@ describe("DFGHandler", () => {
       });
       h.activePlayerControl = apc;
       const roomProxyMock = sinon.mock(h.roomProxy);
-      roomProxyMock.expects("send").withExactArgs(pi, "YourTurnMessage", "");
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          pi,
+          "YourTurnMessage",
+          dfgmsg.encodeYourTurnMessage(true)
+        );
       h.notifyToActivePlayer();
       roomProxyMock.verify();
     });
@@ -390,7 +410,23 @@ describe("DFGHandler", () => {
         discard: dc,
       });
       h.activePlayerControl = apc;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          "ccaatt",
+          "DiscardPairListMessage",
+          dfgmsg.encodeDiscardPairListMessage([])
+        );
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          pi,
+          "YourTurnMessage",
+          dfgmsg.encodeYourTurnMessage(false)
+        );
       const ret = h.discardByIndex(0);
+      roomProxyMock.verify();
       expect(ret).to.be.true;
       expect(edc.called).to.be.true;
       expect(dc.called).to.be.true;
@@ -460,6 +496,21 @@ describe("DFGHandler", () => {
         pass: pass,
       });
       h.activePlayerControl = apc;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          "ccaatt",
+          "DiscardPairListMessage",
+          dfgmsg.encodeDiscardPairListMessage([])
+        );
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          pi,
+          "YourTurnMessage",
+          dfgmsg.encodeYourTurnMessage(false)
+        );
       h.pass();
       expect(pass.called).to.be.true;
     });
@@ -586,6 +637,9 @@ describe("DFGHandler", () => {
         outputResult: sinon.fake(() => {
           return dfg.createResult([]);
         }),
+        enumeratePlayerIdentifiers: sinon.fake((): string[] => {
+          return [];
+        }),
       });
       h.game = g;
       h.eventReceiver.onGameEnd(dfg.createResult([]));
@@ -614,6 +668,9 @@ describe("DFGHandler", () => {
       const g = <dfg.Game>(<unknown>{
         outputResult: sinon.fake(() => {
           return dfg.createResult([]);
+        }),
+        enumeratePlayerIdentifiers: sinon.fake((): string[] => {
+          return [];
         }),
       });
       h.game = g;
