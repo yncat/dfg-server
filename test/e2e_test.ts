@@ -24,6 +24,9 @@ function createRuleConfig() {
 
 function commonMessages(): string[] {
   return [
+    "RoomOwnerMessage",
+    "PlayerJoinedMessage",
+    "PlayerLeftMessage",
     "CardListMessage",
     "YourTurnMessage",
     "PreventCloseMessage",
@@ -459,6 +462,32 @@ describe("e2e test", () => {
       const wrc = game.outputRuleConfig();
       expect(wrc.reverse).to.be.true;
       expect(castedRoom.state.ruleConfig.reverse).to.be.true;
+    });
+
+    it("starting the game sends preventCloseMessage to all joined clients", async () => {
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      );
+      setRoomOptionsForTest(room, true);
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("cat")
+      );
+      mrm.registerFake([client1], commonMessages());
+      const client2 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("dog")
+      );
+      mrm.registerFake([client2], commonMessages());
+      client1.send("GameStartRequest");
+      await forMilliseconds(300);
+      const c1 = mrm.getFake(client1, "PreventCloseMessage");
+      const c2 = mrm.getFake(client2, "PreventCloseMessage");
+      const msg = dfgmsg.encodePreventCloseMessage(true);
+      expect(c1.calledWith(msg)).to.be.true;
+      expect(c2.calledWith(msg)).to.be.true;
     });
 
     it("does nothing when the request sent twice", async () => {
@@ -973,10 +1002,7 @@ describe("e2e test", () => {
         clientOptionsWithDefault("rabbit")
       );
       mrm.registerFake([client3], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
-      mrm.registerFake(
-        [client1, client2, client3],
-        commonMessages(),
-      );
+      mrm.registerFake([client1, client2, client3], commonMessages());
       client1.send("GameStartRequest");
       await forMilliseconds(300);
       mrm.resetHistory();
@@ -1054,6 +1080,40 @@ describe("e2e test", () => {
         "dog",
       ]);
     });
+  });
+
+  it("ending the game sends PreventClose==false event to all joined clients", async () => {
+    const room = (await colyseus.createRoom(
+      "game_room",
+      createGameRoomOptions()
+    )) as GameRoom;
+    const mrm = new MessageReceiverMap();
+    const client1 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("cat")
+    );
+    mrm.registerFake([client1], commonMessages());
+    const client2 = await colyseus.connectTo(
+      room,
+      clientOptionsWithDefault("dog")
+    );
+    mrm.registerFake([client2], commonMessages());
+    const g = createGameBeforeAgari(
+      client1,
+      client2,
+      room.dfgHandler.eventReceiver
+    );
+    room.dfgHandler.game = g;
+    room.dfgHandler.prepareNextPlayer();
+    room.dfgHandler.selectCardByIndex(0);
+    await forMilliseconds(100);
+    client1.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+    await forMilliseconds(100);
+    const c1 = mrm.getFake(client1, "PreventCloseMessage");
+    const c2 = mrm.getFake(client2, "PreventCloseMessage");
+    const msg = dfgmsg.encodePreventCloseMessage(false);
+    expect(c1.calledWith(msg)).to.be.true;
+    expect(c2.calledWith(msg)).to.be.true;
   });
 
   // reconnections
