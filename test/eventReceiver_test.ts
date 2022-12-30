@@ -46,6 +46,7 @@ describe("onAgari", () => {
     };
     const er = createEventReceiver();
     const f = setFake(er);
+    sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
     er.onAgari(pi);
     expect(f.calledWith("AgariMessage", JSON.stringify(msg))).to.be.true;
   });
