@@ -2,7 +2,6 @@ import * as dfg from "dfg-simulator";
 import sinon from "sinon";
 import { expect } from "chai";
 import { EventReceiver } from "../src/logic/eventReceiver";
-import { GameRoom } from "../src/rooms/interface";
 import { Player } from "../src/logic/player";
 import { PlayerMap } from "../src/logic/playerMap";
 import * as dfgmsg from "dfg-messages";
@@ -47,7 +46,7 @@ describe("onAgari", () => {
     };
     const er = createEventReceiver();
     const f = setFake(er);
-    const c2p = sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
+    sinon.stub(er.playerMap, "clientIDToPlayer").returns(player);
     er.onAgari(pi);
     expect(f.calledWith("AgariMessage", JSON.stringify(msg))).to.be.true;
   });
