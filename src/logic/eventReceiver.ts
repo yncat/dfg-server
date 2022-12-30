@@ -1,6 +1,5 @@
 import * as dfg from "dfg-simulator";
 import * as dfgmsg from "dfg-messages";
-import { GameRoom } from "../rooms/interface";
 import { PlayerMap } from "./playerMap";
 
 export interface EventReceiverCallbacks {
