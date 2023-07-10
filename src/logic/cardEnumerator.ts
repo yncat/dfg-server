@@ -5,7 +5,7 @@ interface CardEnumeratableAdditionalAction {
   enumerateCards:() => dfg.Card[];
   isCardSelected:(index: number) => boolean;
   checkCardSelectability:(index: number) => dfg.SelectabilityCheckResult;
-};
+}
 
 export class CardEnumerator {
   public enumerateFromHand(hand: dfg.Hand): dfgmsg.CardListMessage {
