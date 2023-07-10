@@ -184,10 +184,31 @@ export class EventReceiver implements dfg.EventReceiver {
   }
 
   public onTransfer(identifier: string, targetIdentifier: string, transferred: dfg.CardSelectionPair): void {
-    return;
+    this.callbacks.onEventLogPush(
+      "TransferMessage",
+      JSON.stringify(
+        dfgmsg.encodeTransferMessage(
+          this.playerMap.clientIDToPlayer(identifier).name,
+          this.playerMap.clientIDToPlayer(targetIdentifier).name,
+          transferred.cards.map((v) => {
+            return dfgmsg.encodeCardMessage(v.mark, v.cardNumber);
+          })
+        )
+      )
+    );
   }
 
   public onExile(identifier: string, exiled: dfg.CardSelectionPair): void {
-    return;
+    this.callbacks.onEventLogPush(
+      "ExileMessage",
+      JSON.stringify(
+        dfgmsg.encodeExileMessage(
+          this.playerMap.clientIDToPlayer(identifier).name,
+          exiled.cards.map((v) => {
+            return dfgmsg.encodeCardMessage(v.mark, v.cardNumber);
+          })
+        )
+      )
+    );
   }
 }
