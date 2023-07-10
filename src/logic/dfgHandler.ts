@@ -7,7 +7,7 @@ import { CardEnumerator } from "./cardEnumerator";
 import * as dfgmsg from "dfg-messages";
 import { EventReceiver, EventReceiverCallbacks } from "./eventReceiver";
 
-class InvalidGameStateError extends Error {}
+class InvalidGameStateError extends Error { }
 export type OnEventLogPushFunc = (eventType: string, eventBody: string) => void;
 
 export class DFGHandler {
@@ -120,13 +120,13 @@ export class DFGHandler {
     this.game.enumeratePlayerIdentifiers().forEach((v) => {
       const e =
         this.activePlayerControl &&
-        this.activePlayerControl.playerIdentifier === v
+          this.activePlayerControl.playerIdentifier === v
           ? this.cardEnumerator.enumerateFromActivePlayerControl(
-              this.activePlayerControl
-            )
+            this.activePlayerControl
+          )
           : this.cardEnumerator.enumerateFromHand(
-              this.game.findPlayerByIdentifier(v).hand
-            );
+            this.game.findPlayerByIdentifier(v).hand
+          );
       this.roomProxy.send(v, "CardListMessage", e);
     });
   }
@@ -201,7 +201,7 @@ export class DFGHandler {
       this.activePlayerControl.playerIdentifier,
       "DiscardPairListMessage",
       dfgmsg.encodeDiscardPairListMessage(
-        this.activePlayerControl.enumerateDiscardPairs().map((v) => {
+        this.activePlayerControl.enumerateCardSelectionPairs().map((v) => {
           return dfgmsg.encodeDiscardPairMessage(
             v.cards.map((w) => {
               return dfgmsg.encodeCardMessage(w.mark, w.cardNumber);
@@ -220,7 +220,7 @@ export class DFGHandler {
     if (index < 0) {
       return;
     }
-    const dps = this.activePlayerControl.enumerateDiscardPairs();
+    const dps = this.activePlayerControl.enumerateCardSelectionPairs();
     if (index >= dps.length) {
       return false;
     }
@@ -283,7 +283,7 @@ export class DFGHandler {
     return mustHandleNextPlayer;
   }
 
-  public getLatestDiscardStack(): dfg.DiscardPair[] {
+  public getLatestDiscardStack(): dfg.CardSelectionPair[] {
     if (!this.game) {
       this.gameInactiveError();
     }

@@ -68,7 +68,7 @@ export class EventReceiver implements dfg.EventReceiver {
 
   public onDiscard(
     identifier: string,
-    discardPair: dfg.DiscardPair,
+    discardPair: dfg.CardSelectionPair,
     remainingHandCount: number
   ): void {
     this.callbacks.onEventLogPush(
@@ -181,5 +181,13 @@ export class EventReceiver implements dfg.EventReceiver {
         )
       )
     );
+  }
+
+  public onTransfer(identifier: string, targetIdentifier: string, transferred: dfg.CardSelectionPair): void {
+    return;
+  }
+
+  public onExile(identifier: string, exiled: dfg.CardSelectionPair): void {
+    return;
   }
 }

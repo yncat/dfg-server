@@ -40,7 +40,7 @@ export class GameRoom extends Room<GameState> {
     this.chatHandler = new ChatHandler();
     this.playerMap = new PlayerMap();
     const rp = new RoomProxy<GameRoom>(this);
-    const onEventLogPush = (eventType:string, eventBody:string)=>{
+    const onEventLogPush = (eventType: string, eventBody: string) => {
       const evt = new EventLog();
       evt.type = eventType;
       evt.body = eventBody;
@@ -147,13 +147,15 @@ export class GameRoom extends Room<GameState> {
           return;
         }
         this.dfgHandler.finishAction();
-        if (this.dfgHandler.isGameActive()) {
-          // 出したプレイヤーの手札を更新
-          this.dfgHandler.updateCardsForEveryone();
-          this.updateDiscardStackState();
-          // カードを出した後、まだゲームが続いていれば、次のプレイヤーに回す処理をする
-          this.handleNextPlayer();
+        // ゲームが終わっていたらここで抜ける
+        if (!this.dfgHandler.isGameActive()) {
+          return;
         }
+        // 出したプレイヤーの手札を更新
+        this.dfgHandler.updateCardsForEveryone();
+        this.updateDiscardStackState();
+        // カードを出した後、まだゲームが続いていれば、次のプレイヤーに回す処理をする
+        this.handleNextPlayer();
       });
     });
 
@@ -281,8 +283,8 @@ export class GameRoom extends Room<GameState> {
 
   private updatePlayerNameList() {
     // also updates playerCount
-    const names:string[] = [];
-    this.playerMap.forEach((identifier,player)=>{
+    const names: string[] = [];
+    this.playerMap.forEach((identifier, player) => {
       names.push(player.name);
     });
     this.state.playerNameList = new ArraySchema<string>(...names);

@@ -17,12 +17,14 @@ function createRuleConfig() {
     kakumei: true,
     reverse: false,
     skip: dfgmsg.SkipConfig.OFF,
+    transfer: false,
+    exile: false,
   };
 }
 
 function createEventLogPushFunc() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  return (eventType: string, eventBody: string) => {};
+  return (eventType: string, eventBody: string) => { };
 }
 
 function createDFGHandler(): DFGHandler {
@@ -246,7 +248,7 @@ describe("DFGHandler", () => {
       const ccs = sinon.fake((index: number) => {
         return dfg.SelectabilityCheckResult.SELECTABLE;
       });
-      const sc = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const sc = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
         isCardSelected: ics,
@@ -274,7 +276,7 @@ describe("DFGHandler", () => {
       const ccs = sinon.fake((index: number) => {
         return dfg.SelectabilityCheckResult.SELECTABLE;
       });
-      const dsc = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const dsc = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
         isCardSelected: ics,
@@ -322,18 +324,18 @@ describe("DFGHandler", () => {
     });
   });
 
-  describe("enumerateDiscardPairs", () => {
-    it("can send DiscardPairListMessage to the active player", () => {
+  describe("enumerateCardSelectionPairs", () => {
+    it("can send CardSelectionPairListMessage to the active player", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
       const d4 = dfg.createCard(dfg.CardMark.DIAMONDS, 4);
       const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
       const d4m = dfgmsg.encodeCardMessage(d4.mark, d4.cardNumber);
-      const dp1 = <dfg.DiscardPair>(<unknown>{
+      const dp1 = <dfg.CardSelectionPair>(<unknown>{
         cards: [s4, s4],
       });
-      const dp2 = <dfg.DiscardPair>(<unknown>{
+      const dp2 = <dfg.CardSelectionPair>(<unknown>{
         cards: [d4, d4],
       });
       const edc = sinon.fake(() => {
@@ -341,7 +343,7 @@ describe("DFGHandler", () => {
       });
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
-        enumerateDiscardPairs: edc,
+        enumerateCardSelectionPairs: edc,
       });
       h.activePlayerControl = apc;
       const roomProxyMock = sinon.mock(h.roomProxy);
@@ -351,28 +353,28 @@ describe("DFGHandler", () => {
       ]);
       roomProxyMock
         .expects("send")
-        .calledWithExactly(pi, "DiscardPairListMessage", msg);
+        .calledWithExactly(pi, "CardSelectionPairListMessage", msg);
       h.enumerateDiscardPairs();
       expect(edc.called).to.be.true;
       roomProxyMock.verify();
     });
 
-    it("sends DiscardPairListMessage with an empty DiscardPairList when no discardPair is enumerated", () => {
+    it("sends CardSelectionPairListMessage with an empty CardSelectionPairList when no CardSelectionPair is enumerated", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const edc = sinon.fake((): dfg.DiscardPair[] => {
+      const edc = sinon.fake((): dfg.CardSelectionPair[] => {
         return [];
       });
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
-        enumerateDiscardPairs: edc,
+        enumerateCardSelectionPairs: edc,
       });
       h.activePlayerControl = apc;
       const roomProxyMock = sinon.mock(h.roomProxy);
       const msg = dfgmsg.encodeDiscardPairListMessage([]);
       roomProxyMock
         .expects("send")
-        .calledWithExactly(pi, "DiscardPairListMessage", msg);
+        .calledWithExactly(pi, "CardSelectionPairListMessage", msg);
       h.enumerateDiscardPairs();
       expect(edc.called).to.be.true;
       roomProxyMock.verify();
@@ -397,16 +399,16 @@ describe("DFGHandler", () => {
       });
       h.game = g;
       const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
-      const dp1 = <dfg.DiscardPair>(<unknown>{
+      const dp1 = <dfg.CardSelectionPair>(<unknown>{
         cards: [s4, s4],
       });
       const edc = sinon.fake(() => {
         return [dp1];
       });
-      const dc = sinon.fake((dp: dfg.DiscardPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
-        enumerateDiscardPairs: edc,
+        enumerateCardSelectionPairs: edc,
         discard: dc,
       });
       h.activePlayerControl = apc;
@@ -437,16 +439,16 @@ describe("DFGHandler", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
-      const dp1 = <dfg.DiscardPair>(<unknown>{
+      const dp1 = <dfg.CardSelectionPair>(<unknown>{
         cards: [s4, s4],
       });
       const edc = sinon.fake(() => {
         return [dp1];
       });
-      const dc = sinon.fake((dp: dfg.DiscardPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
-        enumerateDiscardPairs: edc,
+        enumerateCardSelectionPairs: edc,
         discard: dc,
       });
       h.activePlayerControl = apc;
@@ -460,16 +462,16 @@ describe("DFGHandler", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
-      const dp1 = <dfg.DiscardPair>(<unknown>{
+      const dp1 = <dfg.CardSelectionPair>(<unknown>{
         cards: [s4, s4],
       });
       const edc = sinon.fake(() => {
         return [dp1];
       });
-      const dc = sinon.fake((dp: dfg.DiscardPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
-        enumerateDiscardPairs: edc,
+        enumerateCardSelectionPairs: edc,
         discard: dc,
       });
       h.activePlayerControl = apc;
@@ -552,7 +554,7 @@ describe("DFGHandler", () => {
     it("calls game.kickPlayerByIdentifier and returns true when kicking the active player", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const kick = sinon.fake((identifier: string) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
         enumeratePlayerIdentifiers: sinon.fake(() => {
@@ -573,7 +575,7 @@ describe("DFGHandler", () => {
       const pi = "ccaatt";
       const inactivePi = "ddoogg";
       const h = createDFGHandler();
-      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const kick = sinon.fake((identifier: string) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
         enumeratePlayerIdentifiers: sinon.fake(() => {
@@ -593,7 +595,7 @@ describe("DFGHandler", () => {
     it("does not call game.kickPlayerByIdentifier and returns false when the identifier is not found", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const kick = sinon.fake((identifier: string) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
         enumeratePlayerIdentifiers: sinon.fake(() => {
@@ -612,7 +614,7 @@ describe("DFGHandler", () => {
 
     it("throws an error when activePlayerControl is not set", () => {
       const h = createDFGHandler();
-      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const kick = sinon.fake((identifier: string) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
       });
@@ -658,7 +660,7 @@ describe("DFGHandler", () => {
       );
       const state = new GameState();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-      const bc = sinon.fake((message: string, obj: any) => {});
+      const bc = sinon.fake((message: string, obj: any) => { });
       const rm = <GameRoom>(<unknown>{
         editableMetadata: em,
         state: state,
@@ -707,8 +709,8 @@ describe("DFGHandler", () => {
       });
       h["activePlayerControl"] = apc;
       const g = <dfg.Game>(<unknown>{});
-      const updateCardsForEveryone = sinon.fake(() => {});
-      const notifyToActivePlayer = sinon.fake(() => {});
+      const updateCardsForEveryone = sinon.fake(() => { });
+      const notifyToActivePlayer = sinon.fake(() => { });
       h["updateCardsForEveryone"] = updateCardsForEveryone;
       h["notifyToActivePlayer"] = notifyToActivePlayer;
       h.game = g;
@@ -725,8 +727,8 @@ describe("DFGHandler", () => {
       });
       h["activePlayerControl"] = apc;
       const g = <dfg.Game>(<unknown>{});
-      const updateCardsForEveryone = sinon.fake(() => {});
-      const notifyToActivePlayer = sinon.fake(() => {});
+      const updateCardsForEveryone = sinon.fake(() => { });
+      const notifyToActivePlayer = sinon.fake(() => { });
       h["updateCardsForEveryone"] = updateCardsForEveryone;
       h["notifyToActivePlayer"] = notifyToActivePlayer;
       h.game = g;

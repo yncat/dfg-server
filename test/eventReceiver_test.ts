@@ -125,7 +125,7 @@ describe("onDiscard", () => {
     const player = <Player>{
       name: pn,
     };
-    const dp = <dfg.DiscardPair>(<unknown>{
+    const dp = <dfg.CardSelectionPair>(<unknown>{
       cards: [c1, c2],
     });
     const er = createEventReceiver();
