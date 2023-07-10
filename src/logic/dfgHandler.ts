@@ -259,10 +259,18 @@ export class DFGHandler {
     this.activePlayerControl = null;
   }
 
-  public handleNextAdditionalAction():boolean{
-    const action = this.game.startAdditionalActionControl();
-    if (!action) {
+  public handleNextAdditionalAction(): boolean {
+    this.additionalActionControl = this.game.startAdditionalActionControl();
+    if (!this.additionalActionControl) {
       return false;
+    }
+    switch (this.additionalActionControl.getType()) {
+      case "transfer7":
+        this.handleTransfer7();
+        break;
+      case "exile10":
+        this.handleExile10();
+        break;
     }
     return true;
   }
@@ -375,5 +383,55 @@ export class DFGHandler {
     return ids.map((id) => {
       return this.playerMap.clientIDToPlayer(id).name;
     });
+  }
+
+  private handleTransfer7() {
+    if (!this.additionalActionControl) {
+      throw new InvalidGameStateError("additional action control is invalid");
+    }
+
+    const t7action = this.additionalActionControl.cast<dfg.Transfer7>(dfg.Transfer7);
+    this.roomProxy.send(
+      t7action.playerIdentifier,
+      "CardListMessage",
+      this.cardEnumerator.enumerateFromAdditionalAction<dfg.Transfer7>(
+        t7action
+      )
+    );
+    const p = this.playerMap.clientIDToPlayer(t7action.playerIdentifier);
+    this.roomProxy.broadcast(
+      "PlayerWaitMessage",
+      dfgmsg.encodePlayerWaitMessage(p.name, dfgmsg.WaitReason.TRANSFER)
+    );
+    this.roomProxy.send(
+      t7action.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(true)
+    );
+  }
+
+  private handleExile10() {
+    if (!this.additionalActionControl) {
+      throw new InvalidGameStateError("additional action control is invalid");
+    }
+
+    const e10action = this.additionalActionControl.cast<dfg.Exile10>(dfg.Exile10);
+    this.roomProxy.send(
+      e10action.playerIdentifier,
+      "CardListMessage",
+      this.cardEnumerator.enumerateFromAdditionalAction<dfg.Exile10>(
+        e10action
+      )
+    );
+    const p = this.playerMap.clientIDToPlayer(e10action.playerIdentifier);
+    this.roomProxy.broadcast(
+      "PlayerWaitMessage",
+      dfgmsg.encodePlayerWaitMessage(p.name, dfgmsg.WaitReason.EXILE)
+    );
+    this.roomProxy.send(
+      e10action.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(true)
+    );
   }
 }
