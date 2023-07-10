@@ -8,9 +8,9 @@ import * as dfgmsg from "dfg-messages";
 
 function createCallbacks() {
   return {
-    onGameEnd: () => {},
+    onGameEnd: () => { },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onEventLogPush: (eventType: string, eventBody: string) => {},
+    onEventLogPush: (eventType: string, eventBody: string) => { },
   };
 }
 
@@ -248,3 +248,56 @@ describe("onCardsProvided", () => {
       .true;
   });
 });
+
+describe("onTransfer", () => {
+  it("inserts transfer event", () => {
+    const pi1 = "ccaatt";
+    const pn1 = "cat";
+    const pi2 = "ddoogg";
+    const pn2 = "dog";
+
+    const card = dfg.createCard(dfg.CardMark.CLUBS, 3)
+    const pair = <dfg.CardSelectionPair>(<unknown>{
+      cards: [card],
+    });
+    const cardmsg = dfgmsg.encodeCardMessage(dfgmsg.CardMark.CLUBS, 3);
+    const msg = dfgmsg.encodeTransferMessage(pn1, pn2, [cardmsg]);
+    const player1 = <Player>{
+      name: pn1,
+    };
+    const player2 = <Player>{
+      name: pn2,
+    };
+    const er = createEventReceiver();
+    const f = setFake(er);
+    const stub = sinon.stub(er.playerMap, "clientIDToPlayer");
+    stub.onCall(0).returns(player1);
+    stub.onCall(1).returns(player2);
+    er.onTransfer(pi1, pi2, pair);
+    expect(f.calledWith("TransferMessage", JSON.stringify(msg))).to.be.true;
+  });
+});
+
+describe("onExile", () => {
+  it("inserts transfer event", () => {
+    const pi1 = "ccaatt";
+    const pn1 = "cat";
+
+    const card = dfg.createCard(dfg.CardMark.CLUBS, 3)
+    const pair = <dfg.CardSelectionPair>(<unknown>{
+      cards: [card],
+    });
+    const cardmsg = dfgmsg.encodeCardMessage(dfgmsg.CardMark.CLUBS, 3);
+    const msg = dfgmsg.encodeExileMessage(pn1, [cardmsg]);
+    const player1 = <Player>{
+      name: pn1,
+    };
+    const er = createEventReceiver();
+    const f = setFake(er);
+    const stub = sinon.stub(er.playerMap, "clientIDToPlayer");
+    stub.onCall(0).returns(player1);
+    er.onExile(pi1, pair);
+    expect(f.calledWith("ExileMessage", JSON.stringify(msg))).to.be.true;
+  });
+});
+

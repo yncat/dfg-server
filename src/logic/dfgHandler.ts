@@ -176,22 +176,15 @@ export class DFGHandler {
   }
 
   public selectCardByIndex(index: number): void {
-    if (!this.activePlayerControl) {
-      this.invalidControllerError();
+    // activePlayerControlがあるときは、通常のプレイ状態。
+    // additionalActionControlがあるときは、追加アクションの選択状態。
+    if (!this.activePlayerControl && !this.additionalActionControl) {
+      throw new InvalidGameStateError("activePlayerControl and additionalActionControl are both null.");
     }
 
-    if (
-      this.activePlayerControl.checkCardSelectability(index) ===
-      dfg.SelectabilityCheckResult.NOT_SELECTABLE
-    ) {
-      return;
+    if (this.activePlayerControl) {
+      return this.selectCardByIndexForActivePlayer(this.activePlayerControl, index);
     }
-
-    if (this.activePlayerControl.isCardSelected(index)) {
-      this.activePlayerControl.deselectCard(index);
-      return;
-    }
-    this.activePlayerControl.selectCard(index);
   }
 
   public enumerateDiscardPairs(): void {
@@ -433,5 +426,20 @@ export class DFGHandler {
       "YourTurnMessage",
       dfgmsg.encodeYourTurnMessage(true)
     );
+  }
+
+  private selectCardByIndexForActivePlayer(activePlayerControl: dfg.ActivePlayerControl, index: number) {
+    if (
+      activePlayerControl.checkCardSelectability(index) ===
+      dfg.SelectabilityCheckResult.NOT_SELECTABLE
+    ) {
+      return;
+    }
+
+    if (activePlayerControl.isCardSelected(index)) {
+      activePlayerControl.deselectCard(index);
+      return;
+    }
+    activePlayerControl.selectCard(index);
   }
 }

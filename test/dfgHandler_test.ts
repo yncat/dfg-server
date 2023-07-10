@@ -320,7 +320,7 @@ describe("DFGHandler", () => {
       const h = createDFGHandler();
       expect(() => {
         h.selectCardByIndex(0);
-      }).to.throw("active player control is invalid");
+      }).to.throw("activePlayerControl and additionalActionControl are both null.");
     });
   });
 
@@ -384,7 +384,7 @@ describe("DFGHandler", () => {
       const h = createDFGHandler();
       expect(() => {
         h.selectCardByIndex(0);
-      }).to.throw("active player control is invalid");
+      }).to.throw("activePlayerControl and additionalActionControl are both null.");
     });
   });
 
