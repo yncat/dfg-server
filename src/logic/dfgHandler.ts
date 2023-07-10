@@ -14,6 +14,7 @@ export class DFGHandler {
   ruleConfig: dfg.RuleConfig;
   game: dfg.Game | null;
   activePlayerControl: dfg.ActivePlayerControl | null;
+  additionalActionControl: dfg.AdditionalActionControl | null;
   eventReceiver: dfg.EventReceiver;
   roomProxy: RoomProxy<GameRoom>;
   playerMap: PlayerMap;
@@ -256,6 +257,14 @@ export class DFGHandler {
 
     this.game.finishActivePlayerControl(this.activePlayerControl);
     this.activePlayerControl = null;
+  }
+
+  public handleNextAdditionalAction():boolean{
+    const action = this.game.startAdditionalActionControl();
+    if (!action) {
+      return false;
+    }
+    return true;
   }
 
   public kickPlayerByIdentifier(identifier: string): boolean {

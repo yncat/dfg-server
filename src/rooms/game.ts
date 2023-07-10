@@ -154,7 +154,13 @@ export class GameRoom extends Room<GameState> {
         // 出したプレイヤーの手札を更新
         this.dfgHandler.updateCardsForEveryone();
         this.updateDiscardStackState();
-        // カードを出した後、まだゲームが続いていれば、次のプレイヤーに回す処理をする
+        // 追加のアクションがあればそれらを処理刷る
+        const hasNextAction = this.dfgHandler.handleNextAdditionalAction();
+        // 追加のアクションがある場合は、次のプレイヤーにターンを回さない
+        if (hasNextAction) {
+          return;
+        }
+        // 追加のアクションがなにもないので、次のプレイヤーにターンを回す
         this.handleNextPlayer();
       });
     });
