@@ -488,6 +488,123 @@ describe("DFGHandler", () => {
     });
   });
 
+  describe("handleNextAdditionalAction", () => {
+    it("returns false when no additional action is found", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const g = <dfg.Game>(<unknown>{
+        startAdditionalActionControl: sinon.fake((): dfg.AdditionalActionControl | null => {
+          return null;
+        }),
+      });
+      h.game = g;
+      const ret = h.handleNextAdditionalAction();
+      expect(ret).to.be.false;
+    });
+
+    it("handles action and returns true when transfer7 is found", () => {
+      const pi = "ccaatt";
+      const pn = "cat";
+      const p = <Player>{
+        name: pn,
+      };
+      const h = createDFGHandler();
+      const s41 = dfg.createCard(dfg.CardMark.SPADES, 4);
+      const s42 = dfg.createCard(dfg.CardMark.SPADES, 4);
+      const t7action = new dfg.Transfer7(pi, [s41, s42]);
+      const cast = sinon.fake(() => {
+        return t7action;
+      });
+      const aac = new dfg.AdditionalActionControl("transfer7", t7action);
+      const g = <dfg.Game>(<unknown>{
+        startAdditionalActionControl: sinon.fake((): dfg.AdditionalActionControl | null => {
+          return aac;
+        }),
+      });
+      h.game = g;
+      const clientIDToPlayer = sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
+      const scm1 = dfgmsg.encodeSelectableCardMessage(s41.ID, s41.mark, s41.cardNumber, false, true);
+      const scm2 = dfgmsg.encodeSelectableCardMessage(s42.ID, s42.mark, s42.cardNumber, false, true);
+      const clm = dfgmsg.encodeCardListMessage([scm1, scm2]);
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          "ccaatt",
+          "CardListMessage",
+          clm
+        );
+      roomProxyMock
+        .expects("broadcast")
+        .withExactArgs(
+          "PlayerWaitMessage",
+          dfgmsg.encodePlayerWaitMessage(pn, dfgmsg.WaitReason.TRANSFER)
+        );
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          pi,
+          "YourTurnMessage",
+          dfgmsg.encodeYourTurnMessage(true)
+        );
+      const ret = h.handleNextAdditionalAction();
+      roomProxyMock.verify();
+      expect(ret).to.be.true;
+      expect(clientIDToPlayer.firstCall.firstArg).to.eql(pi);
+    });
+
+    it("handles action and returns true when exile10 is found", () => {
+      const pi = "ccaatt";
+      const pn = "cat";
+      const p = <Player>{
+        name: pn,
+      };
+      const h = createDFGHandler();
+      const s41 = dfg.createCard(dfg.CardMark.SPADES, 4);
+      const s42 = dfg.createCard(dfg.CardMark.SPADES, 4);
+      const e10action = new dfg.Exile10(pi, [s41, s42]);
+      const cast = sinon.fake(() => {
+        return e10action;
+      });
+      const aac = new dfg.AdditionalActionControl("exile10", e10action);
+      const g = <dfg.Game>(<unknown>{
+        startAdditionalActionControl: sinon.fake((): dfg.AdditionalActionControl | null => {
+          return aac;
+        }),
+      });
+      h.game = g;
+      const clientIDToPlayer = sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
+      const scm1 = dfgmsg.encodeSelectableCardMessage(s41.ID, s41.mark, s41.cardNumber, false, true);
+      const scm2 = dfgmsg.encodeSelectableCardMessage(s42.ID, s42.mark, s42.cardNumber, false, true);
+      const clm = dfgmsg.encodeCardListMessage([scm1, scm2]);
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          "ccaatt",
+          "CardListMessage",
+          clm
+        );
+      roomProxyMock
+        .expects("broadcast")
+        .withExactArgs(
+          "PlayerWaitMessage",
+          dfgmsg.encodePlayerWaitMessage(pn, dfgmsg.WaitReason.EXILE)
+        );
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          pi,
+          "YourTurnMessage",
+          dfgmsg.encodeYourTurnMessage(true)
+        );
+      const ret = h.handleNextAdditionalAction();
+      roomProxyMock.verify();
+      expect(ret).to.be.true;
+      expect(clientIDToPlayer.firstCall.firstArg).to.eql(pi);
+    });
+  });
+
   describe("pass", () => {
     it("calls activePlayerControl.pass", () => {
       const pi = "ccaatt";
