@@ -185,6 +185,7 @@ export class DFGHandler {
     if (this.activePlayerControl) {
       return this.selectCardByIndexForActivePlayer(this.activePlayerControl, index);
     }
+    return this.selectCardByIndexForAdditionalAction(this.additionalActionControl, index);
   }
 
   public enumerateDiscardPairs(): void {
@@ -441,5 +442,48 @@ export class DFGHandler {
       return;
     }
     activePlayerControl.selectCard(index);
+  }
+
+  private selectCardByIndexForAdditionalAction(additionalActionControl: dfg.AdditionalActionControl, index: number) {
+    switch (additionalActionControl.getType()) {
+      case "transfer7":
+        this.selectCardByIndexForTransfer7(additionalActionControl, index);
+        break;
+      case "exile10":
+        this.selectCardByIndexForExile10(additionalActionControl, index);
+        break;
+      default:
+        throw new InvalidGameStateError("unrecognized additional action type");
+    }
+  }
+
+  private selectCardByIndexForTransfer7(ctrl: dfg.AdditionalActionControl, index: number) {
+    const t7action = ctrl.cast<dfg.Transfer7>(dfg.Transfer7);
+    if (
+      t7action.checkCardSelectability(index) ===
+      dfg.SelectabilityCheckResult.NOT_SELECTABLE
+    ) {
+      return;
+    }
+    if (t7action.isCardSelected(index)) {
+      t7action.deselectCard(index);
+      return;
+    }
+    t7action.selectCard(index);
+  }
+
+  private selectCardByIndexForExile10(ctrl: dfg.AdditionalActionControl, index: number) {
+    const e10action = ctrl.cast<dfg.Exile10>(dfg.Exile10);
+    if (
+      e10action.checkCardSelectability(index) ===
+      dfg.SelectabilityCheckResult.NOT_SELECTABLE
+    ) {
+      return;
+    }
+    if (e10action.isCardSelected(index)) {
+      e10action.deselectCard(index);
+      return;
+    }
+    e10action.selectCard(index);
   }
 }

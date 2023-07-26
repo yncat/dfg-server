@@ -237,90 +237,238 @@ describe("DFGHandler", () => {
   });
 
   describe("selectCardByIndex", () => {
-    it("can select a card", () => {
-      const pi = "ccaatt";
-      const h = createDFGHandler();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const ics = sinon.fake((index: number) => {
-        return false;
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const ccs = sinon.fake((index: number) => {
-        return dfg.SelectabilityCheckResult.SELECTABLE;
-      });
-      const sc = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
-        playerIdentifier: pi,
-        isCardSelected: ics,
-        checkCardSelectability: ccs,
-        selectCard: sc,
-      });
-      h.activePlayerControl = apc;
-      h.selectCardByIndex(0);
-      expect(ics.called).to.be.true;
-      expect(ics.firstCall.firstArg).to.eql(0);
-      expect(ccs.called).to.be.true;
-      expect(ccs.firstCall.firstArg).to.eql(0);
-      expect(sc.called).to.be.true;
-      expect(sc.firstCall.firstArg).to.eql(0);
-    });
-
-    it("can deselect a card", () => {
-      const pi = "ccaatt";
-      const h = createDFGHandler();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const ics = sinon.fake((index: number) => {
-        return true;
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const ccs = sinon.fake((index: number) => {
-        return dfg.SelectabilityCheckResult.SELECTABLE;
-      });
-      const dsc = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
-        playerIdentifier: pi,
-        isCardSelected: ics,
-        checkCardSelectability: ccs,
-        deselectCard: dsc,
-      });
-      h.activePlayerControl = apc;
-      h.selectCardByIndex(0);
-      expect(ics.called).to.be.true;
-      expect(ics.firstCall.firstArg).to.eql(0);
-      expect(ccs.called).to.be.true;
-      expect(ccs.firstCall.firstArg).to.eql(0);
-      expect(dsc.called).to.be.true;
-      expect(dsc.firstCall.firstArg).to.eql(0);
-    });
-
-    it("does nothing when card is not selectable", () => {
-      const pi = "ccaatt";
-      const h = createDFGHandler();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const ics = sinon.fake((index: number) => {
-        return false;
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const ccs = sinon.fake((index: number) => {
-        return dfg.SelectabilityCheckResult.NOT_SELECTABLE;
-      });
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
-        playerIdentifier: pi,
-        isCardSelected: ics,
-        checkCardSelectability: ccs,
-      });
-      h.activePlayerControl = apc;
-      h.selectCardByIndex(0);
-      expect(ccs.called).to.be.true;
-      expect(ccs.firstCall.firstArg).to.eql(0);
-      expect(ics.called).to.be.false;
-    });
-
-    it("throws an error when activePlayerControl is not set", () => {
-      const h = createDFGHandler();
-      expect(() => {
+    describe("for active player", () => {
+      it("can select a card", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const ics = sinon.fake((index: number) => {
+          return false;
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const ccs = sinon.fake((index: number) => {
+          return dfg.SelectabilityCheckResult.SELECTABLE;
+        });
+        const sc = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+        const apc = <dfg.ActivePlayerControl>(<unknown>{
+          playerIdentifier: pi,
+          isCardSelected: ics,
+          checkCardSelectability: ccs,
+          selectCard: sc,
+        });
+        h.activePlayerControl = apc;
         h.selectCardByIndex(0);
-      }).to.throw("activePlayerControl and additionalActionControl are both null.");
+        expect(ics.called).to.be.true;
+        expect(ics.firstCall.firstArg).to.eql(0);
+        expect(ccs.called).to.be.true;
+        expect(ccs.firstCall.firstArg).to.eql(0);
+        expect(sc.called).to.be.true;
+        expect(sc.firstCall.firstArg).to.eql(0);
+      });
+
+      it("can deselect a card", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const ics = sinon.fake((index: number) => {
+          return true;
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const ccs = sinon.fake((index: number) => {
+          return dfg.SelectabilityCheckResult.SELECTABLE;
+        });
+        const dsc = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+        const apc = <dfg.ActivePlayerControl>(<unknown>{
+          playerIdentifier: pi,
+          isCardSelected: ics,
+          checkCardSelectability: ccs,
+          deselectCard: dsc,
+        });
+        h.activePlayerControl = apc;
+        h.selectCardByIndex(0);
+        expect(ics.called).to.be.true;
+        expect(ics.firstCall.firstArg).to.eql(0);
+        expect(ccs.called).to.be.true;
+        expect(ccs.firstCall.firstArg).to.eql(0);
+        expect(dsc.called).to.be.true;
+        expect(dsc.firstCall.firstArg).to.eql(0);
+      });
+
+      it("does nothing when card is not selectable", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const ics = sinon.fake((index: number) => {
+          return false;
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const ccs = sinon.fake((index: number) => {
+          return dfg.SelectabilityCheckResult.NOT_SELECTABLE;
+        });
+        const apc = <dfg.ActivePlayerControl>(<unknown>{
+          playerIdentifier: pi,
+          isCardSelected: ics,
+          checkCardSelectability: ccs,
+        });
+        h.activePlayerControl = apc;
+        h.selectCardByIndex(0);
+        expect(ccs.called).to.be.true;
+        expect(ccs.firstCall.firstArg).to.eql(0);
+        expect(ics.called).to.be.false;
+      });
+
+      it("throws an error when activePlayerControl is not set", () => {
+        const h = createDFGHandler();
+        expect(() => {
+          h.selectCardByIndex(0);
+        }).to.throw("activePlayerControl and additionalActionControl are both null.");
+      });
+    });
+
+    describe("for additional action", () => {
+      describe("for transfer7", () => {
+        it("can select a card", () => {
+          const pi = "ccaatt";
+          const h = createDFGHandler();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const isCardSelected = sinon.fake((index: number) => {
+            return false;
+          });
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const checkCardSelectability = sinon.fake((index: number) => {
+            return dfg.SelectabilityCheckResult.SELECTABLE;
+          });
+          const selectCard = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const action = new dfg.Transfer7(pi, []);
+          sinon.replace(action, "isCardSelected", isCardSelected);
+          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          sinon.replace(action, "selectCard", selectCard);
+          const ctrl = new dfg.AdditionalActionControl("transfer7", action);
+          h.additionalActionControl = ctrl;
+          h.selectCardByIndex(0);
+          expect(isCardSelected.called).to.be.true;
+          expect(isCardSelected.firstCall.firstArg).to.eql(0);
+          expect(checkCardSelectability.called).to.be.true;
+          expect(checkCardSelectability.firstCall.firstArg).to.eql(0);
+          expect(selectCard.called).to.be.true;
+          expect(selectCard.firstCall.firstArg).to.eql(0);
+        });
+
+        it("can deselect a card", () => {
+          const pi = "ccaatt";
+          const h = createDFGHandler();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const isCardSelected = sinon.fake((index: number) => {
+            return true;
+          });
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const checkCardSelectability = sinon.fake((index: number) => {
+            return dfg.SelectabilityCheckResult.ALREADY_SELECTED;
+          });
+          const deselectCard = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const action = new dfg.Transfer7(pi, []);
+          sinon.replace(action, "isCardSelected", isCardSelected);
+          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          sinon.replace(action, "deselectCard", deselectCard);
+          const ctrl = new dfg.AdditionalActionControl("transfer7", action);
+          h.additionalActionControl = ctrl;
+          h.selectCardByIndex(0);
+          expect(isCardSelected.called).to.be.true;
+          expect(isCardSelected.firstCall.firstArg).to.eql(0);
+          expect(checkCardSelectability.called).to.be.true;
+          expect(checkCardSelectability.firstCall.firstArg).to.eql(0);
+          expect(deselectCard.called).to.be.true;
+          expect(deselectCard.firstCall.firstArg).to.eql(0);
+        });
+
+        it("does nothing when card is not selectable", () => {
+          const pi = "ccaatt";
+          const h = createDFGHandler();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const checkCardSelectability = sinon.fake((index: number) => {
+            return dfg.SelectabilityCheckResult.NOT_SELECTABLE;
+          });
+          const action = new dfg.Transfer7(pi, []);
+          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          const ctrl = new dfg.AdditionalActionControl("transfer7", action);
+          h.additionalActionControl = ctrl;
+          h.selectCardByIndex(0);
+          expect(checkCardSelectability.called).to.be.true;
+          expect(checkCardSelectability.firstCall.firstArg).to.eql(0);
+        });
+      });
+
+      describe("for transfer7", () => {
+        it("can select a card", () => {
+          const pi = "ccaatt";
+          const h = createDFGHandler();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const isCardSelected = sinon.fake((index: number) => {
+            return false;
+          });
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const checkCardSelectability = sinon.fake((index: number) => {
+            return dfg.SelectabilityCheckResult.SELECTABLE;
+          });
+          const selectCard = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const action = new dfg.Exile10(pi, []);
+          sinon.replace(action, "isCardSelected", isCardSelected);
+          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          sinon.replace(action, "selectCard", selectCard);
+          const ctrl = new dfg.AdditionalActionControl("exile10", action);
+          h.additionalActionControl = ctrl;
+          h.selectCardByIndex(0);
+          expect(isCardSelected.called).to.be.true;
+          expect(isCardSelected.firstCall.firstArg).to.eql(0);
+          expect(checkCardSelectability.called).to.be.true;
+          expect(checkCardSelectability.firstCall.firstArg).to.eql(0);
+          expect(selectCard.called).to.be.true;
+          expect(selectCard.firstCall.firstArg).to.eql(0);
+        });
+
+        it("can deselect a card", () => {
+          const pi = "ccaatt";
+          const h = createDFGHandler();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const isCardSelected = sinon.fake((index: number) => {
+            return true;
+          });
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const checkCardSelectability = sinon.fake((index: number) => {
+            return dfg.SelectabilityCheckResult.ALREADY_SELECTED;
+          });
+          const deselectCard = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const action = new dfg.Exile10(pi, []);
+          sinon.replace(action, "isCardSelected", isCardSelected);
+          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          sinon.replace(action, "deselectCard", deselectCard);
+          const ctrl = new dfg.AdditionalActionControl("exile10", action);
+          h.additionalActionControl = ctrl;
+          h.selectCardByIndex(0);
+          expect(isCardSelected.called).to.be.true;
+          expect(isCardSelected.firstCall.firstArg).to.eql(0);
+          expect(checkCardSelectability.called).to.be.true;
+          expect(checkCardSelectability.firstCall.firstArg).to.eql(0);
+          expect(deselectCard.called).to.be.true;
+          expect(deselectCard.firstCall.firstArg).to.eql(0);
+        });
+
+        it("does nothing when card is not selectable", () => {
+          const pi = "ccaatt";
+          const h = createDFGHandler();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const checkCardSelectability = sinon.fake((index: number) => {
+            return dfg.SelectabilityCheckResult.NOT_SELECTABLE;
+          });
+          const action = new dfg.Exile10(pi, []);
+          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          const ctrl = new dfg.AdditionalActionControl("exile10", action);
+          h.additionalActionControl = ctrl;
+          h.selectCardByIndex(0);
+          expect(checkCardSelectability.called).to.be.true;
+          expect(checkCardSelectability.firstCall.firstArg).to.eql(0);
+        });
+      });
     });
   });
 
