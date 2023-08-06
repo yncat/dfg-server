@@ -537,102 +537,151 @@ describe("DFGHandler", () => {
   });
 
   describe("discardByIndex", () => {
-    it("can set discard info to activePlayerControl and returns true", () => {
-      const pi = "ccaatt";
-      const h = createDFGHandler();
-      const g = <dfg.Game>(<unknown>{
-        enumeratePlayerIdentifiers: sinon.fake((): string[] => {
-          return [];
-        }),
+    describe("for active player control", () => {
+      it("can set discard info to activePlayerControl and returns true", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const g = <dfg.Game>(<unknown>{
+          enumeratePlayerIdentifiers: sinon.fake((): string[] => {
+            return [];
+          }),
+        });
+        h.game = g;
+        const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+        const dp1 = <dfg.CardSelectionPair>(<unknown>{
+          cards: [s4, s4],
+        });
+        const edc = sinon.fake(() => {
+          return [dp1];
+        });
+        const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+        const apc = <dfg.ActivePlayerControl>(<unknown>{
+          playerIdentifier: pi,
+          enumerateCardSelectionPairs: edc,
+          discard: dc,
+        });
+        h.activePlayerControl = apc;
+        const roomProxyMock = sinon.mock(h.roomProxy);
+        roomProxyMock
+          .expects("send")
+          .withExactArgs(
+            "ccaatt",
+            "DiscardPairListMessage",
+            dfgmsg.encodeDiscardPairListMessage([])
+          );
+        roomProxyMock
+          .expects("send")
+          .withExactArgs(
+            pi,
+            "YourTurnMessage",
+            dfgmsg.encodeYourTurnMessage(false)
+          );
+        const ret = h.discardByIndex(0);
+        roomProxyMock.verify();
+        expect(ret).to.be.true;
+        expect(edc.called).to.be.true;
+        expect(dc.called).to.be.true;
+        expect(dc.firstCall.firstArg).to.eql(dp1);
       });
-      h.game = g;
-      const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
-      const dp1 = <dfg.CardSelectionPair>(<unknown>{
-        cards: [s4, s4],
+
+      it("does nothing and returns false when index is out of range", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+        const dp1 = <dfg.CardSelectionPair>(<unknown>{
+          cards: [s4, s4],
+        });
+        const edc = sinon.fake(() => {
+          return [dp1];
+        });
+        const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+        const apc = <dfg.ActivePlayerControl>(<unknown>{
+          playerIdentifier: pi,
+          enumerateCardSelectionPairs: edc,
+          discard: dc,
+        });
+        h.activePlayerControl = apc;
+        const ret = h.discardByIndex(1);
+        expect(ret).to.be.false;
+        expect(edc.called).to.be.true;
+        expect(dc.called).to.be.false;
       });
-      const edc = sinon.fake(() => {
-        return [dp1];
+
+      it("does nothing when index is negative", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+        const dp1 = <dfg.CardSelectionPair>(<unknown>{
+          cards: [s4, s4],
+        });
+        const edc = sinon.fake(() => {
+          return [dp1];
+        });
+        const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+        const apc = <dfg.ActivePlayerControl>(<unknown>{
+          playerIdentifier: pi,
+          enumerateCardSelectionPairs: edc,
+          discard: dc,
+        });
+        h.activePlayerControl = apc;
+        h.discardByIndex(-1);
+        expect(edc.called).to.be.false;
+        expect(dc.called).to.be.false;
       });
-      const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
-        playerIdentifier: pi,
-        enumerateCardSelectionPairs: edc,
-        discard: dc,
+
+      it("throws an error when activePlayerControl is not set", () => {
+        const h = createDFGHandler();
+        expect(() => {
+          h.discardByIndex(0);
+        }).to.throw("active player control is invalid");
       });
-      h.activePlayerControl = apc;
-      const roomProxyMock = sinon.mock(h.roomProxy);
-      roomProxyMock
-        .expects("send")
-        .withExactArgs(
-          "ccaatt",
-          "DiscardPairListMessage",
-          dfgmsg.encodeDiscardPairListMessage([])
-        );
-      roomProxyMock
-        .expects("send")
-        .withExactArgs(
-          pi,
-          "YourTurnMessage",
-          dfgmsg.encodeYourTurnMessage(false)
-        );
-      const ret = h.discardByIndex(0);
-      roomProxyMock.verify();
-      expect(ret).to.be.true;
-      expect(edc.called).to.be.true;
-      expect(dc.called).to.be.true;
-      expect(dc.firstCall.firstArg).to.eql(dp1);
     });
 
-    it("does nothing and returns false when index is out of range", () => {
-      const pi = "ccaatt";
-      const h = createDFGHandler();
-      const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
-      const dp1 = <dfg.CardSelectionPair>(<unknown>{
-        cards: [s4, s4],
+    describe("for additional action control", () => {
+      it("just sends yourTurnMessage and returns true when index is 0", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+        const action = new dfg.Transfer7(pi, [s4]);
+        const ctrl = new dfg.AdditionalActionControl("transfer7", action);
+        h.additionalActionControl = ctrl;
+        const roomProxyMock = sinon.mock(h.roomProxy);
+        roomProxyMock
+          .expects("send")
+          .withExactArgs(
+            pi,
+            "YourTurnMessage",
+            dfgmsg.encodeYourTurnMessage(false)
+          );
+        roomProxyMock
+          .expects("send")
+          .withExactArgs(
+            pi,
+            "DiscardPairListMessage",
+            dfgmsg.encodeDiscardPairListMessage([])
+          );
+        const ret = h.discardByIndex(0);
+        roomProxyMock.verify();
+        expect(ret).to.be.true;
       });
-      const edc = sinon.fake(() => {
-        return [dp1];
-      });
-      const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
-        playerIdentifier: pi,
-        enumerateCardSelectionPairs: edc,
-        discard: dc,
-      });
-      h.activePlayerControl = apc;
-      const ret = h.discardByIndex(1);
-      expect(ret).to.be.false;
-      expect(edc.called).to.be.true;
-      expect(dc.called).to.be.false;
-    });
 
-    it("does nothing when index is negative", () => {
-      const pi = "ccaatt";
-      const h = createDFGHandler();
-      const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
-      const dp1 = <dfg.CardSelectionPair>(<unknown>{
-        cards: [s4, s4],
+      it("does nothing when index is negative", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+        const action = new dfg.Transfer7(pi, [s4]);
+        const ctrl = new dfg.AdditionalActionControl("transfer7", action);
+        h.additionalActionControl = ctrl;
+        const ret = h.discardByIndex(-1);
+        expect(ret).to.be.false;
       });
-      const edc = sinon.fake(() => {
-        return [dp1];
-      });
-      const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
-        playerIdentifier: pi,
-        enumerateCardSelectionPairs: edc,
-        discard: dc,
-      });
-      h.activePlayerControl = apc;
-      h.discardByIndex(-1);
-      expect(edc.called).to.be.false;
-      expect(dc.called).to.be.false;
-    });
 
-    it("throws an error when activePlayerControl is not set", () => {
-      const h = createDFGHandler();
-      expect(() => {
-        h.discardByIndex(0);
-      }).to.throw("active player control is invalid");
+      it("throws an error when additionalActionControl is not set", () => {
+        const h = createDFGHandler();
+        expect(() => {
+          h.discardByIndex(0);
+        }).to.throw("active player control is invalid");
+      });
     });
   });
 

@@ -209,25 +209,16 @@ export class DFGHandler {
 
   public discardByIndex(index: number): boolean {
     // 有効なDiscardPairがないときに呼ぶと、 false を返すようにする。タイミング問題で変なメッセージが送られても、落ちる前に逃げるようにするため。
-    if (!this.activePlayerControl) {
+    if (!this.activePlayerControl && !this.additionalActionControl) {
       this.invalidControllerError();
     }
     if (index < 0) {
-      return;
-    }
-    const dps = this.activePlayerControl.enumerateCardSelectionPairs();
-    if (index >= dps.length) {
       return false;
     }
-
-    this.activePlayerControl.discard(dps[index]);
-    this.clearDiscardPairList();
-    this.roomProxy.send(
-      this.activePlayerControl.playerIdentifier,
-      "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(false)
-    );
-    return true;
+    if (this.activePlayerControl) {
+      return this.discardByIndexForActivePlayer(index);
+    }
+    return this.discardByIndexForAdditionalAction(this.additionalActionControl, index);
   }
 
   public pass(): void {
@@ -236,7 +227,7 @@ export class DFGHandler {
     }
 
     this.activePlayerControl.pass();
-    this.clearDiscardPairList();
+    this.clearDiscardPairList(this.activePlayerControl.playerIdentifier);
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
       "YourTurnMessage",
@@ -352,10 +343,10 @@ export class DFGHandler {
     return dfg.createGame(clientIDList, eventReceiver, ruleConfig);
   }
 
-  private clearDiscardPairList() {
+  private clearDiscardPairList(playerIdentifier:string) {
     // カードを出したプレイヤーのカード候補表示をクリアさせるため、空のDiscardPairListMessageを送って通知する
     this.roomProxy.send(
-      this.activePlayerControl.playerIdentifier,
+      playerIdentifier,
       "DiscardPairListMessage",
       dfgmsg.encodeDiscardPairListMessage([])
     );
@@ -427,6 +418,33 @@ export class DFGHandler {
       "YourTurnMessage",
       dfgmsg.encodeYourTurnMessage(true)
     );
+  }
+
+  private discardByIndexForActivePlayer(index: number): boolean {
+    const dps = this.activePlayerControl.enumerateCardSelectionPairs();
+    if (index >= dps.length) {
+      return false;
+    }
+
+    this.activePlayerControl.discard(dps[index]);
+    this.clearDiscardPairList(this.activePlayerControl.playerIdentifier);
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(false)
+    );
+    return true;
+  }
+
+  private discardByIndexForAdditionalAction(additionalActionControl: dfg.AdditionalActionControl, index: number): boolean {
+    // finishAdditionalActionControl is called at finishAction method
+    this.clearDiscardPairList(additionalActionControl.playerIdentifier);
+    this.roomProxy.send(
+      additionalActionControl.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(false)
+    );
+    return true;
   }
 
   private selectCardByIndexForActivePlayer(activePlayerControl: dfg.ActivePlayerControl, index: number) {
