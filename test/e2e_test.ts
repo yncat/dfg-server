@@ -48,11 +48,11 @@ function createGameRoomOptions() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function dummyMessageHandler(message: any) {}
+function dummyMessageHandler(message: any) { }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createMessageReceiver() {
-  return sinon.fake((message: any) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+  return sinon.fake((message: any) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
 }
 
 function clientOptionsWithDefault(playerName: string) {
@@ -142,6 +142,35 @@ function createGameBeforeAgari(
     penalizedPlayerIdentifiers: [],
     eventReceiver: er,
     ruleConfig: dfg.createDefaultRuleConfig(),
+    removedCardsMap: new Map<dfg.CardMark, Map<dfg.CardNumber, number>>(),
+    reversed: false,
+  });
+}
+
+function createGameWithTransfer7Situation(
+  client1: TestClient,
+  client2: TestClient,
+  er: dfg.EventReceiver
+) {
+  const p1 = dfg.createPlayer(client1.sessionId);
+  const p2 = dfg.createPlayer(client2.sessionId);
+  p1.hand.give(dfg.createCard(dfg.CardMark.DIAMONDS, 4));
+  p1.hand.give(dfg.createCard(dfg.CardMark.DIAMONDS, 5));
+  p1.hand.give(dfg.createCard(dfg.CardMark.DIAMONDS, 7));
+  p2.hand.give(dfg.createCard(dfg.CardMark.CLUBS, 5));
+  const config = dfg.createDefaultRuleConfig();
+  config.transfer7 = true;
+  return dfg.createGameCustom({
+    players: [p1, p2],
+    activePlayerIndex: 0,
+    activePlayerActionCount: 0,
+    discardStack: dfg.createDiscardStack(),
+    lastDiscarderIdentifier: "",
+    strengthInverted: false,
+    agariPlayerIdentifiers: [],
+    penalizedPlayerIdentifiers: [],
+    eventReceiver: er,
+    ruleConfig: config,
     removedCardsMap: new Map<dfg.CardMark, Map<dfg.CardNumber, number>>(),
     reversed: false,
   });
@@ -844,6 +873,57 @@ describe("e2e test", () => {
       const dc2 = mrm.getFake(client2, "DiscardMessage");
       expect(dc1.called).to.be.false;
       expect(dc2.called).to.be.false;
+    });
+
+    it("can trigger an additional action", async () => {
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      ) as GameRoom;
+      setRoomOptionsForTest(room, true);
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("cat")
+      );
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("dog")
+      );
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1, client2], commonMessages());
+      const g = createGameWithTransfer7Situation(
+        client1,
+        client2,
+        room.dfgHandler.eventReceiver
+      );
+      room.dfgHandler.game = g;
+      room.dfgHandler.prepareNextPlayer();
+      mrm.resetHistory();
+      const activePlayer = getActivePlayer(room, client1, client2);
+      const msg = dfgmsg.encodeCardSelectRequest(2);
+      activePlayer.send("CardSelectRequest", msg);
+      await forMilliseconds(100);
+      const cl = mrm.getFake(activePlayer, "CardListMessage");
+      expect(cl.calledOnce).to.be.true;
+      const dp = mrm.getFake(activePlayer, "DiscardPairListMessage"); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      expect(dp.calledOnce).to.be.true;
+      mrm.resetHistory();
+      activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+      await forMilliseconds(100);
+      const len = (room as GameRoom).state.eventLogList.length;
+      // 追加のアクションを行うので、次のプレイヤーにはターンが移らない
+      const nextPlayer = activePlayer === client1 ? client2 : client1;
+      const nextPlayerName = nextPlayer === client1 ? "cat" : "dog";
+      const tm = (room as GameRoom).state.eventLogList[len - 1];
+      expect(tm.type).not.to.eql("TurnMessage");
+      // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
+      expect(dp.calledOnce).to.be.true;
+      expect(dp.firstCall.lastArg.discardPairList.length).to.eql(0);
+      // カードを出したプレイヤーの手札が更新されているか(実は全員分を更新しているけれどご愛敬)
+      // 追加のアクションの時は、街頭プレイヤーの分は２会更新されている
+      expect(cl.calledTwice).to.be.true;
     });
 
     it("can pass", async () => {
