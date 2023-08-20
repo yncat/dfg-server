@@ -106,7 +106,7 @@ export class GameRoom extends Room<GameState> {
           return;
         }
         if (
-          this.dfgHandler.activePlayerControl.playerIdentifier !== client.id
+          this.dfgHandler.getActivePlayerIdentifier() !== client.id
         ) {
           return;
         }
@@ -130,7 +130,7 @@ export class GameRoom extends Room<GameState> {
           return;
         }
         if (
-          this.dfgHandler.activePlayerControl.playerIdentifier !== client.id
+          this.dfgHandler.getActivePlayerIdentifier() !== client.id
         ) {
           return;
         }

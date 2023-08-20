@@ -38,8 +38,8 @@ export class CardEnumerator {
     );
   }
 
-  public enumerateFromAdditionalAction<T extends CardEnumeratableAdditionalAction>(
-    action: T
+  public enumerateFromAdditionalAction(
+    action: dfg.Transfer7 | dfg.Exile10
   ): dfgmsg.CardListMessage {
     return dfgmsg.encodeCardListMessage(
       action.enumerateCards().map((v, i) => {

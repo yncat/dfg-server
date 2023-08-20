@@ -203,36 +203,95 @@ describe("DFGHandler", () => {
   });
 
   describe("updateHandForActivePlayer", () => {
-    it("can send CardListMessage to the active player", () => {
-      const pi = "ccaatt";
-      const h = createDFGHandler();
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
-        playerIdentifier: pi,
+    describe("for activePlayerControl", () => {
+      it("can send CardListMessage to the active player", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const apc = <dfg.ActivePlayerControl>(<unknown>{
+          playerIdentifier: pi,
+        });
+        h.activePlayerControl = apc;
+        const roomProxyMock = sinon.mock(h.roomProxy);
+        const msg = dfgmsg.encodeCardListMessage([
+          dfgmsg.encodeSelectableCardMessage(
+            "33abcd",
+            dfg.CardMark.SPADES,
+            3,
+            true,
+            true
+          ),
+        ]);
+        sinon
+          .stub(h.cardEnumerator, "enumerateFromActivePlayerControl")
+          .returns(msg);
+        roomProxyMock.expects("send").withExactArgs(pi, "CardListMessage", msg);
+        h.updateHandForActivePlayer();
+        roomProxyMock.verify();
       });
-      h.activePlayerControl = apc;
-      const roomProxyMock = sinon.mock(h.roomProxy);
-      const msg = dfgmsg.encodeCardListMessage([
-        dfgmsg.encodeSelectableCardMessage(
-          "33abcd",
-          dfg.CardMark.SPADES,
-          3,
-          true,
-          true
-        ),
-      ]);
-      sinon
-        .stub(h.cardEnumerator, "enumerateFromActivePlayerControl")
-        .returns(msg);
-      roomProxyMock.expects("send").withExactArgs(pi, "CardListMessage", msg);
-      h.updateHandForActivePlayer();
-      roomProxyMock.verify();
+
+      it("throws an error when activePlayerControl is not set", () => {
+        const h = createDFGHandler();
+        expect(() => {
+          h.updateHandForActivePlayer();
+        }).to.throw("active player control is invalid");
+      });
     });
 
-    it("throws an error when activePlayerControl is not set", () => {
-      const h = createDFGHandler();
-      expect(() => {
+    describe("for additionalActionControl", () => {
+      it("can send CardListMessage to the active player within transfer 7 context", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const t7action = new dfg.Transfer7(pi, []);
+        const additionalActionControl = new dfg.AdditionalActionControl("transfer7", t7action)
+        h.additionalActionControl = additionalActionControl
+        const roomProxyMock = sinon.mock(h.roomProxy);
+        const msg = dfgmsg.encodeCardListMessage([
+          dfgmsg.encodeSelectableCardMessage(
+            "33abcd",
+            dfg.CardMark.SPADES,
+            3,
+            true,
+            true
+          ),
+        ]);
+        sinon
+          .stub(h.cardEnumerator, "enumerateFromAdditionalAction")
+          .returns(msg);
+        roomProxyMock.expects("send").withExactArgs(pi, "CardListMessage", msg);
         h.updateHandForActivePlayer();
-      }).to.throw("active player control is invalid");
+        roomProxyMock.verify();
+      });
+
+      it("can send CardListMessage to the active player within exile 10 context", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const e10action = new dfg.Exile10(pi, []);
+        const additionalActionControl = new dfg.AdditionalActionControl("exile10", e10action);
+        h.additionalActionControl = additionalActionControl;
+        const roomProxyMock = sinon.mock(h.roomProxy);
+        const msg = dfgmsg.encodeCardListMessage([
+          dfgmsg.encodeSelectableCardMessage(
+            "33abcd",
+            dfg.CardMark.SPADES,
+            3,
+            true,
+            true
+          ),
+        ]);
+        sinon
+          .stub(h.cardEnumerator, "enumerateFromAdditionalAction")
+          .returns(msg);
+        roomProxyMock.expects("send").withExactArgs(pi, "CardListMessage", msg);
+        h.updateHandForActivePlayer();
+        roomProxyMock.verify();
+      });
+
+      it("throws an error when AdditionalActionControl is not set", () => {
+        const h = createDFGHandler();
+        expect(() => {
+          h.updateHandForActivePlayer();
+        }).to.throw("active player control is invalid");
+      });
     });
   });
 
@@ -473,66 +532,114 @@ describe("DFGHandler", () => {
   });
 
   describe("enumerateCardSelectionPairs", () => {
-    it("can send CardSelectionPairListMessage to the active player", () => {
-      const pi = "ccaatt";
-      const h = createDFGHandler();
-      const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
-      const d4 = dfg.createCard(dfg.CardMark.DIAMONDS, 4);
-      const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
-      const d4m = dfgmsg.encodeCardMessage(d4.mark, d4.cardNumber);
-      const dp1 = <dfg.CardSelectionPair>(<unknown>{
-        cards: [s4, s4],
+    describe("for active player", () => {
+      it("can send CardSelectionPairListMessage to the active player", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+        const d4 = dfg.createCard(dfg.CardMark.DIAMONDS, 4);
+        const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
+        const d4m = dfgmsg.encodeCardMessage(d4.mark, d4.cardNumber);
+        const dp1 = <dfg.CardSelectionPair>(<unknown>{
+          cards: [s4, s4],
+        });
+        const dp2 = <dfg.CardSelectionPair>(<unknown>{
+          cards: [d4, d4],
+        });
+        const edc = sinon.fake(() => {
+          return [dp1, dp2];
+        });
+        const apc = <dfg.ActivePlayerControl>(<unknown>{
+          playerIdentifier: pi,
+          enumerateCardSelectionPairs: edc,
+        });
+        h.activePlayerControl = apc;
+        const roomProxyMock = sinon.mock(h.roomProxy);
+        const msg = dfgmsg.encodeDiscardPairListMessage([
+          dfgmsg.encodeDiscardPairMessage([s4m, s4m]),
+          dfgmsg.encodeDiscardPairMessage([d4m, d4m]),
+        ]);
+        roomProxyMock
+          .expects("send")
+          .calledWithExactly(pi, "CardSelectionPairListMessage", msg);
+        h.enumerateDiscardPairs();
+        expect(edc.called).to.be.true;
+        roomProxyMock.verify();
       });
-      const dp2 = <dfg.CardSelectionPair>(<unknown>{
-        cards: [d4, d4],
+
+      it("sends CardSelectionPairListMessage with an empty CardSelectionPairList when no CardSelectionPair is enumerated", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const edc = sinon.fake((): dfg.CardSelectionPair[] => {
+          return [];
+        });
+        const apc = <dfg.ActivePlayerControl>(<unknown>{
+          playerIdentifier: pi,
+          enumerateCardSelectionPairs: edc,
+        });
+        h.activePlayerControl = apc;
+        const roomProxyMock = sinon.mock(h.roomProxy);
+        const msg = dfgmsg.encodeDiscardPairListMessage([]);
+        roomProxyMock
+          .expects("send")
+          .calledWithExactly(pi, "CardSelectionPairListMessage", msg);
+        h.enumerateDiscardPairs();
+        expect(edc.called).to.be.true;
+        roomProxyMock.verify();
       });
-      const edc = sinon.fake(() => {
-        return [dp1, dp2];
+
+      it("throws an error when activePlayerControl is not set", () => {
+        const h = createDFGHandler();
+        expect(() => {
+          h.selectCardByIndex(0);
+        }).to.throw("activePlayerControl and additionalActionControl are both null.");
       });
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
-        playerIdentifier: pi,
-        enumerateCardSelectionPairs: edc,
-      });
-      h.activePlayerControl = apc;
-      const roomProxyMock = sinon.mock(h.roomProxy);
-      const msg = dfgmsg.encodeDiscardPairListMessage([
-        dfgmsg.encodeDiscardPairMessage([s4m, s4m]),
-        dfgmsg.encodeDiscardPairMessage([d4m, d4m]),
-      ]);
-      roomProxyMock
-        .expects("send")
-        .calledWithExactly(pi, "CardSelectionPairListMessage", msg);
-      h.enumerateDiscardPairs();
-      expect(edc.called).to.be.true;
-      roomProxyMock.verify();
     });
 
-    it("sends CardSelectionPairListMessage with an empty CardSelectionPairList when no CardSelectionPair is enumerated", () => {
-      const pi = "ccaatt";
-      const h = createDFGHandler();
-      const edc = sinon.fake((): dfg.CardSelectionPair[] => {
-        return [];
+    describe("for additional action", () => {
+      it("can send CardSelectionPairListMessage within transfer7 context", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+        const d4 = dfg.createCard(dfg.CardMark.DIAMONDS, 4);
+        const t7action = new dfg.Transfer7(pi, [d4, s4]);
+        t7action.selectCard(0);
+        const additionalActionControl = new dfg.AdditionalActionControl("transfer7", t7action);
+        const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
+        const d4m = dfgmsg.encodeCardMessage(d4.mark, d4.cardNumber);
+        h.additionalActionControl = additionalActionControl;
+        const roomProxyMock = sinon.mock(h.roomProxy);
+        const msg = dfgmsg.encodeDiscardPairListMessage([
+          dfgmsg.encodeDiscardPairMessage([s4m]),
+        ]);
+        roomProxyMock
+          .expects("send")
+          .calledWithExactly(pi, "CardSelectionPairListMessage", msg);
+        h.enumerateDiscardPairs();
+        roomProxyMock.verify();
       });
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
-        playerIdentifier: pi,
-        enumerateCardSelectionPairs: edc,
-      });
-      h.activePlayerControl = apc;
-      const roomProxyMock = sinon.mock(h.roomProxy);
-      const msg = dfgmsg.encodeDiscardPairListMessage([]);
-      roomProxyMock
-        .expects("send")
-        .calledWithExactly(pi, "CardSelectionPairListMessage", msg);
-      h.enumerateDiscardPairs();
-      expect(edc.called).to.be.true;
-      roomProxyMock.verify();
-    });
 
-    it("throws an error when activePlayerControl is not set", () => {
-      const h = createDFGHandler();
-      expect(() => {
-        h.selectCardByIndex(0);
-      }).to.throw("activePlayerControl and additionalActionControl are both null.");
+      it("can send CardSelectionPairListMessage within exile10 context", () => {
+        const pi = "ccaatt";
+        const h = createDFGHandler();
+        const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
+        const d4 = dfg.createCard(dfg.CardMark.DIAMONDS, 4);
+        const e10action = new dfg.Exile10(pi, [d4, s4]);
+        e10action.selectCard(0);
+        const additionalActionControl = new dfg.AdditionalActionControl("exile10", e10action);
+        const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
+        const d4m = dfgmsg.encodeCardMessage(d4.mark, d4.cardNumber);
+        h.additionalActionControl = additionalActionControl;
+        const roomProxyMock = sinon.mock(h.roomProxy);
+        const msg = dfgmsg.encodeDiscardPairListMessage([
+          dfgmsg.encodeDiscardPairMessage([s4m]),
+        ]);
+        roomProxyMock
+          .expects("send")
+          .calledWithExactly(pi, "CardSelectionPairListMessage", msg);
+        h.enumerateDiscardPairs();
+        roomProxyMock.verify();
+      });
     });
   });
 
@@ -840,7 +947,7 @@ describe("DFGHandler", () => {
   });
 
   describe("finishAction", () => {
-    it("calls game.finishActivePlayerControl", () => {
+    it("calls game.finishActivePlayerControl when activePlayerControl is set", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const fapc = sinon.fake();
@@ -856,7 +963,23 @@ describe("DFGHandler", () => {
       expect(fapc.called).to.be.true;
     });
 
-    it("throws an error when activePlayerControl is not set", () => {
+    it("calls game.finishAdditionalActionControl when additionalActionControl is set", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const faac = sinon.fake();
+      const aac = <dfg.AdditionalActionControl>(<unknown>{
+        playerIdentifier: pi,
+      });
+      const g = <dfg.Game>(<unknown>{
+        finishAdditionalActionControl: faac,
+      });
+      h.additionalActionControl = aac;
+      h.game = g;
+      h.finishAction();
+      expect(faac.called).to.be.true;
+    });
+
+    it("throws an error when activePlayerControl and additionalActionControl are not set", () => {
       const h = createDFGHandler();
       expect(() => {
         h.finishAction();

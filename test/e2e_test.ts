@@ -924,6 +924,15 @@ describe("e2e test", () => {
       // カードを出したプレイヤーの手札が更新されているか(実は全員分を更新しているけれどご愛敬)
       // 追加のアクションの時は、街頭プレイヤーの分は２会更新されている
       expect(cl.calledTwice).to.be.true;
+      mrm.resetHistory();
+      // 7渡しのカードを選択する
+      const msg2 = dfgmsg.encodeCardSelectRequest(0);
+      activePlayer.send("CardSelectRequest", msg2);
+      await forMilliseconds(100);
+      expect(cl.calledOnce).to.be.true;
+      expect(dp.calledOnce).to.be.true;
+      mrm.resetHistory();
+      activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
     });
 
     it("can pass", async () => {
