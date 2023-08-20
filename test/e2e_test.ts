@@ -176,6 +176,35 @@ function createGameWithTransfer7Situation(
   });
 }
 
+function createGameWithExile10Situation(
+  client1: TestClient,
+  client2: TestClient,
+  er: dfg.EventReceiver
+) {
+  const p1 = dfg.createPlayer(client1.sessionId);
+  const p2 = dfg.createPlayer(client2.sessionId);
+  p1.hand.give(dfg.createCard(dfg.CardMark.DIAMONDS, 4));
+  p1.hand.give(dfg.createCard(dfg.CardMark.DIAMONDS, 5));
+  p1.hand.give(dfg.createCard(dfg.CardMark.DIAMONDS, 10));
+  p2.hand.give(dfg.createCard(dfg.CardMark.CLUBS, 5));
+  const config = dfg.createDefaultRuleConfig();
+  config.exile10 = true;
+  return dfg.createGameCustom({
+    players: [p1, p2],
+    activePlayerIndex: 0,
+    activePlayerActionCount: 0,
+    discardStack: dfg.createDiscardStack(),
+    lastDiscarderIdentifier: "",
+    strengthInverted: false,
+    agariPlayerIdentifiers: [],
+    penalizedPlayerIdentifiers: [],
+    eventReceiver: er,
+    ruleConfig: config,
+    removedCardsMap: new Map<dfg.CardMark, Map<dfg.CardNumber, number>>(),
+    reversed: false,
+  });
+}
+
 describe("e2e test", () => {
   let colyseus: ColyseusTestServer;
 
@@ -951,6 +980,87 @@ describe("e2e test", () => {
       expect(tmsg.cardList.length).to.eql(1);
       expect(tmsg.cardList[0].mark).to.eql(dfgmsg.CardMark.DIAMONDS);
       expect(tmsg.cardList[0].cardNumber).to.eql(4);
+      // 次の人のターンになっている
+      const tnmsg = (room as GameRoom).state.eventLogList[len - 1];
+      expect(tnmsg.type).to.eql("TurnMessage");
+      expect(JSON.parse(tnmsg.body)).to.eql(dfgmsg.encodeTurnMessage(nextPlayerName));
+    });
+
+    it("can trigger exile10 additional action", async () => {
+      const room = await colyseus.createRoom(
+        "game_room",
+        createGameRoomOptions()
+      ) as GameRoom;
+      setRoomOptionsForTest(room, true);
+      const mrm = new MessageReceiverMap();
+      const client1 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("cat")
+      );
+      mrm.registerFake([client1], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      const client2 = await colyseus.connectTo(
+        room,
+        clientOptionsWithDefault("dog")
+      );
+      mrm.registerFake([client2], ["RoomOwnerMessage", "PlayerJoinedMessage"]);
+      mrm.registerFake([client1, client2], commonMessages());
+      const g = createGameWithExile10Situation(
+        client1,
+        client2,
+        room.dfgHandler.eventReceiver
+      );
+      room.dfgHandler.game = g;
+      room.dfgHandler.prepareNextPlayer();
+      mrm.resetHistory();
+      const activePlayer = getActivePlayer(room, client1, client2);
+      const msg = dfgmsg.encodeCardSelectRequest(2);
+      activePlayer.send("CardSelectRequest", msg);
+      await forMilliseconds(100);
+      const cl = mrm.getFake(activePlayer, "CardListMessage");
+      expect(cl.calledOnce).to.be.true;
+      const dp = mrm.getFake(activePlayer, "DiscardPairListMessage"); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      expect(dp.calledOnce).to.be.true;
+      mrm.resetHistory();
+      activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+      await forMilliseconds(100);
+      let len = (room as GameRoom).state.eventLogList.length;
+      // 追加のアクションを行うので、次のプレイヤーにはターンが移らない
+      const nextPlayer = activePlayer === client1 ? client2 : client1;
+      const nextPlayerName = nextPlayer === client1 ? "cat" : "dog";
+      const tm = (room as GameRoom).state.eventLogList[len - 1];
+      expect(tm.type).not.to.eql("TurnMessage");
+      // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
+      expect(dp.calledOnce).to.be.true;
+      expect(dp.firstCall.lastArg.discardPairList.length).to.eql(0);
+      // カードを出したプレイヤーの手札が更新されているか(実は全員分を更新しているけれどご愛敬)
+      // 追加のアクションの時は、街頭プレイヤーの分は２会更新されている
+      expect(cl.calledTwice).to.be.true;
+      mrm.resetHistory();
+      // 7渡しのカードを選択する
+      const msg2 = dfgmsg.encodeCardSelectRequest(0);
+      activePlayer.send("CardSelectRequest", msg2);
+      await forMilliseconds(100);
+      expect(cl.calledOnce).to.be.true;
+      expect(dp.calledOnce).to.be.true;
+      mrm.resetHistory();
+      activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
+      await forMilliseconds(100);
+      // カードリスト・10捨てするカードのリストが更新されているか
+      expect(cl.calledOnce).to.be.true;
+      expect(dp.calledOnce).to.be.true;
+      // 10捨てをしたので、cardSelectionPairは空になっているはず
+      const cspAfterAction = dp.firstCall.firstArg as dfgmsg.DiscardPairListMessage;
+      expect(cspAfterAction.discardPairList.length).to.eql(0);
+      // 10捨てのメッセージがイベントログに残っている
+      len = (room as GameRoom).state.eventLogList.length;
+      const evtmsg = (room as GameRoom).state.eventLogList[len - 2];
+      expect(evtmsg.type).to.eql("ExileMessage");
+      const emsg = dfgmsg.decodePayload<dfgmsg.ExileMessage>(JSON.parse(evtmsg.body), dfgmsg.ExileMessageDecoder) as dfgmsg.ExileMessage;
+      const activePlayerName = activePlayer === client1 ? "cat" : "dog";
+      expect(emsg.playerName).to.eql(activePlayerName);
+      expect(emsg.cardList.length).to.eql(1);
+      expect(emsg.cardList[0].mark).to.eql(dfgmsg.CardMark.DIAMONDS);
+      expect(emsg.cardList[0].cardNumber).to.eql(4);
       // 次の人のターンになっている
       const tnmsg = (room as GameRoom).state.eventLogList[len - 1];
       expect(tnmsg.type).to.eql("TurnMessage");
