@@ -33,8 +33,8 @@ export class DFGHandler {
     r.kakumei = ruleConfig.kakumei;
     r.reverse = ruleConfig.reverse;
     r.skip = ruleConfig.skip;
-    r.transfer = ruleConfig.transfer;
-    r.exile = ruleConfig.exile;
+    r.transfer7 = ruleConfig.transfer;
+    r.exile10 = ruleConfig.exile;
     this.ruleConfig = r;
 
     // set other constructor values
