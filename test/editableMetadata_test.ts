@@ -9,6 +9,8 @@ function createRuleConfig() {
     kakumei: true,
     reverse: false,
     skip: dfgmsg.SkipConfig.OFF,
+    transfer: false,
+    exile: false,
   };
 }
 

@@ -32,6 +32,22 @@ export class CardEnumerator {
     );
   }
 
+  public enumerateFromAdditionalAction(
+    action: dfg.Transfer7 | dfg.Exile10
+  ): dfgmsg.CardListMessage {
+    return dfgmsg.encodeCardListMessage(
+      action.enumerateCards().map((v, i) => {
+        return dfgmsg.encodeSelectableCardMessage(
+          v.ID,
+          v.mark,
+          v.cardNumber,
+          action.isCardSelected(i),
+          this.isSelectable(action.checkCardSelectability(i))
+        );
+      })
+    );
+  }
+
   private isSelectable(selectability: dfg.SelectabilityCheckResult) {
     return (
       selectability === dfg.SelectabilityCheckResult.SELECTABLE ||

@@ -7,13 +7,14 @@ import { CardEnumerator } from "./cardEnumerator";
 import * as dfgmsg from "dfg-messages";
 import { EventReceiver, EventReceiverCallbacks } from "./eventReceiver";
 
-class InvalidGameStateError extends Error {}
+class InvalidGameStateError extends Error { }
 export type OnEventLogPushFunc = (eventType: string, eventBody: string) => void;
 
 export class DFGHandler {
   ruleConfig: dfg.RuleConfig;
   game: dfg.Game | null;
   activePlayerControl: dfg.ActivePlayerControl | null;
+  additionalActionControl: dfg.AdditionalActionControl | null;
   eventReceiver: dfg.EventReceiver;
   roomProxy: RoomProxy<GameRoom>;
   playerMap: PlayerMap;
@@ -32,6 +33,8 @@ export class DFGHandler {
     r.kakumei = ruleConfig.kakumei;
     r.reverse = ruleConfig.reverse;
     r.skip = ruleConfig.skip;
+    r.transfer7 = ruleConfig.transfer;
+    r.exile10 = ruleConfig.exile;
     this.ruleConfig = r;
 
     // set other constructor values
@@ -113,6 +116,13 @@ export class DFGHandler {
     return this.game ? true : false;
   }
 
+  public getActivePlayerIdentifier(): string {
+    if (!this.activePlayerControl && !this.additionalActionControl) {
+      throw new InvalidGameStateError("activePlayerControl and additionalActionControl are both null.");
+    }
+    return this.activePlayerControl ? this.activePlayerControl.playerIdentifier : this.additionalActionControl.playerIdentifier;
+  }
+
   public updateCardsForEveryone(): void {
     if (!this.game) {
       this.gameInactiveError();
@@ -120,13 +130,13 @@ export class DFGHandler {
     this.game.enumeratePlayerIdentifiers().forEach((v) => {
       const e =
         this.activePlayerControl &&
-        this.activePlayerControl.playerIdentifier === v
+          this.activePlayerControl.playerIdentifier === v
           ? this.cardEnumerator.enumerateFromActivePlayerControl(
-              this.activePlayerControl
-            )
+            this.activePlayerControl
+          )
           : this.cardEnumerator.enumerateFromHand(
-              this.game.findPlayerByIdentifier(v).hand
-            );
+            this.game.findPlayerByIdentifier(v).hand
+          );
       this.roomProxy.send(v, "CardListMessage", e);
     });
   }
@@ -156,83 +166,56 @@ export class DFGHandler {
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
       "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(true)
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.ACTIVE, true)
     );
   }
 
   public updateHandForActivePlayer(): void {
     // This method is intended to be used when the active player checked / unchecked cards. For updating all player cards state to latest, use updateCardsForEveryone.
-    if (!this.activePlayerControl) {
+    if (!this.activePlayerControl && !this.additionalActionControl) {
       this.invalidControllerError();
     }
-    this.roomProxy.send(
-      this.activePlayerControl.playerIdentifier,
-      "CardListMessage",
-      this.cardEnumerator.enumerateFromActivePlayerControl(
-        this.activePlayerControl
-      )
-    );
+    if (this.activePlayerControl) {
+      return this.updateHandForActivePlayerControl();
+    }
+    return this.updateHandForAdditionalActionControl();
   }
 
   public selectCardByIndex(index: number): void {
-    if (!this.activePlayerControl) {
-      this.invalidControllerError();
+    // activePlayerControlがあるときは、通常のプレイ状態。
+    // additionalActionControlがあるときは、追加アクションの選択状態。
+    if (!this.activePlayerControl && !this.additionalActionControl) {
+      throw new InvalidGameStateError("activePlayerControl and additionalActionControl are both null.");
     }
 
-    if (
-      this.activePlayerControl.checkCardSelectability(index) ===
-      dfg.SelectabilityCheckResult.NOT_SELECTABLE
-    ) {
-      return;
+    if (this.activePlayerControl) {
+      return this.selectCardByIndexForActivePlayer(this.activePlayerControl, index);
     }
-
-    if (this.activePlayerControl.isCardSelected(index)) {
-      this.activePlayerControl.deselectCard(index);
-      return;
-    }
-    this.activePlayerControl.selectCard(index);
+    return this.selectCardByIndexForAdditionalAction(this.additionalActionControl, index);
   }
 
   public enumerateDiscardPairs(): void {
-    if (!this.activePlayerControl) {
+    if (!this.activePlayerControl && !this.additionalActionControl) {
       this.invalidControllerError();
     }
-    this.roomProxy.send(
-      this.activePlayerControl.playerIdentifier,
-      "DiscardPairListMessage",
-      dfgmsg.encodeDiscardPairListMessage(
-        this.activePlayerControl.enumerateDiscardPairs().map((v) => {
-          return dfgmsg.encodeDiscardPairMessage(
-            v.cards.map((w) => {
-              return dfgmsg.encodeCardMessage(w.mark, w.cardNumber);
-            })
-          );
-        })
-      )
-    );
+    if (this.activePlayerControl) {
+      return this.enumerateDiscardPairsForActivePlayer();
+    }
+    return this.enumerateDiscardPairsForAdditionalAction();
   }
 
   public discardByIndex(index: number): boolean {
     // 有効なDiscardPairがないときに呼ぶと、 false を返すようにする。タイミング問題で変なメッセージが送られても、落ちる前に逃げるようにするため。
-    if (!this.activePlayerControl) {
+    if (!this.activePlayerControl && !this.additionalActionControl) {
       this.invalidControllerError();
     }
     if (index < 0) {
-      return;
-    }
-    const dps = this.activePlayerControl.enumerateDiscardPairs();
-    if (index >= dps.length) {
       return false;
     }
-
-    this.activePlayerControl.discard(dps[index]);
-    this.clearDiscardPairList();
-    this.roomProxy.send(
-      this.activePlayerControl.playerIdentifier,
-      "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(false)
-    );
-    return true;
+    if (this.activePlayerControl) {
+      return this.discardByIndexForActivePlayer(index);
+    }
+    return this.discardByIndexForAdditionalAction(this.additionalActionControl);
   }
 
   public pass(): void {
@@ -241,21 +224,42 @@ export class DFGHandler {
     }
 
     this.activePlayerControl.pass();
-    this.clearDiscardPairList();
+    this.clearDiscardPairList(this.activePlayerControl.playerIdentifier);
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
       "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(false)
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.INACTIVE, false)
     );
   }
 
   public finishAction(): void {
-    if (!this.activePlayerControl) {
+    if (!this.activePlayerControl && !this.additionalActionControl) {
       this.invalidControllerError();
     }
 
-    this.game.finishActivePlayerControl(this.activePlayerControl);
-    this.activePlayerControl = null;
+    if (this.activePlayerControl) {
+      this.game.finishActivePlayerControl(this.activePlayerControl);
+      this.activePlayerControl = null;
+      return;
+    }
+    this.game.finishAdditionalActionControl(this.additionalActionControl);
+    this.additionalActionControl = null;
+  }
+
+  public handleNextAdditionalAction(): boolean {
+    this.additionalActionControl = this.game.startAdditionalActionControl();
+    if (!this.additionalActionControl) {
+      return false;
+    }
+    switch (this.additionalActionControl.getType()) {
+      case "transfer7":
+        this.handleTransfer7();
+        break;
+      case "exile10":
+        this.handleExile10();
+        break;
+    }
+    return true;
   }
 
   public kickPlayerByIdentifier(identifier: string): boolean {
@@ -283,7 +287,7 @@ export class DFGHandler {
     return mustHandleNextPlayer;
   }
 
-  public getLatestDiscardStack(): dfg.DiscardPair[] {
+  public getLatestDiscardStack(): dfg.CardSelectionPair[] {
     if (!this.game) {
       this.gameInactiveError();
     }
@@ -341,10 +345,10 @@ export class DFGHandler {
     return dfg.createGame(clientIDList, eventReceiver, ruleConfig);
   }
 
-  private clearDiscardPairList() {
+  private clearDiscardPairList(playerIdentifier: string) {
     // カードを出したプレイヤーのカード候補表示をクリアさせるため、空のDiscardPairListMessageを送って通知する
     this.roomProxy.send(
-      this.activePlayerControl.playerIdentifier,
+      playerIdentifier,
       "DiscardPairListMessage",
       dfgmsg.encodeDiscardPairListMessage([])
     );
@@ -367,4 +371,250 @@ export class DFGHandler {
       return this.playerMap.clientIDToPlayer(id).name;
     });
   }
+
+  private handleTransfer7() {
+    if (!this.additionalActionControl) {
+      throw new InvalidGameStateError("additional action control is invalid");
+    }
+
+    const t7action = this.additionalActionControl.cast<dfg.Transfer7>(dfg.Transfer7);
+    this.roomProxy.send(
+      t7action.playerIdentifier,
+      "CardListMessage",
+      this.cardEnumerator.enumerateFromAdditionalAction(
+        t7action
+      )
+    );
+    const p = this.playerMap.clientIDToPlayer(t7action.playerIdentifier);
+    this.roomProxy.broadcast(
+      "PlayerWaitMessage",
+      dfgmsg.encodePlayerWaitMessage(p.name, dfgmsg.WaitReason.TRANSFER)
+    );
+    this.roomProxy.send(
+      t7action.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.TRANSFER, false)
+    );
+  }
+
+  private handleExile10() {
+    if (!this.additionalActionControl) {
+      throw new InvalidGameStateError("additional action control is invalid");
+    }
+
+    const e10action = this.additionalActionControl.cast<dfg.Exile10>(dfg.Exile10);
+    this.roomProxy.send(
+      e10action.playerIdentifier,
+      "CardListMessage",
+      this.cardEnumerator.enumerateFromAdditionalAction(
+        e10action
+      )
+    );
+    const p = this.playerMap.clientIDToPlayer(e10action.playerIdentifier);
+    this.roomProxy.broadcast(
+      "PlayerWaitMessage",
+      dfgmsg.encodePlayerWaitMessage(p.name, dfgmsg.WaitReason.EXILE)
+    );
+    this.roomProxy.send(
+      e10action.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.EXILE, false)
+    );
+  }
+
+  private discardByIndexForActivePlayer(index: number): boolean {
+    const dps = this.activePlayerControl.enumerateCardSelectionPairs();
+    if (index >= dps.length) {
+      return false;
+    }
+
+    this.activePlayerControl.discard(dps[index]);
+    this.clearDiscardPairList(this.activePlayerControl.playerIdentifier);
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.INACTIVE, false)
+    );
+    return true;
+  }
+
+  private discardByIndexForAdditionalAction(additionalActionControl: dfg.AdditionalActionControl): boolean {
+    // finishAdditionalActionControl is called at finishAction method
+    this.clearDiscardPairList(additionalActionControl.playerIdentifier);
+    this.roomProxy.send(
+      additionalActionControl.playerIdentifier,
+      "YourTurnMessage",
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.INACTIVE, false)
+    );
+    return true;
+  }
+
+  private selectCardByIndexForActivePlayer(activePlayerControl: dfg.ActivePlayerControl, index: number) {
+    if (
+      activePlayerControl.checkCardSelectability(index) ===
+      dfg.SelectabilityCheckResult.NOT_SELECTABLE
+    ) {
+      return;
+    }
+
+    if (activePlayerControl.isCardSelected(index)) {
+      activePlayerControl.deselectCard(index);
+      return;
+    }
+    activePlayerControl.selectCard(index);
+  }
+
+  private selectCardByIndexForAdditionalAction(additionalActionControl: dfg.AdditionalActionControl, index: number) {
+    switch (additionalActionControl.getType()) {
+      case "transfer7":
+        this.selectCardByIndexForTransfer7(additionalActionControl, index);
+        break;
+      case "exile10":
+        this.selectCardByIndexForExile10(additionalActionControl, index);
+        break;
+      default:
+        throw new InvalidGameStateError("unrecognized additional action type");
+    }
+  }
+
+  private selectCardByIndexForTransfer7(ctrl: dfg.AdditionalActionControl, index: number) {
+    const t7action = ctrl.cast<dfg.Transfer7>(dfg.Transfer7);
+    if (
+      t7action.checkCardSelectability(index) ===
+      dfg.SelectabilityCheckResult.NOT_SELECTABLE
+    ) {
+      return;
+    }
+    if (t7action.isCardSelected(index)) {
+      t7action.deselectCard(index);
+      return;
+    }
+    t7action.selectCard(index);
+  }
+
+  private selectCardByIndexForExile10(ctrl: dfg.AdditionalActionControl, index: number) {
+    const e10action = ctrl.cast<dfg.Exile10>(dfg.Exile10);
+    if (
+      e10action.checkCardSelectability(index) ===
+      dfg.SelectabilityCheckResult.NOT_SELECTABLE
+    ) {
+      return;
+    }
+    if (e10action.isCardSelected(index)) {
+      e10action.deselectCard(index);
+      return;
+    }
+    e10action.selectCard(index);
+  }
+
+  private updateHandForActivePlayerControl() {
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "CardListMessage",
+      this.cardEnumerator.enumerateFromActivePlayerControl(
+        this.activePlayerControl
+      )
+    );
+  }
+
+  private updateHandForAdditionalActionControl() {
+    switch (this.additionalActionControl.getType()) {
+      case "transfer7":
+        this.updateHandForTransfer7();
+        break;
+      case "exile10":
+        this.updateHandForExile10();
+        break;
+      default:
+        throw new InvalidGameStateError("unrecognized additional action type");
+    }
+  }
+
+  private updateHandForTransfer7() {
+    const t7action = this.additionalActionControl.cast<dfg.Transfer7>(dfg.Transfer7);
+    this.roomProxy.send(
+      this.additionalActionControl.playerIdentifier,
+      "CardListMessage",
+      this.cardEnumerator.enumerateFromAdditionalAction(
+        t7action
+      )
+    );
+  }
+
+  private updateHandForExile10() {
+    const e10action = this.additionalActionControl.cast<dfg.Exile10>(dfg.Exile10);
+    this.roomProxy.send(
+      this.additionalActionControl.playerIdentifier,
+      "CardListMessage",
+      this.cardEnumerator.enumerateFromAdditionalAction(
+        e10action
+      )
+    );
+  }
+
+  private enumerateDiscardPairsForActivePlayer() {
+    this.roomProxy.send(
+      this.activePlayerControl.playerIdentifier,
+      "DiscardPairListMessage",
+      dfgmsg.encodeDiscardPairListMessage(
+        this.activePlayerControl.enumerateCardSelectionPairs().map((v) => {
+          return dfgmsg.encodeDiscardPairMessage(
+            v.cards.map((w) => {
+              return dfgmsg.encodeCardMessage(w.mark, w.cardNumber);
+            })
+          );
+        })
+      )
+    );
+  }
+
+  private enumerateDiscardPairsForAdditionalAction() {
+    switch (this.additionalActionControl.getType()) {
+      case "transfer7":
+        this.enumerateDiscardPairsForTransfer7();
+        break;
+      case "exile10":
+        this.enumerateDiscardPairsForExile10();
+        break;
+      default:
+        throw new InvalidGameStateError("unrecognized additional action type");
+    }
+  }
+
+  private enumerateDiscardPairsForTransfer7() {
+    const t7action = this.additionalActionControl.cast<dfg.Transfer7>(dfg.Transfer7);
+    const csp = t7action.createCardSelectionPair();
+    this.roomProxy.send(
+      this.additionalActionControl.playerIdentifier,
+      "DiscardPairListMessage",
+      dfgmsg.encodeDiscardPairListMessage(
+        [
+          dfgmsg.encodeDiscardPairMessage(
+            [
+              dfgmsg.encodeCardMessage(csp.cards[0].mark, csp.cards[0].cardNumber)
+            ]
+          )
+        ]
+      )
+    );
+  }
+
+  private enumerateDiscardPairsForExile10() {
+    const e10action = this.additionalActionControl.cast<dfg.Exile10>(dfg.Exile10);
+    const csp = e10action.createCardSelectionPair();
+    this.roomProxy.send(
+      this.additionalActionControl.playerIdentifier,
+      "DiscardPairListMessage",
+      dfgmsg.encodeDiscardPairListMessage(
+        [
+          dfgmsg.encodeDiscardPairMessage(
+            [
+              dfgmsg.encodeCardMessage(csp.cards[0].mark, csp.cards[0].cardNumber)
+            ]
+          )
+        ]
+      )
+    );
+  }
 }
+

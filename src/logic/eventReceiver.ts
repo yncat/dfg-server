@@ -68,7 +68,7 @@ export class EventReceiver implements dfg.EventReceiver {
 
   public onDiscard(
     identifier: string,
-    discardPair: dfg.DiscardPair,
+    discardPair: dfg.CardSelectionPair,
     remainingHandCount: number
   ): void {
     this.callbacks.onEventLogPush(
@@ -178,6 +178,35 @@ export class EventReceiver implements dfg.EventReceiver {
       JSON.stringify(
         dfgmsg.encodeTurnSkippedMessage(
           this.playerMap.clientIDToPlayer(identifier).name
+        )
+      )
+    );
+  }
+
+  public onTransfer(identifier: string, targetIdentifier: string, transferred: dfg.CardSelectionPair): void {
+    this.callbacks.onEventLogPush(
+      "TransferMessage",
+      JSON.stringify(
+        dfgmsg.encodeTransferMessage(
+          this.playerMap.clientIDToPlayer(identifier).name,
+          this.playerMap.clientIDToPlayer(targetIdentifier).name,
+          transferred.cards.map((v) => {
+            return dfgmsg.encodeCardMessage(v.mark, v.cardNumber);
+          })
+        )
+      )
+    );
+  }
+
+  public onExile(identifier: string, exiled: dfg.CardSelectionPair): void {
+    this.callbacks.onEventLogPush(
+      "ExileMessage",
+      JSON.stringify(
+        dfgmsg.encodeExileMessage(
+          this.playerMap.clientIDToPlayer(identifier).name,
+          exiled.cards.map((v) => {
+            return dfgmsg.encodeCardMessage(v.mark, v.cardNumber);
+          })
         )
       )
     );
