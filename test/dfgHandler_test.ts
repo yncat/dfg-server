@@ -188,7 +188,7 @@ describe("DFGHandler", () => {
         .withExactArgs(
           pi,
           "YourTurnMessage",
-          dfgmsg.encodeYourTurnMessage(true)
+          dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.ACTIVE, true)
         );
       h.notifyToActivePlayer();
       roomProxyMock.verify();
@@ -681,7 +681,7 @@ describe("DFGHandler", () => {
           .withExactArgs(
             pi,
             "YourTurnMessage",
-            dfgmsg.encodeYourTurnMessage(false)
+            dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.INACTIVE, false)
           );
         const ret = h.discardByIndex(0);
         roomProxyMock.verify();
@@ -758,7 +758,7 @@ describe("DFGHandler", () => {
           .withExactArgs(
             pi,
             "YourTurnMessage",
-            dfgmsg.encodeYourTurnMessage(false)
+            dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.INACTIVE, false)
           );
         roomProxyMock
           .expects("send")
@@ -849,7 +849,7 @@ describe("DFGHandler", () => {
         .withExactArgs(
           pi,
           "YourTurnMessage",
-          dfgmsg.encodeYourTurnMessage(true)
+          dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.TRANSFER, false)
         );
       const ret = h.handleNextAdditionalAction();
       roomProxyMock.verify();
@@ -900,7 +900,7 @@ describe("DFGHandler", () => {
         .withExactArgs(
           pi,
           "YourTurnMessage",
-          dfgmsg.encodeYourTurnMessage(true)
+          dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.EXILE, false)
         );
       const ret = h.handleNextAdditionalAction();
       roomProxyMock.verify();
@@ -932,7 +932,7 @@ describe("DFGHandler", () => {
         .withExactArgs(
           pi,
           "YourTurnMessage",
-          dfgmsg.encodeYourTurnMessage(false)
+          dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.INACTIVE, false)
         );
       h.pass();
       expect(pass.called).to.be.true;

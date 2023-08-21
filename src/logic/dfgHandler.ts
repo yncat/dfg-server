@@ -166,7 +166,7 @@ export class DFGHandler {
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
       "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(true)
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.ACTIVE, true)
     );
   }
 
@@ -228,7 +228,7 @@ export class DFGHandler {
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
       "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(false)
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.INACTIVE, false)
     );
   }
 
@@ -393,7 +393,7 @@ export class DFGHandler {
     this.roomProxy.send(
       t7action.playerIdentifier,
       "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(true)
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.TRANSFER, false)
     );
   }
 
@@ -418,7 +418,7 @@ export class DFGHandler {
     this.roomProxy.send(
       e10action.playerIdentifier,
       "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(true)
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.EXILE, false)
     );
   }
 
@@ -433,7 +433,7 @@ export class DFGHandler {
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
       "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(false)
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.INACTIVE, false)
     );
     return true;
   }
@@ -444,7 +444,7 @@ export class DFGHandler {
     this.roomProxy.send(
       additionalActionControl.playerIdentifier,
       "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(false)
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.INACTIVE, false)
     );
     return true;
   }
