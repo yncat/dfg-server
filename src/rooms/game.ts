@@ -354,6 +354,8 @@ export class GameRoom extends Room<GameState> {
     state.ruleConfig.kakumei = options.ruleConfig.kakumei;
     state.ruleConfig.reverse = options.ruleConfig.reverse;
     state.ruleConfig.skip = options.ruleConfig.skip;
+    state.ruleConfig.transfer = options.ruleConfig.transfer;
+    state.ruleConfig.exile = options.ruleConfig.exile;
     return state;
   }
 }

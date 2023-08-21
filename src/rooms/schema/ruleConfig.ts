@@ -6,4 +6,6 @@ export class RuleConfig extends Schema {
   @type("boolean") kakumei = false;
   @type("boolean") reverse = false;
   @type("uint8") skip = 0;
+  @type("boolean") transfer = false;
+  @type("boolean") exile = false;
 }
