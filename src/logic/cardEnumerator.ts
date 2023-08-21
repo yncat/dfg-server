@@ -1,12 +1,6 @@
 import * as dfg from "dfg-simulator";
 import * as dfgmsg from "dfg-messages";
 
-interface CardEnumeratableAdditionalAction {
-  enumerateCards:() => dfg.Card[];
-  isCardSelected:(index: number) => boolean;
-  checkCardSelectability:(index: number) => dfg.SelectabilityCheckResult;
-}
-
 export class CardEnumerator {
   public enumerateFromHand(hand: dfg.Hand): dfgmsg.CardListMessage {
     return dfgmsg.encodeCardListMessage(

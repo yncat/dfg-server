@@ -977,11 +977,11 @@ describe("e2e test", () => {
       mrm.resetHistory();
       activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
       await forMilliseconds(100);
-      let len = (room as GameRoom).state.eventLogList.length;
+      let len = (room ).state.eventLogList.length;
       // 追加のアクションを行うので、次のプレイヤーにはターンが移らない
       const nextPlayer = activePlayer === client1 ? client2 : client1;
       const nextPlayerName = nextPlayer === client1 ? "cat" : "dog";
-      const tm = (room as GameRoom).state.eventLogList[len - 1];
+      const tm = (room ).state.eventLogList[len - 1];
       expect(tm.type).not.to.eql("TurnMessage");
       // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
       expect(dp.calledOnce).to.be.true;
@@ -1006,8 +1006,8 @@ describe("e2e test", () => {
       const cspAfterAction = dp.firstCall.firstArg as dfgmsg.DiscardPairListMessage;
       expect(cspAfterAction.discardPairList.length).to.eql(0);
       // 7渡しのメッセージがイベントログに残っている
-      len = (room as GameRoom).state.eventLogList.length;
-      const evtmsg = (room as GameRoom).state.eventLogList[len - 2];
+      len = (room ).state.eventLogList.length;
+      const evtmsg = (room ).state.eventLogList[len - 2];
       expect(evtmsg.type).to.eql("TransferMessage");
       const tmsg = dfgmsg.decodePayload<dfgmsg.TransferMessage>(JSON.parse(evtmsg.body), dfgmsg.TransferMessageDecoder) as dfgmsg.TransferMessage;
       const activePlayerName = activePlayer === client1 ? "cat" : "dog";
@@ -1017,7 +1017,7 @@ describe("e2e test", () => {
       expect(tmsg.cardList[0].mark).to.eql(dfgmsg.CardMark.DIAMONDS);
       expect(tmsg.cardList[0].cardNumber).to.eql(4);
       // 次の人のターンになっている
-      const tnmsg = (room as GameRoom).state.eventLogList[len - 1];
+      const tnmsg = (room ).state.eventLogList[len - 1];
       expect(tnmsg.type).to.eql("TurnMessage");
       expect(JSON.parse(tnmsg.body)).to.eql(dfgmsg.encodeTurnMessage(nextPlayerName));
     });
@@ -1059,11 +1059,11 @@ describe("e2e test", () => {
       mrm.resetHistory();
       activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
       await forMilliseconds(100);
-      let len = (room as GameRoom).state.eventLogList.length;
+      let len = (room ).state.eventLogList.length;
       // 追加のアクションを行うので、次のプレイヤーにはターンが移らない
       const nextPlayer = activePlayer === client1 ? client2 : client1;
       const nextPlayerName = nextPlayer === client1 ? "cat" : "dog";
-      const tm = (room as GameRoom).state.eventLogList[len - 1];
+      const tm = (room ).state.eventLogList[len - 1];
       expect(tm.type).not.to.eql("TurnMessage");
       // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
       expect(dp.calledOnce).to.be.true;
@@ -1088,8 +1088,8 @@ describe("e2e test", () => {
       const cspAfterAction = dp.firstCall.firstArg as dfgmsg.DiscardPairListMessage;
       expect(cspAfterAction.discardPairList.length).to.eql(0);
       // 10捨てのメッセージがイベントログに残っている
-      len = (room as GameRoom).state.eventLogList.length;
-      const evtmsg = (room as GameRoom).state.eventLogList[len - 2];
+      len = (room ).state.eventLogList.length;
+      const evtmsg = (room ).state.eventLogList[len - 2];
       expect(evtmsg.type).to.eql("ExileMessage");
       const emsg = dfgmsg.decodePayload<dfgmsg.ExileMessage>(JSON.parse(evtmsg.body), dfgmsg.ExileMessageDecoder) as dfgmsg.ExileMessage;
       const activePlayerName = activePlayer === client1 ? "cat" : "dog";
@@ -1098,7 +1098,7 @@ describe("e2e test", () => {
       expect(emsg.cardList[0].mark).to.eql(dfgmsg.CardMark.DIAMONDS);
       expect(emsg.cardList[0].cardNumber).to.eql(4);
       // 次の人のターンになっている
-      const tnmsg = (room as GameRoom).state.eventLogList[len - 1];
+      const tnmsg = (room ).state.eventLogList[len - 1];
       expect(tnmsg.type).to.eql("TurnMessage");
       expect(JSON.parse(tnmsg.body)).to.eql(dfgmsg.encodeTurnMessage(nextPlayerName));
     });
@@ -1141,11 +1141,11 @@ describe("e2e test", () => {
       mrm.resetHistory();
       activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
       await forMilliseconds(100);
-      let len = (room as GameRoom).state.eventLogList.length;
+      let len = (room ).state.eventLogList.length;
       // 追加のアクションを行うので、次のプレイヤーにはターンが移らない
       const nextPlayer = activePlayer === client1 ? client2 : client1;
       const nextPlayerName = nextPlayer === client1 ? "cat" : "dog";
-      const tm = (room as GameRoom).state.eventLogList[len - 1];
+      const tm = (room ).state.eventLogList[len - 1];
       expect(tm.type).not.to.eql("TurnMessage");
       // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
       expect(dp.calledOnce).to.be.true;
@@ -1171,11 +1171,11 @@ describe("e2e test", () => {
       let cspAfterAction = dp.firstCall.firstArg as dfgmsg.DiscardPairListMessage;
       expect(cspAfterAction.discardPairList.length).to.eql(0);
       // 7渡しのメッセージがイベントログに残っている
-      len = (room as GameRoom).state.eventLogList.length;
+      len = (room ).state.eventLogList.length;
       // turnMessageが残らないので最後のログを参照すればよい
-      let evtmsg = (room as GameRoom).state.eventLogList[len - 1];
+      let evtmsg = (room ).state.eventLogList[len - 1];
       expect(evtmsg.type).to.eql("TransferMessage");
-      let tmsg = dfgmsg.decodePayload<dfgmsg.TransferMessage>(JSON.parse(evtmsg.body), dfgmsg.TransferMessageDecoder) as dfgmsg.TransferMessage;
+      const tmsg = dfgmsg.decodePayload<dfgmsg.TransferMessage>(JSON.parse(evtmsg.body), dfgmsg.TransferMessageDecoder) as dfgmsg.TransferMessage;
       const activePlayerName = activePlayer === client1 ? "cat" : "dog";
       expect(tmsg.fromPlayerName).to.eql(activePlayerName);
       expect(tmsg.toPlayerName).to.eql(nextPlayerName);
@@ -1199,8 +1199,8 @@ describe("e2e test", () => {
       cspAfterAction = dp.firstCall.firstArg as dfgmsg.DiscardPairListMessage;
       expect(cspAfterAction.discardPairList.length).to.eql(0);
       // 10捨てのメッセージがイベントログに残っている
-      len = (room as GameRoom).state.eventLogList.length;
-      evtmsg = (room as GameRoom).state.eventLogList[len - 2];
+      len = (room ).state.eventLogList.length;
+      evtmsg = (room ).state.eventLogList[len - 2];
       expect(evtmsg.type).to.eql("ExileMessage");
       const emsg = dfgmsg.decodePayload<dfgmsg.ExileMessage>(JSON.parse(evtmsg.body), dfgmsg.ExileMessageDecoder) as dfgmsg.ExileMessage;
       expect(emsg.playerName).to.eql(activePlayerName);
@@ -1208,7 +1208,7 @@ describe("e2e test", () => {
       expect(emsg.cardList[0].mark).to.eql(dfgmsg.CardMark.DIAMONDS);
       expect(emsg.cardList[0].cardNumber).to.eql(5);
       // 次の人のターンになっている
-      const tnmsg = (room as GameRoom).state.eventLogList[len - 1];
+      const tnmsg = (room ).state.eventLogList[len - 1];
       expect(tnmsg.type).to.eql("TurnMessage");
       expect(JSON.parse(tnmsg.body)).to.eql(dfgmsg.encodeTurnMessage(nextPlayerName));
     });

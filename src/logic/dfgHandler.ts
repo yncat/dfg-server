@@ -215,7 +215,7 @@ export class DFGHandler {
     if (this.activePlayerControl) {
       return this.discardByIndexForActivePlayer(index);
     }
-    return this.discardByIndexForAdditionalAction(this.additionalActionControl, index);
+    return this.discardByIndexForAdditionalAction(this.additionalActionControl);
   }
 
   public pass(): void {
@@ -438,7 +438,7 @@ export class DFGHandler {
     return true;
   }
 
-  private discardByIndexForAdditionalAction(additionalActionControl: dfg.AdditionalActionControl, index: number): boolean {
+  private discardByIndexForAdditionalAction(additionalActionControl: dfg.AdditionalActionControl): boolean {
     // finishAdditionalActionControl is called at finishAction method
     this.clearDiscardPairList(additionalActionControl.playerIdentifier);
     this.roomProxy.send(

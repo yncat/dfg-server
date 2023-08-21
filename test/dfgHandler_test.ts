@@ -606,7 +606,6 @@ describe("DFGHandler", () => {
         t7action.selectCard(0);
         const additionalActionControl = new dfg.AdditionalActionControl("transfer7", t7action);
         const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
-        const d4m = dfgmsg.encodeCardMessage(d4.mark, d4.cardNumber);
         h.additionalActionControl = additionalActionControl;
         const roomProxyMock = sinon.mock(h.roomProxy);
         const msg = dfgmsg.encodeDiscardPairListMessage([
@@ -628,7 +627,6 @@ describe("DFGHandler", () => {
         e10action.selectCard(0);
         const additionalActionControl = new dfg.AdditionalActionControl("exile10", e10action);
         const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
-        const d4m = dfgmsg.encodeCardMessage(d4.mark, d4.cardNumber);
         h.additionalActionControl = additionalActionControl;
         const roomProxyMock = sinon.mock(h.roomProxy);
         const msg = dfgmsg.encodeDiscardPairListMessage([
@@ -794,7 +792,6 @@ describe("DFGHandler", () => {
 
   describe("handleNextAdditionalAction", () => {
     it("returns false when no additional action is found", () => {
-      const pi = "ccaatt";
       const h = createDFGHandler();
       const g = <dfg.Game>(<unknown>{
         startAdditionalActionControl: sinon.fake((): dfg.AdditionalActionControl | null => {
@@ -816,9 +813,6 @@ describe("DFGHandler", () => {
       const s41 = dfg.createCard(dfg.CardMark.SPADES, 4);
       const s42 = dfg.createCard(dfg.CardMark.SPADES, 4);
       const t7action = new dfg.Transfer7(pi, [s41, s42]);
-      const cast = sinon.fake(() => {
-        return t7action;
-      });
       const aac = new dfg.AdditionalActionControl("transfer7", t7action);
       const g = <dfg.Game>(<unknown>{
         startAdditionalActionControl: sinon.fake((): dfg.AdditionalActionControl | null => {
@@ -867,9 +861,6 @@ describe("DFGHandler", () => {
       const s41 = dfg.createCard(dfg.CardMark.SPADES, 4);
       const s42 = dfg.createCard(dfg.CardMark.SPADES, 4);
       const e10action = new dfg.Exile10(pi, [s41, s42]);
-      const cast = sinon.fake(() => {
-        return e10action;
-      });
       const aac = new dfg.AdditionalActionControl("exile10", e10action);
       const g = <dfg.Game>(<unknown>{
         startAdditionalActionControl: sinon.fake((): dfg.AdditionalActionControl | null => {
