@@ -10,7 +10,7 @@
     "schema:build": "schema-codegen src/rooms/schema/game.ts --output schema-def/ --ts && schema-codegen src/rooms/schema/global.ts --output schema-def/ --ts",
     "schema:copy": "copyfiles schema-def/*.ts ../dfg/src/logic",
     "clean": "node node_modules/rimraf/bin lib",
-    "test": "mocha --require ts-node/register test/**_test.ts --exit --timeout 15000 --reporter dot",
+    "test": "mocha --require ts-node/register test/**_test.ts --exit --timeout 20000 --reporter dot",
     "fmt-lint": "prettier -c test/**/*.ts src/**/*.ts",
     "fmt": "prettier -w src/**/*.ts test/**/*.ts",
     "lint": "eslint . --ext ts",

@@ -267,7 +267,7 @@ export class DFGHandler {
     if (!this.game) {
       this.gameInactiveError();
     }
-    if (!this.activePlayerControl) {
+    if (!this.activePlayerControl && !this.additionalActionControl) {
       this.invalidControllerError();
     }
 
@@ -277,7 +277,7 @@ export class DFGHandler {
       return false;
     }
     let mustHandleNextPlayer =
-      identifier === this.activePlayerControl.playerIdentifier; // 現在捜査中のプレイヤーがキックされる場合、次のプレイヤーにターンを回さなければならない
+      identifier === this.getActivePlayerIdentifier(); // 現在捜査中のプレイヤーがキックされる場合、次のプレイヤーにターンを回さなければならない
     this.game.kickPlayerByIdentifier(identifier);
     // 残りの人数が二人の時、キックした結果としてゲームが終わっている場合がある。ここでチェックしておかないと、ゲームが終わっているのに次のプレイヤーにターンを回そうとしてエラーが起きる。
     // ちょっとわかりにくいが、eventReceiverのコールバックで、ゲームが終わったら this.game = null が走るようになっているので、 isGameActive で判定すればよい。
@@ -320,12 +320,21 @@ export class DFGHandler {
     }
 
     this.updateCardsForEveryone();
-    if (!this.activePlayerControl) {
+    if (this.activePlayerControl && this.activePlayerControl.playerIdentifier === identifier) {
+      this.notifyToActivePlayer();
       return;
     }
 
-    if (this.activePlayerControl.playerIdentifier === identifier) {
-      this.notifyToActivePlayer();
+    if (this.additionalActionControl) {
+      switch (this.additionalActionControl.getType()) {
+        case "transfer7":
+          this.handleTransfer7();
+          break;
+        case "exile10":
+          this.handleExile10();
+          break;
+      }
+      return
     }
   }
 

@@ -1164,5 +1164,42 @@ describe("DFGHandler", () => {
       expect(updateCardsForEveryone.calledOnce).to.be.true;
       expect(notifyToActivePlayer.calledOnce).to.be.true;
     });
+
+    it("re-applies transfer7", () => {
+      const pn1 = "cat";
+      const h = createDFGHandler();
+      const t7action = new dfg.Transfer7(pn1, []);
+      const ctrl = new dfg.AdditionalActionControl("transfer7", t7action);
+      h.additionalActionControl = ctrl;
+      const g = <dfg.Game>(<unknown>{});
+      const updateCardsForEveryone = sinon.fake(() => { });
+      const notifyToActivePlayer = sinon.fake(() => { });
+      const handleTransfer7 = sinon.fake(() => { });
+      h["updateCardsForEveryone"] = updateCardsForEveryone;
+      h["notifyToActivePlayer"] = notifyToActivePlayer;
+      h["handleTransfer7"] = handleTransfer7;
+      h.game = g;
+      h.handlePlayerReconnect(pn1);
+      expect(handleTransfer7.called).to.be.true;
+    });
+
+    it("re-applies exile10", () => {
+      const pn1 = "cat";
+      const h = createDFGHandler();
+      const e10action = new dfg.Exile10(pn1, []);
+      const ctrl = new dfg.AdditionalActionControl("exile10", e10action);
+      h.additionalActionControl = ctrl;
+      const g = <dfg.Game>(<unknown>{});
+      const updateCardsForEveryone = sinon.fake(() => { });
+      const notifyToActivePlayer = sinon.fake(() => { });
+      const handleExile10 = sinon.fake(() => { });
+      h["updateCardsForEveryone"] = updateCardsForEveryone;
+      h["notifyToActivePlayer"] = notifyToActivePlayer;
+      h["handleExile10"] = handleExile10;
+      h.game = g;
+      h.handlePlayerReconnect(pn1);
+      expect(handleExile10.called).to.be.true;
+    });
+
   });
 });
