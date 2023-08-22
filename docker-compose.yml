@@ -6,6 +6,7 @@ services:
     command: "npm start"
     environment:
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      NODE_ENV: ${NODE_ENV:-development}
     image: dfg-server:latest
     ports:
       - "2567:2567"
