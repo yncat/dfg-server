@@ -163,10 +163,12 @@ export class DFGHandler {
     if (!this.activePlayerControl) {
       this.invalidControllerError();
     }
+    // 主権を持っているとき(DiscardStackが空のとき)は、パスする意味がないので、パスボタンを表示しないようにフロントエンドに伝える。
+    const passable = this.game.outputDiscardStack().length > 0;
     this.roomProxy.send(
       this.activePlayerControl.playerIdentifier,
       "YourTurnMessage",
-      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.ACTIVE, true)
+      dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.ACTIVE, passable)
     );
   }
 

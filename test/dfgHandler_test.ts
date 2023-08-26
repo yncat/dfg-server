@@ -175,13 +175,44 @@ describe("DFGHandler", () => {
   });
 
   describe("notifyToActivePlayer", () => {
-    it("can send YourTurnMessage to the appropriate player", () => {
+    it("can send YourTurnMessage to the appropriate player (not passable)", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const apc = <dfg.ActivePlayerControl>(<unknown>{
         playerIdentifier: pi,
       });
       h.activePlayerControl = apc;
+      const game = <dfg.Game>(<unknown>{
+        outputDiscardStack: sinon.fake(():dfg.CardSelectionPair[] => {
+          return [];
+        }),
+      });
+      h.game = game;
+      const roomProxyMock = sinon.mock(h.roomProxy);
+      roomProxyMock
+        .expects("send")
+        .withExactArgs(
+          pi,
+          "YourTurnMessage",
+          dfgmsg.encodeYourTurnMessage(dfgmsg.YourTurnContext.ACTIVE, false)
+        );
+      h.notifyToActivePlayer();
+      roomProxyMock.verify();
+    });
+
+    it("can send YourTurnMessage to the appropriate player (passable)", () => {
+      const pi = "ccaatt";
+      const h = createDFGHandler();
+      const apc = <dfg.ActivePlayerControl>(<unknown>{
+        playerIdentifier: pi,
+      });
+      h.activePlayerControl = apc;
+      const game = <dfg.Game>(<unknown>{
+        outputDiscardStack: sinon.fake(():dfg.CardSelectionPair[] => {
+          return [new dfg.CardSelectionPair([dfg.createCard(dfg.CardMark.SPADES, 4), dfg.createCard(dfg.CardMark.SPADES, 4)])];
+        }),
+      });
+      h.game = game;
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock
         .expects("send")
