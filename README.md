@@ -4,7 +4,7 @@ This is online daifugo game server.
 
 ## Setup development environment
 
-NodeJS 16.x is assumed.
+NodeJS 20.x is assumed.
 
 Clone this repository, run `npm ci` to install dependencies, then run `npm start` to start the server.
 
