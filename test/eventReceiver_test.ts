@@ -8,17 +8,14 @@ import * as dfgmsg from "dfg-messages";
 
 function createCallbacks() {
   return {
-    onGameEnd: () => { },
+    onGameEnd: () => {},
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onEventLogPush: (eventType: string, eventBody: string) => { },
+    onEventLogPush: (eventType: string, eventBody: string) => {},
   };
 }
 
 function createEventReceiver(): EventReceiver {
-  return new EventReceiver(
-    new PlayerMap(),
-    createCallbacks()
-  );
+  return new EventReceiver(new PlayerMap(), createCallbacks());
 }
 
 function setFake(er: EventReceiver) {
@@ -256,7 +253,7 @@ describe("onTransfer", () => {
     const pi2 = "ddoogg";
     const pn2 = "dog";
 
-    const card = dfg.createCard(dfg.CardMark.CLUBS, 3)
+    const card = dfg.createCard(dfg.CardMark.CLUBS, 3);
     const pair = <dfg.CardSelectionPair>(<unknown>{
       cards: [card],
     });
@@ -283,7 +280,7 @@ describe("onExile", () => {
     const pi1 = "ccaatt";
     const pn1 = "cat";
 
-    const card = dfg.createCard(dfg.CardMark.CLUBS, 3)
+    const card = dfg.createCard(dfg.CardMark.CLUBS, 3);
     const pair = <dfg.CardSelectionPair>(<unknown>{
       cards: [card],
     });
@@ -300,4 +297,3 @@ describe("onExile", () => {
     expect(f.calledWith("ExileMessage", JSON.stringify(msg))).to.be.true;
   });
 });
-

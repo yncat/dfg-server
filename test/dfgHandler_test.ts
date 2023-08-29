@@ -24,7 +24,7 @@ function createRuleConfig() {
 
 function createEventLogPushFunc() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  return (eventType: string, eventBody: string) => { };
+  return (eventType: string, eventBody: string) => {};
 }
 
 function createDFGHandler(): DFGHandler {
@@ -183,7 +183,7 @@ describe("DFGHandler", () => {
       });
       h.activePlayerControl = apc;
       const game = <dfg.Game>(<unknown>{
-        outputDiscardStack: sinon.fake(():dfg.CardSelectionPair[] => {
+        outputDiscardStack: sinon.fake((): dfg.CardSelectionPair[] => {
           return [];
         }),
       });
@@ -208,8 +208,13 @@ describe("DFGHandler", () => {
       });
       h.activePlayerControl = apc;
       const game = <dfg.Game>(<unknown>{
-        outputDiscardStack: sinon.fake(():dfg.CardSelectionPair[] => {
-          return [new dfg.CardSelectionPair([dfg.createCard(dfg.CardMark.SPADES, 4), dfg.createCard(dfg.CardMark.SPADES, 4)])];
+        outputDiscardStack: sinon.fake((): dfg.CardSelectionPair[] => {
+          return [
+            new dfg.CardSelectionPair([
+              dfg.createCard(dfg.CardMark.SPADES, 4),
+              dfg.createCard(dfg.CardMark.SPADES, 4),
+            ]),
+          ];
         }),
       });
       h.game = game;
@@ -273,8 +278,11 @@ describe("DFGHandler", () => {
         const pi = "ccaatt";
         const h = createDFGHandler();
         const t7action = new dfg.Transfer7(pi, []);
-        const additionalActionControl = new dfg.AdditionalActionControl("transfer7", t7action)
-        h.additionalActionControl = additionalActionControl
+        const additionalActionControl = new dfg.AdditionalActionControl(
+          "transfer7",
+          t7action
+        );
+        h.additionalActionControl = additionalActionControl;
         const roomProxyMock = sinon.mock(h.roomProxy);
         const msg = dfgmsg.encodeCardListMessage([
           dfgmsg.encodeSelectableCardMessage(
@@ -297,7 +305,10 @@ describe("DFGHandler", () => {
         const pi = "ccaatt";
         const h = createDFGHandler();
         const e10action = new dfg.Exile10(pi, []);
-        const additionalActionControl = new dfg.AdditionalActionControl("exile10", e10action);
+        const additionalActionControl = new dfg.AdditionalActionControl(
+          "exile10",
+          e10action
+        );
         h.additionalActionControl = additionalActionControl;
         const roomProxyMock = sinon.mock(h.roomProxy);
         const msg = dfgmsg.encodeCardListMessage([
@@ -339,7 +350,7 @@ describe("DFGHandler", () => {
         const ccs = sinon.fake((index: number) => {
           return dfg.SelectabilityCheckResult.SELECTABLE;
         });
-        const sc = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+        const sc = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
         const apc = <dfg.ActivePlayerControl>(<unknown>{
           playerIdentifier: pi,
           isCardSelected: ics,
@@ -367,7 +378,7 @@ describe("DFGHandler", () => {
         const ccs = sinon.fake((index: number) => {
           return dfg.SelectabilityCheckResult.SELECTABLE;
         });
-        const dsc = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+        const dsc = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
         const apc = <dfg.ActivePlayerControl>(<unknown>{
           playerIdentifier: pi,
           isCardSelected: ics,
@@ -411,7 +422,9 @@ describe("DFGHandler", () => {
         const h = createDFGHandler();
         expect(() => {
           h.selectCardByIndex(0);
-        }).to.throw("activePlayerControl and additionalActionControl are both null.");
+        }).to.throw(
+          "activePlayerControl and additionalActionControl are both null."
+        );
       });
     });
 
@@ -428,10 +441,14 @@ describe("DFGHandler", () => {
           const checkCardSelectability = sinon.fake((index: number) => {
             return dfg.SelectabilityCheckResult.SELECTABLE;
           });
-          const selectCard = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const selectCard = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
           const action = new dfg.Transfer7(pi, []);
           sinon.replace(action, "isCardSelected", isCardSelected);
-          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          sinon.replace(
+            action,
+            "checkCardSelectability",
+            checkCardSelectability
+          );
           sinon.replace(action, "selectCard", selectCard);
           const ctrl = new dfg.AdditionalActionControl("transfer7", action);
           h.additionalActionControl = ctrl;
@@ -455,10 +472,14 @@ describe("DFGHandler", () => {
           const checkCardSelectability = sinon.fake((index: number) => {
             return dfg.SelectabilityCheckResult.ALREADY_SELECTED;
           });
-          const deselectCard = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const deselectCard = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
           const action = new dfg.Transfer7(pi, []);
           sinon.replace(action, "isCardSelected", isCardSelected);
-          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          sinon.replace(
+            action,
+            "checkCardSelectability",
+            checkCardSelectability
+          );
           sinon.replace(action, "deselectCard", deselectCard);
           const ctrl = new dfg.AdditionalActionControl("transfer7", action);
           h.additionalActionControl = ctrl;
@@ -479,7 +500,11 @@ describe("DFGHandler", () => {
             return dfg.SelectabilityCheckResult.NOT_SELECTABLE;
           });
           const action = new dfg.Transfer7(pi, []);
-          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          sinon.replace(
+            action,
+            "checkCardSelectability",
+            checkCardSelectability
+          );
           const ctrl = new dfg.AdditionalActionControl("transfer7", action);
           h.additionalActionControl = ctrl;
           h.selectCardByIndex(0);
@@ -500,10 +525,14 @@ describe("DFGHandler", () => {
           const checkCardSelectability = sinon.fake((index: number) => {
             return dfg.SelectabilityCheckResult.SELECTABLE;
           });
-          const selectCard = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const selectCard = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
           const action = new dfg.Exile10(pi, []);
           sinon.replace(action, "isCardSelected", isCardSelected);
-          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          sinon.replace(
+            action,
+            "checkCardSelectability",
+            checkCardSelectability
+          );
           sinon.replace(action, "selectCard", selectCard);
           const ctrl = new dfg.AdditionalActionControl("exile10", action);
           h.additionalActionControl = ctrl;
@@ -527,10 +556,14 @@ describe("DFGHandler", () => {
           const checkCardSelectability = sinon.fake((index: number) => {
             return dfg.SelectabilityCheckResult.ALREADY_SELECTED;
           });
-          const deselectCard = sinon.fake((index: number) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const deselectCard = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
           const action = new dfg.Exile10(pi, []);
           sinon.replace(action, "isCardSelected", isCardSelected);
-          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          sinon.replace(
+            action,
+            "checkCardSelectability",
+            checkCardSelectability
+          );
           sinon.replace(action, "deselectCard", deselectCard);
           const ctrl = new dfg.AdditionalActionControl("exile10", action);
           h.additionalActionControl = ctrl;
@@ -551,7 +584,11 @@ describe("DFGHandler", () => {
             return dfg.SelectabilityCheckResult.NOT_SELECTABLE;
           });
           const action = new dfg.Exile10(pi, []);
-          sinon.replace(action, "checkCardSelectability", checkCardSelectability);
+          sinon.replace(
+            action,
+            "checkCardSelectability",
+            checkCardSelectability
+          );
           const ctrl = new dfg.AdditionalActionControl("exile10", action);
           h.additionalActionControl = ctrl;
           h.selectCardByIndex(0);
@@ -623,7 +660,9 @@ describe("DFGHandler", () => {
         const h = createDFGHandler();
         expect(() => {
           h.selectCardByIndex(0);
-        }).to.throw("activePlayerControl and additionalActionControl are both null.");
+        }).to.throw(
+          "activePlayerControl and additionalActionControl are both null."
+        );
       });
     });
 
@@ -635,7 +674,10 @@ describe("DFGHandler", () => {
         const d4 = dfg.createCard(dfg.CardMark.DIAMONDS, 4);
         const t7action = new dfg.Transfer7(pi, [d4, s4]);
         t7action.selectCard(0);
-        const additionalActionControl = new dfg.AdditionalActionControl("transfer7", t7action);
+        const additionalActionControl = new dfg.AdditionalActionControl(
+          "transfer7",
+          t7action
+        );
         const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
         h.additionalActionControl = additionalActionControl;
         const roomProxyMock = sinon.mock(h.roomProxy);
@@ -656,7 +698,10 @@ describe("DFGHandler", () => {
         const d4 = dfg.createCard(dfg.CardMark.DIAMONDS, 4);
         const e10action = new dfg.Exile10(pi, [d4, s4]);
         e10action.selectCard(0);
-        const additionalActionControl = new dfg.AdditionalActionControl("exile10", e10action);
+        const additionalActionControl = new dfg.AdditionalActionControl(
+          "exile10",
+          e10action
+        );
         const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
         h.additionalActionControl = additionalActionControl;
         const roomProxyMock = sinon.mock(h.roomProxy);
@@ -690,7 +735,7 @@ describe("DFGHandler", () => {
         const edc = sinon.fake(() => {
           return [dp1];
         });
-        const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+        const dc = sinon.fake((dp: dfg.CardSelectionPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
         const apc = <dfg.ActivePlayerControl>(<unknown>{
           playerIdentifier: pi,
           enumerateCardSelectionPairs: edc,
@@ -730,7 +775,7 @@ describe("DFGHandler", () => {
         const edc = sinon.fake(() => {
           return [dp1];
         });
-        const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+        const dc = sinon.fake((dp: dfg.CardSelectionPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
         const apc = <dfg.ActivePlayerControl>(<unknown>{
           playerIdentifier: pi,
           enumerateCardSelectionPairs: edc,
@@ -753,7 +798,7 @@ describe("DFGHandler", () => {
         const edc = sinon.fake(() => {
           return [dp1];
         });
-        const dc = sinon.fake((dp: dfg.CardSelectionPair) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+        const dc = sinon.fake((dp: dfg.CardSelectionPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
         const apc = <dfg.ActivePlayerControl>(<unknown>{
           playerIdentifier: pi,
           enumerateCardSelectionPairs: edc,
@@ -825,9 +870,11 @@ describe("DFGHandler", () => {
     it("returns false when no additional action is found", () => {
       const h = createDFGHandler();
       const g = <dfg.Game>(<unknown>{
-        startAdditionalActionControl: sinon.fake((): dfg.AdditionalActionControl | null => {
-          return null;
-        }),
+        startAdditionalActionControl: sinon.fake(
+          (): dfg.AdditionalActionControl | null => {
+            return null;
+          }
+        ),
       });
       h.game = g;
       const ret = h.handleNextAdditionalAction();
@@ -846,23 +893,35 @@ describe("DFGHandler", () => {
       const t7action = new dfg.Transfer7(pi, [s41, s42]);
       const aac = new dfg.AdditionalActionControl("transfer7", t7action);
       const g = <dfg.Game>(<unknown>{
-        startAdditionalActionControl: sinon.fake((): dfg.AdditionalActionControl | null => {
-          return aac;
-        }),
+        startAdditionalActionControl: sinon.fake(
+          (): dfg.AdditionalActionControl | null => {
+            return aac;
+          }
+        ),
       });
       h.game = g;
-      const clientIDToPlayer = sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
-      const scm1 = dfgmsg.encodeSelectableCardMessage(s41.ID, s41.mark, s41.cardNumber, false, true);
-      const scm2 = dfgmsg.encodeSelectableCardMessage(s42.ID, s42.mark, s42.cardNumber, false, true);
+      const clientIDToPlayer = sinon
+        .stub(h.playerMap, "clientIDToPlayer")
+        .returns(p);
+      const scm1 = dfgmsg.encodeSelectableCardMessage(
+        s41.ID,
+        s41.mark,
+        s41.cardNumber,
+        false,
+        true
+      );
+      const scm2 = dfgmsg.encodeSelectableCardMessage(
+        s42.ID,
+        s42.mark,
+        s42.cardNumber,
+        false,
+        true
+      );
       const clm = dfgmsg.encodeCardListMessage([scm1, scm2]);
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock
         .expects("send")
-        .withExactArgs(
-          "ccaatt",
-          "CardListMessage",
-          clm
-        );
+        .withExactArgs("ccaatt", "CardListMessage", clm);
       roomProxyMock
         .expects("broadcast")
         .withExactArgs(
@@ -894,23 +953,35 @@ describe("DFGHandler", () => {
       const e10action = new dfg.Exile10(pi, [s41, s42]);
       const aac = new dfg.AdditionalActionControl("exile10", e10action);
       const g = <dfg.Game>(<unknown>{
-        startAdditionalActionControl: sinon.fake((): dfg.AdditionalActionControl | null => {
-          return aac;
-        }),
+        startAdditionalActionControl: sinon.fake(
+          (): dfg.AdditionalActionControl | null => {
+            return aac;
+          }
+        ),
       });
       h.game = g;
-      const clientIDToPlayer = sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
-      const scm1 = dfgmsg.encodeSelectableCardMessage(s41.ID, s41.mark, s41.cardNumber, false, true);
-      const scm2 = dfgmsg.encodeSelectableCardMessage(s42.ID, s42.mark, s42.cardNumber, false, true);
+      const clientIDToPlayer = sinon
+        .stub(h.playerMap, "clientIDToPlayer")
+        .returns(p);
+      const scm1 = dfgmsg.encodeSelectableCardMessage(
+        s41.ID,
+        s41.mark,
+        s41.cardNumber,
+        false,
+        true
+      );
+      const scm2 = dfgmsg.encodeSelectableCardMessage(
+        s42.ID,
+        s42.mark,
+        s42.cardNumber,
+        false,
+        true
+      );
       const clm = dfgmsg.encodeCardListMessage([scm1, scm2]);
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock
         .expects("send")
-        .withExactArgs(
-          "ccaatt",
-          "CardListMessage",
-          clm
-        );
+        .withExactArgs("ccaatt", "CardListMessage", clm);
       roomProxyMock
         .expects("broadcast")
         .withExactArgs(
@@ -1013,7 +1084,7 @@ describe("DFGHandler", () => {
     it("calls game.kickPlayerByIdentifier and returns true when kicking the active player", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const kick = sinon.fake((identifier: string) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
         enumeratePlayerIdentifiers: sinon.fake(() => {
@@ -1034,7 +1105,7 @@ describe("DFGHandler", () => {
       const pi = "ccaatt";
       const inactivePi = "ddoogg";
       const h = createDFGHandler();
-      const kick = sinon.fake((identifier: string) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
         enumeratePlayerIdentifiers: sinon.fake(() => {
@@ -1054,7 +1125,7 @@ describe("DFGHandler", () => {
     it("does not call game.kickPlayerByIdentifier and returns false when the identifier is not found", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const kick = sinon.fake((identifier: string) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
         enumeratePlayerIdentifiers: sinon.fake(() => {
@@ -1073,7 +1144,7 @@ describe("DFGHandler", () => {
 
     it("throws an error when activePlayerControl is not set", () => {
       const h = createDFGHandler();
-      const kick = sinon.fake((identifier: string) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
       const g = <dfg.Game>(<unknown>{
         kickPlayerByIdentifier: kick,
       });
@@ -1119,7 +1190,7 @@ describe("DFGHandler", () => {
       );
       const state = new GameState();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-      const bc = sinon.fake((message: string, obj: any) => { });
+      const bc = sinon.fake((message: string, obj: any) => {});
       const rm = <GameRoom>(<unknown>{
         editableMetadata: em,
         state: state,
@@ -1168,8 +1239,8 @@ describe("DFGHandler", () => {
       });
       h["activePlayerControl"] = apc;
       const g = <dfg.Game>(<unknown>{});
-      const updateCardsForEveryone = sinon.fake(() => { });
-      const notifyToActivePlayer = sinon.fake(() => { });
+      const updateCardsForEveryone = sinon.fake(() => {});
+      const notifyToActivePlayer = sinon.fake(() => {});
       h["updateCardsForEveryone"] = updateCardsForEveryone;
       h["notifyToActivePlayer"] = notifyToActivePlayer;
       h.game = g;
@@ -1186,8 +1257,8 @@ describe("DFGHandler", () => {
       });
       h["activePlayerControl"] = apc;
       const g = <dfg.Game>(<unknown>{});
-      const updateCardsForEveryone = sinon.fake(() => { });
-      const notifyToActivePlayer = sinon.fake(() => { });
+      const updateCardsForEveryone = sinon.fake(() => {});
+      const notifyToActivePlayer = sinon.fake(() => {});
       h["updateCardsForEveryone"] = updateCardsForEveryone;
       h["notifyToActivePlayer"] = notifyToActivePlayer;
       h.game = g;
@@ -1203,9 +1274,9 @@ describe("DFGHandler", () => {
       const ctrl = new dfg.AdditionalActionControl("transfer7", t7action);
       h.additionalActionControl = ctrl;
       const g = <dfg.Game>(<unknown>{});
-      const updateCardsForEveryone = sinon.fake(() => { });
-      const notifyToActivePlayer = sinon.fake(() => { });
-      const handleTransfer7 = sinon.fake(() => { });
+      const updateCardsForEveryone = sinon.fake(() => {});
+      const notifyToActivePlayer = sinon.fake(() => {});
+      const handleTransfer7 = sinon.fake(() => {});
       h["updateCardsForEveryone"] = updateCardsForEveryone;
       h["notifyToActivePlayer"] = notifyToActivePlayer;
       h["handleTransfer7"] = handleTransfer7;
@@ -1221,9 +1292,9 @@ describe("DFGHandler", () => {
       const ctrl = new dfg.AdditionalActionControl("exile10", e10action);
       h.additionalActionControl = ctrl;
       const g = <dfg.Game>(<unknown>{});
-      const updateCardsForEveryone = sinon.fake(() => { });
-      const notifyToActivePlayer = sinon.fake(() => { });
-      const handleExile10 = sinon.fake(() => { });
+      const updateCardsForEveryone = sinon.fake(() => {});
+      const notifyToActivePlayer = sinon.fake(() => {});
+      const handleExile10 = sinon.fake(() => {});
       h["updateCardsForEveryone"] = updateCardsForEveryone;
       h["notifyToActivePlayer"] = notifyToActivePlayer;
       h["handleExile10"] = handleExile10;
@@ -1231,6 +1302,5 @@ describe("DFGHandler", () => {
       h.handlePlayerReconnect(pn1);
       expect(handleExile10.called).to.be.true;
     });
-
   });
 });

@@ -10,10 +10,7 @@ export interface EventReceiverCallbacks {
 export class EventReceiver implements dfg.EventReceiver {
   playerMap: PlayerMap;
   callbacks: EventReceiverCallbacks;
-  constructor(
-    playerMap: PlayerMap,
-    callbacks: EventReceiverCallbacks
-  ) {
+  constructor(playerMap: PlayerMap, callbacks: EventReceiverCallbacks) {
     this.playerMap = playerMap;
     this.callbacks = callbacks;
   }
@@ -183,7 +180,11 @@ export class EventReceiver implements dfg.EventReceiver {
     );
   }
 
-  public onTransfer(identifier: string, targetIdentifier: string, transferred: dfg.CardSelectionPair): void {
+  public onTransfer(
+    identifier: string,
+    targetIdentifier: string,
+    transferred: dfg.CardSelectionPair
+  ): void {
     this.callbacks.onEventLogPush(
       "TransferMessage",
       JSON.stringify(

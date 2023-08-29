@@ -30,7 +30,7 @@ describe("PlayerMap", () => {
     const pm = new PlayerMap();
     pm.add("1", new Player("cat"));
     pm.add("2", new Player("dog"));
-    const ps:Player[] = [];
+    const ps: Player[] = [];
     pm.forEach((identifier, player) => {
       ps.push(player);
     });

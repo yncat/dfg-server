@@ -47,11 +47,11 @@ function createGameRoomOptions() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function dummyMessageHandler(message: any) { }
+function dummyMessageHandler(message: any) {}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createMessageReceiver() {
-  return sinon.fake((message: any) => { }); // eslint-disable-line @typescript-eslint/no-unused-vars
+  return sinon.fake((message: any) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
 }
 
 function clientOptionsWithDefault(playerName: string) {
@@ -940,10 +940,10 @@ describe("e2e test", () => {
     });
 
     it("can trigger transfer7 additional action", async () => {
-      const room = await colyseus.createRoom(
+      const room = (await colyseus.createRoom(
         "game_room",
         createGameRoomOptions()
-      ) as GameRoom;
+      )) as GameRoom;
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -976,11 +976,11 @@ describe("e2e test", () => {
       mrm.resetHistory();
       activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
       await forMilliseconds(100);
-      let len = (room ).state.eventLogList.length;
+      let len = room.state.eventLogList.length;
       // 追加のアクションを行うので、次のプレイヤーにはターンが移らない
       const nextPlayer = activePlayer === client1 ? client2 : client1;
       const nextPlayerName = nextPlayer === client1 ? "cat" : "dog";
-      const tm = (room ).state.eventLogList[len - 1];
+      const tm = room.state.eventLogList[len - 1];
       expect(tm.type).not.to.eql("TurnMessage");
       // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
       expect(dp.calledOnce).to.be.true;
@@ -1002,13 +1002,17 @@ describe("e2e test", () => {
       expect(cl.calledOnce).to.be.true;
       expect(dp.calledOnce).to.be.true;
       // 7渡しをしたので、cardSelectionPairは空になっているはず
-      const cspAfterAction = dp.firstCall.firstArg as dfgmsg.DiscardPairListMessage;
+      const cspAfterAction = dp.firstCall
+        .firstArg as dfgmsg.DiscardPairListMessage;
       expect(cspAfterAction.discardPairList.length).to.eql(0);
       // 7渡しのメッセージがイベントログに残っている
-      len = (room ).state.eventLogList.length;
-      const evtmsg = (room ).state.eventLogList[len - 2];
+      len = room.state.eventLogList.length;
+      const evtmsg = room.state.eventLogList[len - 2];
       expect(evtmsg.type).to.eql("TransferMessage");
-      const tmsg = dfgmsg.decodePayload<dfgmsg.TransferMessage>(JSON.parse(evtmsg.body), dfgmsg.TransferMessageDecoder) as dfgmsg.TransferMessage;
+      const tmsg = dfgmsg.decodePayload<dfgmsg.TransferMessage>(
+        JSON.parse(evtmsg.body),
+        dfgmsg.TransferMessageDecoder
+      ) as dfgmsg.TransferMessage;
       const activePlayerName = activePlayer === client1 ? "cat" : "dog";
       expect(tmsg.fromPlayerName).to.eql(activePlayerName);
       expect(tmsg.toPlayerName).to.eql(nextPlayerName);
@@ -1016,16 +1020,18 @@ describe("e2e test", () => {
       expect(tmsg.cardList[0].mark).to.eql(dfgmsg.CardMark.DIAMONDS);
       expect(tmsg.cardList[0].cardNumber).to.eql(4);
       // 次の人のターンになっている
-      const tnmsg = (room ).state.eventLogList[len - 1];
+      const tnmsg = room.state.eventLogList[len - 1];
       expect(tnmsg.type).to.eql("TurnMessage");
-      expect(JSON.parse(tnmsg.body)).to.eql(dfgmsg.encodeTurnMessage(nextPlayerName));
+      expect(JSON.parse(tnmsg.body)).to.eql(
+        dfgmsg.encodeTurnMessage(nextPlayerName)
+      );
     });
 
     it("can trigger exile10 additional action", async () => {
-      const room = await colyseus.createRoom(
+      const room = (await colyseus.createRoom(
         "game_room",
         createGameRoomOptions()
-      ) as GameRoom;
+      )) as GameRoom;
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -1058,11 +1064,11 @@ describe("e2e test", () => {
       mrm.resetHistory();
       activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
       await forMilliseconds(100);
-      let len = (room ).state.eventLogList.length;
+      let len = room.state.eventLogList.length;
       // 追加のアクションを行うので、次のプレイヤーにはターンが移らない
       const nextPlayer = activePlayer === client1 ? client2 : client1;
       const nextPlayerName = nextPlayer === client1 ? "cat" : "dog";
-      const tm = (room ).state.eventLogList[len - 1];
+      const tm = room.state.eventLogList[len - 1];
       expect(tm.type).not.to.eql("TurnMessage");
       // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
       expect(dp.calledOnce).to.be.true;
@@ -1084,29 +1090,35 @@ describe("e2e test", () => {
       expect(cl.calledOnce).to.be.true;
       expect(dp.calledOnce).to.be.true;
       // 10捨てをしたので、cardSelectionPairは空になっているはず
-      const cspAfterAction = dp.firstCall.firstArg as dfgmsg.DiscardPairListMessage;
+      const cspAfterAction = dp.firstCall
+        .firstArg as dfgmsg.DiscardPairListMessage;
       expect(cspAfterAction.discardPairList.length).to.eql(0);
       // 10捨てのメッセージがイベントログに残っている
-      len = (room ).state.eventLogList.length;
-      const evtmsg = (room ).state.eventLogList[len - 2];
+      len = room.state.eventLogList.length;
+      const evtmsg = room.state.eventLogList[len - 2];
       expect(evtmsg.type).to.eql("ExileMessage");
-      const emsg = dfgmsg.decodePayload<dfgmsg.ExileMessage>(JSON.parse(evtmsg.body), dfgmsg.ExileMessageDecoder) as dfgmsg.ExileMessage;
+      const emsg = dfgmsg.decodePayload<dfgmsg.ExileMessage>(
+        JSON.parse(evtmsg.body),
+        dfgmsg.ExileMessageDecoder
+      ) as dfgmsg.ExileMessage;
       const activePlayerName = activePlayer === client1 ? "cat" : "dog";
       expect(emsg.playerName).to.eql(activePlayerName);
       expect(emsg.cardList.length).to.eql(1);
       expect(emsg.cardList[0].mark).to.eql(dfgmsg.CardMark.DIAMONDS);
       expect(emsg.cardList[0].cardNumber).to.eql(4);
       // 次の人のターンになっている
-      const tnmsg = (room ).state.eventLogList[len - 1];
+      const tnmsg = room.state.eventLogList[len - 1];
       expect(tnmsg.type).to.eql("TurnMessage");
-      expect(JSON.parse(tnmsg.body)).to.eql(dfgmsg.encodeTurnMessage(nextPlayerName));
+      expect(JSON.parse(tnmsg.body)).to.eql(
+        dfgmsg.encodeTurnMessage(nextPlayerName)
+      );
     });
 
     it("can trigger transfer7 and exile10 additional actions at the same time", async () => {
-      const room = await colyseus.createRoom(
+      const room = (await colyseus.createRoom(
         "game_room",
         createGameRoomOptions()
-      ) as GameRoom;
+      )) as GameRoom;
       setRoomOptionsForTest(room, true);
       const mrm = new MessageReceiverMap();
       const client1 = await colyseus.connectTo(
@@ -1140,11 +1152,11 @@ describe("e2e test", () => {
       mrm.resetHistory();
       activePlayer.send("DiscardRequest", dfgmsg.encodeDiscardRequest(0));
       await forMilliseconds(100);
-      let len = (room ).state.eventLogList.length;
+      let len = room.state.eventLogList.length;
       // 追加のアクションを行うので、次のプレイヤーにはターンが移らない
       const nextPlayer = activePlayer === client1 ? client2 : client1;
       const nextPlayerName = nextPlayer === client1 ? "cat" : "dog";
-      const tm = (room ).state.eventLogList[len - 1];
+      const tm = room.state.eventLogList[len - 1];
       expect(tm.type).not.to.eql("TurnMessage");
       // カードを出したプレイヤーのDiscardPairListが空リストでアップデートされているか
       expect(dp.calledOnce).to.be.true;
@@ -1167,14 +1179,18 @@ describe("e2e test", () => {
       expect(cl.calledTwice).to.be.true;
       expect(dp.calledOnce).to.be.true;
       // 7渡しをしたので、cardSelectionPairは空になっているはず
-      let cspAfterAction = dp.firstCall.firstArg as dfgmsg.DiscardPairListMessage;
+      let cspAfterAction = dp.firstCall
+        .firstArg as dfgmsg.DiscardPairListMessage;
       expect(cspAfterAction.discardPairList.length).to.eql(0);
       // 7渡しのメッセージがイベントログに残っている
-      len = (room ).state.eventLogList.length;
+      len = room.state.eventLogList.length;
       // turnMessageが残らないので最後のログを参照すればよい
-      let evtmsg = (room ).state.eventLogList[len - 1];
+      let evtmsg = room.state.eventLogList[len - 1];
       expect(evtmsg.type).to.eql("TransferMessage");
-      const tmsg = dfgmsg.decodePayload<dfgmsg.TransferMessage>(JSON.parse(evtmsg.body), dfgmsg.TransferMessageDecoder) as dfgmsg.TransferMessage;
+      const tmsg = dfgmsg.decodePayload<dfgmsg.TransferMessage>(
+        JSON.parse(evtmsg.body),
+        dfgmsg.TransferMessageDecoder
+      ) as dfgmsg.TransferMessage;
       const activePlayerName = activePlayer === client1 ? "cat" : "dog";
       expect(tmsg.fromPlayerName).to.eql(activePlayerName);
       expect(tmsg.toPlayerName).to.eql(nextPlayerName);
@@ -1198,18 +1214,23 @@ describe("e2e test", () => {
       cspAfterAction = dp.firstCall.firstArg as dfgmsg.DiscardPairListMessage;
       expect(cspAfterAction.discardPairList.length).to.eql(0);
       // 10捨てのメッセージがイベントログに残っている
-      len = (room ).state.eventLogList.length;
-      evtmsg = (room ).state.eventLogList[len - 2];
+      len = room.state.eventLogList.length;
+      evtmsg = room.state.eventLogList[len - 2];
       expect(evtmsg.type).to.eql("ExileMessage");
-      const emsg = dfgmsg.decodePayload<dfgmsg.ExileMessage>(JSON.parse(evtmsg.body), dfgmsg.ExileMessageDecoder) as dfgmsg.ExileMessage;
+      const emsg = dfgmsg.decodePayload<dfgmsg.ExileMessage>(
+        JSON.parse(evtmsg.body),
+        dfgmsg.ExileMessageDecoder
+      ) as dfgmsg.ExileMessage;
       expect(emsg.playerName).to.eql(activePlayerName);
       expect(emsg.cardList.length).to.eql(1);
       expect(emsg.cardList[0].mark).to.eql(dfgmsg.CardMark.DIAMONDS);
       expect(emsg.cardList[0].cardNumber).to.eql(5);
       // 次の人のターンになっている
-      const tnmsg = (room ).state.eventLogList[len - 1];
+      const tnmsg = room.state.eventLogList[len - 1];
       expect(tnmsg.type).to.eql("TurnMessage");
-      expect(JSON.parse(tnmsg.body)).to.eql(dfgmsg.encodeTurnMessage(nextPlayerName));
+      expect(JSON.parse(tnmsg.body)).to.eql(
+        dfgmsg.encodeTurnMessage(nextPlayerName)
+      );
     });
 
     it("can pass", async () => {

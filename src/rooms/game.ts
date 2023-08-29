@@ -46,7 +46,12 @@ export class GameRoom extends Room<GameState> {
       evt.body = eventBody;
       this.state.eventLogList.push(evt);
     };
-    this.dfgHandler = new DFGHandler(rp, this.playerMap, options.ruleConfig, onEventLogPush);
+    this.dfgHandler = new DFGHandler(
+      rp,
+      this.playerMap,
+      options.ruleConfig,
+      onEventLogPush
+    );
     this.editableMetadata = new EditableMetadata<dfgmsg.GameRoomMetadata>(
       dfgmsg.encodeGameRoomMetadata(
         "",
@@ -105,9 +110,7 @@ export class GameRoom extends Room<GameState> {
         if (!this.dfgHandler.isGameActive()) {
           return;
         }
-        if (
-          this.dfgHandler.getActivePlayerIdentifier() !== client.id
-        ) {
+        if (this.dfgHandler.getActivePlayerIdentifier() !== client.id) {
           return;
         }
         const req = dfgmsg.decodePayload<dfgmsg.CardSelectRequest>(
@@ -129,9 +132,7 @@ export class GameRoom extends Room<GameState> {
         if (!this.dfgHandler.isGameActive()) {
           return;
         }
-        if (
-          this.dfgHandler.getActivePlayerIdentifier() !== client.id
-        ) {
+        if (this.dfgHandler.getActivePlayerIdentifier() !== client.id) {
           return;
         }
         const req = dfgmsg.decodePayload<dfgmsg.DiscardRequest>(
