@@ -1,4 +1,4 @@
-import Arena from "@colyseus/arena";
+import Arena from "@colyseus/tools";
 
 /**
  * Import your Room files
