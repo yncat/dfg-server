@@ -441,7 +441,7 @@ describe("DFGHandler", () => {
           const checkCardSelectability = sinon.fake((index: number) => {
             return dfg.SelectabilityCheckResult.SELECTABLE;
           });
-          const selectCard = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const selectCard = sinon.fake((index: number):dfg.CardSelectResult => {return dfg.CardSelectResult.SUCCESS}); // eslint-disable-line @typescript-eslint/no-unused-vars
           const action = new dfg.Transfer7(pi, []);
           sinon.replace(action, "isCardSelected", isCardSelected);
           sinon.replace(
@@ -472,7 +472,7 @@ describe("DFGHandler", () => {
           const checkCardSelectability = sinon.fake((index: number) => {
             return dfg.SelectabilityCheckResult.ALREADY_SELECTED;
           });
-          const deselectCard = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const deselectCard = sinon.fake((index: number):dfg.CardDeselectResult => {return dfg.CardDeselectResult.SUCCESS}); // eslint-disable-line @typescript-eslint/no-unused-vars
           const action = new dfg.Transfer7(pi, []);
           sinon.replace(action, "isCardSelected", isCardSelected);
           sinon.replace(
@@ -525,7 +525,7 @@ describe("DFGHandler", () => {
           const checkCardSelectability = sinon.fake((index: number) => {
             return dfg.SelectabilityCheckResult.SELECTABLE;
           });
-          const selectCard = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const selectCard = sinon.fake((index: number):dfg.CardSelectResult => {return dfg.CardSelectResult.SUCCESS}); // eslint-disable-line @typescript-eslint/no-unused-vars
           const action = new dfg.Exile10(pi, []);
           sinon.replace(action, "isCardSelected", isCardSelected);
           sinon.replace(
@@ -556,7 +556,7 @@ describe("DFGHandler", () => {
           const checkCardSelectability = sinon.fake((index: number) => {
             return dfg.SelectabilityCheckResult.ALREADY_SELECTED;
           });
-          const deselectCard = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
+          const deselectCard = sinon.fake((index: number):dfg.CardDeselectResult => {return dfg.CardDeselectResult.SUCCESS}); // eslint-disable-line @typescript-eslint/no-unused-vars
           const action = new dfg.Exile10(pi, []);
           sinon.replace(action, "isCardSelected", isCardSelected);
           sinon.replace(

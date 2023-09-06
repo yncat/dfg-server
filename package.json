@@ -45,11 +45,13 @@
     "eslint": "^7.31.0",
     "mocha": "^9.0.2",
     "prettier": "^2.3.2",
-    "rimraf": "^2.7.1"
+    "rimraf": "^2.7.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@colyseus/tools": "^0.15.2",
     "@colyseus/monitor": "^0.15.1",
+    "@colyseus/tools": "^0.15.2",
     "@mojotech/json-type-validation": "^3.1.0",
     "@types/clone": "^2.1.1",
     "clone": "^2.1.2",
@@ -60,8 +62,6 @@
     "express": "^4.17.3",
     "node-fetch": "^2.6.7",
     "sinon": "^11.1.1",
-    "ts-node": "^8.1.0",
-    "ts-node-dev": "^1.0.0-pre.63",
-    "typescript": "^3.4.5"
+    "ts-node-dev": "^1.0.0-pre.63"
   }
 }
