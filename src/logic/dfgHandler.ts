@@ -7,7 +7,7 @@ import { CardEnumerator } from "./cardEnumerator";
 import * as dfgmsg from "dfg-messages";
 import { EventReceiver, EventReceiverCallbacks } from "./eventReceiver";
 
-class InvalidGameStateError extends Error {}
+class InvalidGameStateError extends Error { }
 export type OnEventLogPushFunc = (eventType: string, eventBody: string) => void;
 
 export class DFGHandler {
@@ -134,13 +134,13 @@ export class DFGHandler {
     this.game.enumeratePlayerIdentifiers().forEach((v) => {
       const e =
         this.activePlayerControl &&
-        this.activePlayerControl.playerIdentifier === v
+          this.activePlayerControl.playerIdentifier === v
           ? this.cardEnumerator.enumerateFromActivePlayerControl(
-              this.activePlayerControl
-            )
+            this.activePlayerControl
+          )
           : this.cardEnumerator.enumerateFromHand(
-              this.game.findPlayerByIdentifier(v).hand
-            );
+            this.game.findPlayerByIdentifier(v).hand
+          );
       this.roomProxy.send(v, "CardListMessage", e);
     });
   }
@@ -624,15 +624,17 @@ export class DFGHandler {
     const t7action = this.additionalActionControl.cast<dfg.Transfer7>(
       dfg.Transfer7
     );
+    let lst = dfgmsg.encodeDiscardPairListMessage([]);
     const csp = t7action.createCardSelectionPair();
+    if (csp) {
+      lst = dfgmsg.encodeDiscardPairListMessage([dfgmsg.encodeDiscardPairMessage([
+        dfgmsg.encodeCardMessage(csp.cards[0].mark, csp.cards[0].cardNumber),
+      ])]);
+    }
     this.roomProxy.send(
       this.additionalActionControl.playerIdentifier,
       "DiscardPairListMessage",
-      dfgmsg.encodeDiscardPairListMessage([
-        dfgmsg.encodeDiscardPairMessage([
-          dfgmsg.encodeCardMessage(csp.cards[0].mark, csp.cards[0].cardNumber),
-        ]),
-      ])
+      lst
     );
   }
 
@@ -641,14 +643,16 @@ export class DFGHandler {
       dfg.Exile10
     );
     const csp = e10action.createCardSelectionPair();
+    let lst = dfgmsg.encodeDiscardPairListMessage([]);
+    if (csp) {
+      lst = dfgmsg.encodeDiscardPairListMessage([dfgmsg.encodeDiscardPairMessage([
+        dfgmsg.encodeCardMessage(csp.cards[0].mark, csp.cards[0].cardNumber),
+      ])]);
+    }
     this.roomProxy.send(
       this.additionalActionControl.playerIdentifier,
       "DiscardPairListMessage",
-      dfgmsg.encodeDiscardPairListMessage([
-        dfgmsg.encodeDiscardPairMessage([
-          dfgmsg.encodeCardMessage(csp.cards[0].mark, csp.cards[0].cardNumber),
-        ]),
-      ])
+      lst
     );
   }
 }
