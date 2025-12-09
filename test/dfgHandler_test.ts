@@ -48,11 +48,11 @@ function createCards(): dfg.Card[] {
 }
 
 function createGame() {
-  const g = <dfg.Game>(<unknown>{
+  const g = ({
     enumeratePlayerIdentifiers: sinon.fake(() => {
       return ["a", "b", "c"];
     }),
-  });
+  }) as unknown as dfg.Game;
   return g;
 }
 
@@ -82,7 +82,7 @@ describe("DFGHandler", () => {
   describe("isGameActive", () => {
     it("returns true when the game is active", () => {
       const h = createDFGHandler();
-      const g = <dfg.Game>(<unknown>{});
+      const g = ({}) as unknown as dfg.Game;
       h.game = g;
       expect(h.isGameActive()).to.be.true;
     });
@@ -102,7 +102,7 @@ describe("DFGHandler", () => {
       const p3 = dfg.createPlayer("c");
       p3.hand.give(...createCards());
       const h = createDFGHandler();
-      const g = <dfg.Game>(<unknown>{
+      const g = ({
         enumeratePlayerIdentifiers: sinon.fake(() => {
           return ["a", "b", "c"];
         }),
@@ -117,7 +117,7 @@ describe("DFGHandler", () => {
           }
           throw new Error("error");
         }),
-      });
+      }) as unknown as dfg.Game;
       h.game = g;
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock.expects("send").thrice();
@@ -140,22 +140,22 @@ describe("DFGHandler", () => {
     it("can get the next player and notify the info to everyone", () => {
       const pn = "cat";
       const h = createDFGHandler();
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
+      const apc = ({
         playerIdentifier: pn,
-      });
-      const g = <dfg.Game>(<unknown>{
+      }) as unknown as dfg.ActivePlayerControl;
+      const g = ({
         startActivePlayerControl: sinon.fake(() => {
           return apc;
         }),
-      });
+      }) as unknown as dfg.Game;
       const roomProxyMock = sinon.mock(h.roomProxy);
       const msg = dfgmsg.encodeTurnMessage(pn);
-      const p = <Player>{
+      const p = ({
         name: pn,
         isConnected: () => {
           return true;
         },
-      };
+      }) as Player;
       sinon.stub(h.playerMap, "clientIDToPlayer").returns(p);
       h.game = g;
       const f = sinon.fake(h.onEventLogPush);
@@ -178,15 +178,15 @@ describe("DFGHandler", () => {
     it("can send YourTurnMessage to the appropriate player (not passable)", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
+      const apc = ({
         playerIdentifier: pi,
-      });
+      }) as unknown as dfg.ActivePlayerControl;
       h.activePlayerControl = apc;
-      const game = <dfg.Game>(<unknown>{
+      const game = ({
         outputDiscardStack: sinon.fake((): dfg.CardSelectionPair[] => {
           return [];
         }),
-      });
+      }) as unknown as dfg.Game;
       h.game = game;
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock
@@ -203,11 +203,11 @@ describe("DFGHandler", () => {
     it("can send YourTurnMessage to the appropriate player (passable)", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
+      const apc = ({
         playerIdentifier: pi,
-      });
+      }) as unknown as dfg.ActivePlayerControl;
       h.activePlayerControl = apc;
-      const game = <dfg.Game>(<unknown>{
+      const game = ({
         outputDiscardStack: sinon.fake((): dfg.CardSelectionPair[] => {
           return [
             new dfg.CardSelectionPair([
@@ -216,7 +216,7 @@ describe("DFGHandler", () => {
             ]),
           ];
         }),
-      });
+      }) as unknown as dfg.Game;
       h.game = game;
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock
@@ -243,9 +243,9 @@ describe("DFGHandler", () => {
       it("can send CardListMessage to the active player", () => {
         const pi = "ccaatt";
         const h = createDFGHandler();
-        const apc = <dfg.ActivePlayerControl>(<unknown>{
+        const apc = ({
           playerIdentifier: pi,
-        });
+        }) as unknown as dfg.ActivePlayerControl;
         h.activePlayerControl = apc;
         const roomProxyMock = sinon.mock(h.roomProxy);
         const msg = dfgmsg.encodeCardListMessage([
@@ -351,12 +351,12 @@ describe("DFGHandler", () => {
           return dfg.SelectabilityCheckResult.SELECTABLE;
         });
         const sc = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
-        const apc = <dfg.ActivePlayerControl>(<unknown>{
+        const apc = ({
           playerIdentifier: pi,
           isCardSelected: ics,
           checkCardSelectability: ccs,
           selectCard: sc,
-        });
+        }) as unknown as dfg.ActivePlayerControl;
         h.activePlayerControl = apc;
         h.selectCardByIndex(0);
         expect(ics.called).to.be.true;
@@ -379,12 +379,12 @@ describe("DFGHandler", () => {
           return dfg.SelectabilityCheckResult.SELECTABLE;
         });
         const dsc = sinon.fake((index: number) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
-        const apc = <dfg.ActivePlayerControl>(<unknown>{
+        const apc = ({
           playerIdentifier: pi,
           isCardSelected: ics,
           checkCardSelectability: ccs,
           deselectCard: dsc,
-        });
+        }) as unknown as dfg.ActivePlayerControl;
         h.activePlayerControl = apc;
         h.selectCardByIndex(0);
         expect(ics.called).to.be.true;
@@ -406,11 +406,11 @@ describe("DFGHandler", () => {
         const ccs = sinon.fake((index: number) => {
           return dfg.SelectabilityCheckResult.NOT_SELECTABLE;
         });
-        const apc = <dfg.ActivePlayerControl>(<unknown>{
+        const apc = ({
           playerIdentifier: pi,
           isCardSelected: ics,
           checkCardSelectability: ccs,
-        });
+        }) as unknown as dfg.ActivePlayerControl;
         h.activePlayerControl = apc;
         h.selectCardByIndex(0);
         expect(ccs.called).to.be.true;
@@ -608,19 +608,19 @@ describe("DFGHandler", () => {
         const d4 = dfg.createCard(dfg.CardMark.DIAMONDS, 4);
         const s4m = dfgmsg.encodeCardMessage(s4.mark, s4.cardNumber);
         const d4m = dfgmsg.encodeCardMessage(d4.mark, d4.cardNumber);
-        const dp1 = <dfg.CardSelectionPair>(<unknown>{
+        const dp1 = ({
           cards: [s4, s4],
-        });
-        const dp2 = <dfg.CardSelectionPair>(<unknown>{
+        }) as unknown as dfg.CardSelectionPair;
+        const dp2 = ({
           cards: [d4, d4],
-        });
+        }) as unknown as dfg.CardSelectionPair;
         const edc = sinon.fake(() => {
           return [dp1, dp2];
         });
-        const apc = <dfg.ActivePlayerControl>(<unknown>{
+        const apc = ({
           playerIdentifier: pi,
           enumerateCardSelectionPairs: edc,
-        });
+        }) as unknown as dfg.ActivePlayerControl;
         h.activePlayerControl = apc;
         const roomProxyMock = sinon.mock(h.roomProxy);
         const msg = dfgmsg.encodeDiscardPairListMessage([
@@ -641,10 +641,10 @@ describe("DFGHandler", () => {
         const edc = sinon.fake((): dfg.CardSelectionPair[] => {
           return [];
         });
-        const apc = <dfg.ActivePlayerControl>(<unknown>{
+        const apc = ({
           playerIdentifier: pi,
           enumerateCardSelectionPairs: edc,
-        });
+        }) as unknown as dfg.ActivePlayerControl;
         h.activePlayerControl = apc;
         const roomProxyMock = sinon.mock(h.roomProxy);
         const msg = dfgmsg.encodeDiscardPairListMessage([]);
@@ -722,25 +722,25 @@ describe("DFGHandler", () => {
       it("can set discard info to activePlayerControl and returns true", () => {
         const pi = "ccaatt";
         const h = createDFGHandler();
-        const g = <dfg.Game>(<unknown>{
+        const g = ({
           enumeratePlayerIdentifiers: sinon.fake((): string[] => {
             return [];
           }),
-        });
+        }) as unknown as dfg.Game;
         h.game = g;
         const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
-        const dp1 = <dfg.CardSelectionPair>(<unknown>{
+        const dp1 = ({
           cards: [s4, s4],
-        });
+        }) as unknown as dfg.CardSelectionPair;
         const edc = sinon.fake(() => {
           return [dp1];
         });
         const dc = sinon.fake((dp: dfg.CardSelectionPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
-        const apc = <dfg.ActivePlayerControl>(<unknown>{
+        const apc = ({
           playerIdentifier: pi,
           enumerateCardSelectionPairs: edc,
           discard: dc,
-        });
+        }) as unknown as dfg.ActivePlayerControl;
         h.activePlayerControl = apc;
         const roomProxyMock = sinon.mock(h.roomProxy);
         roomProxyMock
@@ -769,18 +769,18 @@ describe("DFGHandler", () => {
         const pi = "ccaatt";
         const h = createDFGHandler();
         const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
-        const dp1 = <dfg.CardSelectionPair>(<unknown>{
+        const dp1 = ({
           cards: [s4, s4],
-        });
+        }) as unknown as dfg.CardSelectionPair;
         const edc = sinon.fake(() => {
           return [dp1];
         });
         const dc = sinon.fake((dp: dfg.CardSelectionPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
-        const apc = <dfg.ActivePlayerControl>(<unknown>{
+        const apc = ({
           playerIdentifier: pi,
           enumerateCardSelectionPairs: edc,
           discard: dc,
-        });
+        }) as unknown as dfg.ActivePlayerControl;
         h.activePlayerControl = apc;
         const ret = h.discardByIndex(1);
         expect(ret).to.be.false;
@@ -792,18 +792,18 @@ describe("DFGHandler", () => {
         const pi = "ccaatt";
         const h = createDFGHandler();
         const s4 = dfg.createCard(dfg.CardMark.SPADES, 4);
-        const dp1 = <dfg.CardSelectionPair>(<unknown>{
+        const dp1 = ({
           cards: [s4, s4],
-        });
+        }) as unknown as dfg.CardSelectionPair;
         const edc = sinon.fake(() => {
           return [dp1];
         });
         const dc = sinon.fake((dp: dfg.CardSelectionPair) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
-        const apc = <dfg.ActivePlayerControl>(<unknown>{
+        const apc = ({
           playerIdentifier: pi,
           enumerateCardSelectionPairs: edc,
           discard: dc,
-        });
+        }) as unknown as dfg.ActivePlayerControl;
         h.activePlayerControl = apc;
         h.discardByIndex(-1);
         expect(edc.called).to.be.false;
@@ -869,13 +869,13 @@ describe("DFGHandler", () => {
   describe("handleNextAdditionalAction", () => {
     it("returns false when no additional action is found", () => {
       const h = createDFGHandler();
-      const g = <dfg.Game>(<unknown>{
+      const g = ({
         startAdditionalActionControl: sinon.fake(
           (): dfg.AdditionalActionControl | null => {
             return null;
           }
         ),
-      });
+      }) as unknown as dfg.Game;
       h.game = g;
       const ret = h.handleNextAdditionalAction();
       expect(ret).to.be.false;
@@ -884,21 +884,21 @@ describe("DFGHandler", () => {
     it("handles action and returns true when transfer7 is found", () => {
       const pi = "ccaatt";
       const pn = "cat";
-      const p = <Player>{
+      const p = ({
         name: pn,
-      };
+      }) as Player;
       const h = createDFGHandler();
       const s41 = dfg.createCard(dfg.CardMark.SPADES, 4);
       const s42 = dfg.createCard(dfg.CardMark.SPADES, 4);
       const t7action = new dfg.Transfer7(pi, [s41, s42]);
       const aac = new dfg.AdditionalActionControl("transfer7", t7action);
-      const g = <dfg.Game>(<unknown>{
+      const g = ({
         startAdditionalActionControl: sinon.fake(
           (): dfg.AdditionalActionControl | null => {
             return aac;
           }
         ),
-      });
+      }) as unknown as dfg.Game;
       h.game = g;
       const clientIDToPlayer = sinon
         .stub(h.playerMap, "clientIDToPlayer")
@@ -944,21 +944,21 @@ describe("DFGHandler", () => {
     it("handles action and returns true when exile10 is found", () => {
       const pi = "ccaatt";
       const pn = "cat";
-      const p = <Player>{
+      const p = ({
         name: pn,
-      };
+      }) as Player;
       const h = createDFGHandler();
       const s41 = dfg.createCard(dfg.CardMark.SPADES, 4);
       const s42 = dfg.createCard(dfg.CardMark.SPADES, 4);
       const e10action = new dfg.Exile10(pi, [s41, s42]);
       const aac = new dfg.AdditionalActionControl("exile10", e10action);
-      const g = <dfg.Game>(<unknown>{
+      const g = ({
         startAdditionalActionControl: sinon.fake(
           (): dfg.AdditionalActionControl | null => {
             return aac;
           }
         ),
-      });
+      }) as unknown as dfg.Game;
       h.game = g;
       const clientIDToPlayer = sinon
         .stub(h.playerMap, "clientIDToPlayer")
@@ -1007,10 +1007,10 @@ describe("DFGHandler", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const pass = sinon.fake();
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
+      const apc = ({
         playerIdentifier: pi,
         pass: pass,
-      });
+      }) as unknown as dfg.ActivePlayerControl;
       h.activePlayerControl = apc;
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock
@@ -1044,12 +1044,12 @@ describe("DFGHandler", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const fapc = sinon.fake();
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
+      const apc = ({
         playerIdentifier: pi,
-      });
-      const g = <dfg.Game>(<unknown>{
+      }) as unknown as dfg.ActivePlayerControl;
+      const g = ({
         finishActivePlayerControl: fapc,
-      });
+      }) as unknown as dfg.Game;
       h.activePlayerControl = apc;
       h.game = g;
       h.finishAction();
@@ -1060,12 +1060,12 @@ describe("DFGHandler", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const faac = sinon.fake();
-      const aac = <dfg.AdditionalActionControl>(<unknown>{
+      const aac = ({
         playerIdentifier: pi,
-      });
-      const g = <dfg.Game>(<unknown>{
+      }) as unknown as dfg.AdditionalActionControl;
+      const g = ({
         finishAdditionalActionControl: faac,
-      });
+      }) as unknown as dfg.Game;
       h.additionalActionControl = aac;
       h.game = g;
       h.finishAction();
@@ -1085,16 +1085,16 @@ describe("DFGHandler", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
-      const g = <dfg.Game>(<unknown>{
+      const g = ({
         kickPlayerByIdentifier: kick,
         enumeratePlayerIdentifiers: sinon.fake(() => {
           return new Array<string>("ccaatt", "ddoogg");
         }),
-      });
+      }) as unknown as dfg.Game;
       h.game = g;
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
+      const apc = ({
         playerIdentifier: pi,
-      });
+      }) as unknown as dfg.ActivePlayerControl;
       h.activePlayerControl = apc;
       const ret = h.kickPlayerByIdentifier(pi);
       expect(kick.calledWith(pi)).to.be.true;
@@ -1106,16 +1106,16 @@ describe("DFGHandler", () => {
       const inactivePi = "ddoogg";
       const h = createDFGHandler();
       const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
-      const g = <dfg.Game>(<unknown>{
+      const g = ({
         kickPlayerByIdentifier: kick,
         enumeratePlayerIdentifiers: sinon.fake(() => {
           return new Array<string>("ccaatt", "ddoogg");
         }),
-      });
+      }) as unknown as dfg.Game;
       h.game = g;
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
+      const apc = ({
         playerIdentifier: pi,
-      });
+      }) as unknown as dfg.ActivePlayerControl;
       h.activePlayerControl = apc;
       const ret = h.kickPlayerByIdentifier(inactivePi);
       expect(kick.calledWith(inactivePi)).to.be.true;
@@ -1126,16 +1126,16 @@ describe("DFGHandler", () => {
       const pi = "ccaatt";
       const h = createDFGHandler();
       const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
-      const g = <dfg.Game>(<unknown>{
+      const g = ({
         kickPlayerByIdentifier: kick,
         enumeratePlayerIdentifiers: sinon.fake(() => {
           return new Array<string>("ccaatt", "ddoogg");
         }),
-      });
+      }) as unknown as dfg.Game;
       h.game = g;
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
+      const apc = ({
         playerIdentifier: pi,
-      });
+      }) as unknown as dfg.ActivePlayerControl;
       h.activePlayerControl = apc;
       const ret = h.kickPlayerByIdentifier("notfound");
       expect(kick.called).to.be.false;
@@ -1145,9 +1145,9 @@ describe("DFGHandler", () => {
     it("throws an error when activePlayerControl is not set", () => {
       const h = createDFGHandler();
       const kick = sinon.fake((identifier: string) => {}); // eslint-disable-line @typescript-eslint/no-unused-vars
-      const g = <dfg.Game>(<unknown>{
+      const g = ({
         kickPlayerByIdentifier: kick,
-      });
+      }) as unknown as dfg.Game;
       h.game = g;
       expect(() => {
         h.kickPlayerByIdentifier("ccaatt");
@@ -1165,14 +1165,14 @@ describe("DFGHandler", () => {
   describe("detecting game end", () => {
     it("make the game instance null when eventReceiver.onGameEnd is called", () => {
       const h = createDFGHandler();
-      const g = <dfg.Game>(<unknown>{
+      const g = ({
         outputResult: sinon.fake(() => {
           return dfg.createResult([]);
         }),
         enumeratePlayerIdentifiers: sinon.fake((): string[] => {
           return [];
         }),
-      });
+      }) as unknown as dfg.Game;
       h.game = g;
       h.eventReceiver.onGameEnd(dfg.createResult([]));
       expect(h.game).to.be.null;
@@ -1191,20 +1191,20 @@ describe("DFGHandler", () => {
       const state = new GameState();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
       const bc = sinon.fake((message: string, obj: any) => {});
-      const rm = <GameRoom>(<unknown>{
+      const rm = ({
         editableMetadata: em,
         state: state,
         broadcast: bc,
-      });
+      }) as unknown as GameRoom;
       h["roomProxy"]["room"] = rm;
-      const g = <dfg.Game>(<unknown>{
+      const g = ({
         outputResult: sinon.fake(() => {
           return dfg.createResult([]);
         }),
         enumeratePlayerIdentifiers: sinon.fake((): string[] => {
           return [];
         }),
-      });
+      }) as unknown as dfg.Game;
       h.game = g;
       const roomProxyMock = sinon.mock(h.roomProxy);
       roomProxyMock
@@ -1234,11 +1234,11 @@ describe("DFGHandler", () => {
       const pn1 = "cat";
       const pn2 = "dog";
       const h = createDFGHandler();
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
+      const apc = ({
         playerIdentifier: pn1,
-      });
+      }) as unknown as dfg.ActivePlayerControl;
       h["activePlayerControl"] = apc;
-      const g = <dfg.Game>(<unknown>{});
+      const g = ({}) as unknown as dfg.Game;
       const updateCardsForEveryone = sinon.fake(() => {});
       const notifyToActivePlayer = sinon.fake(() => {});
       h["updateCardsForEveryone"] = updateCardsForEveryone;
@@ -1252,11 +1252,11 @@ describe("DFGHandler", () => {
     it("updates player hand and notify to the reconnected player", () => {
       const pn1 = "cat";
       const h = createDFGHandler();
-      const apc = <dfg.ActivePlayerControl>(<unknown>{
+      const apc = ({
         playerIdentifier: pn1,
-      });
+      }) as unknown as dfg.ActivePlayerControl;
       h["activePlayerControl"] = apc;
-      const g = <dfg.Game>(<unknown>{});
+      const g = ({}) as unknown as dfg.Game;
       const updateCardsForEveryone = sinon.fake(() => {});
       const notifyToActivePlayer = sinon.fake(() => {});
       h["updateCardsForEveryone"] = updateCardsForEveryone;
@@ -1273,7 +1273,7 @@ describe("DFGHandler", () => {
       const t7action = new dfg.Transfer7(pn1, []);
       const ctrl = new dfg.AdditionalActionControl("transfer7", t7action);
       h.additionalActionControl = ctrl;
-      const g = <dfg.Game>(<unknown>{});
+      const g = ({}) as unknown as dfg.Game;
       const updateCardsForEveryone = sinon.fake(() => {});
       const notifyToActivePlayer = sinon.fake(() => {});
       const handleTransfer7 = sinon.fake(() => {});
@@ -1291,7 +1291,7 @@ describe("DFGHandler", () => {
       const e10action = new dfg.Exile10(pn1, []);
       const ctrl = new dfg.AdditionalActionControl("exile10", e10action);
       h.additionalActionControl = ctrl;
-      const g = <dfg.Game>(<unknown>{});
+      const g = ({}) as unknown as dfg.Game;
       const updateCardsForEveryone = sinon.fake(() => {});
       const notifyToActivePlayer = sinon.fake(() => {});
       const handleExile10 = sinon.fake(() => {});

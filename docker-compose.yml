@@ -3,7 +3,7 @@ services:
   dfg-server:
     build:
       context: .
-    command: "npm start"
+    command: "pnpm start"
     environment:
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
       NODE_ENV: ${NODE_ENV:-development}

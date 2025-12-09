@@ -10,13 +10,13 @@
     "schema:build": "schema-codegen src/rooms/schema/game.ts --output schema-def/ --ts && schema-codegen src/rooms/schema/global.ts --output schema-def/ --ts",
     "schema:copy": "copyfiles schema-def/*.ts ../dfg/src/logic",
     "clean": "node node_modules/rimraf/bin lib",
-    "test": "mocha --require ts-node/register test/**_test.ts --exit --timeout 20000 --reporter dot",
+    "test": "mocha --require tsx test/**_test.ts --exit --timeout 20000 --reporter dot",
     "fmt-lint": "prettier -c test/**/*.ts src/**/*.ts",
     "fmt": "prettier -w src/**/*.ts test/**/*.ts",
     "lint": "eslint . --ext ts",
     "otp-secret-generate": "node tools/otp_secret_generate.js",
     "docker:build": "docker build -t dfg-server .",
-    "docker:start": "docker run -p 2567:2567 -it --rm --name dfg-server dfg-server npm start"
+    "docker:start": "docker run -p 2567:2567 -it --rm --name dfg-server dfg-server pnpm start"
   },
   "author": "Yukio Nozawa",
   "license": "UNLICENSED",
@@ -47,6 +47,7 @@
     "prettier": "^2.3.2",
     "rimraf": "^2.7.1",
     "ts-node": "^10.9.1",
+    "tsx": "^4.21.0",
     "typescript": "^4.9.5"
   },
   "dependencies": {
