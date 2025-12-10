@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@colyseus/monitor": "^0.15.1",
+    "@colyseus/schema": "^3.0.70",
     "@colyseus/tools": "^0.15.2",
     "@mojotech/json-type-validation": "^3.1.0",
     "@types/clone": "^2.1.1",
