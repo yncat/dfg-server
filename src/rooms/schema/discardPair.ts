@@ -1,4 +1,4 @@
-import { ArraySchema, Schema, type } from "@colyseus/schema";
+import { ArraySchema, Schema } from "@colyseus/schema";
 import { Card } from "./card";
 
 export class DiscardPair extends Schema {

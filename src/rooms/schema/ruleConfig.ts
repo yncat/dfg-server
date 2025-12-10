@@ -1,4 +1,4 @@
-import { Schema, type } from "@colyseus/schema";
+import { Schema } from "@colyseus/schema";
 
 export class RuleConfig extends Schema {
   @type("boolean") yagiri = false;

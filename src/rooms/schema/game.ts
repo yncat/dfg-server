@@ -1,4 +1,4 @@
-import { Schema, ArraySchema, type } from "@colyseus/schema";
+import { Schema, ArraySchema } from "@colyseus/schema";
 import { Result } from "./result";
 import { DiscardPair } from "./discardPair";
 import { RemovedCardEntry } from "./removedCardEntry";

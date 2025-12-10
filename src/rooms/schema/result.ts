@@ -1,4 +1,4 @@
-import { Schema, ArraySchema, type } from "@colyseus/schema";
+import { Schema, ArraySchema } from "@colyseus/schema";
 
 export class Result extends Schema {
   @type(["string"]) daifugoPlayerList = new ArraySchema<string>();
