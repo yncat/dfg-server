@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/colyseus/create-colyseus#readme",
   "engines": {
-    "node": "16.x"
+    "node": "25.x"
   },
   "devDependencies": {
     "@colyseus/loadtest": "^0.15.2",
