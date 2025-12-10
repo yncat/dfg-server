@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/colyseus/create-colyseus#readme",
   "engines": {
-    "node": "16.x"
+    "node": "25.x"
   },
   "devDependencies": {
     "@colyseus/loadtest": "^0.15.2",
@@ -51,11 +51,11 @@
   },
   "dependencies": {
     "@colyseus/monitor": "^0.15.1",
-    "@colyseus/tools": "^0.15.2",
+    "@colyseus/tools": "^0.15.49",
     "@mojotech/json-type-validation": "^3.1.0",
     "@types/clone": "^2.1.1",
     "clone": "^2.1.2",
-    "colyseus": "^0.15.17",
+    "colyseus": "^0.15.57",
     "cors": "^2.8.5",
     "dfg-messages": "github:yncat/dfg-messages#master",
     "dfg-simulator": "^1.3.7",
